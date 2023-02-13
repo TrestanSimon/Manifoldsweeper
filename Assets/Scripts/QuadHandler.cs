@@ -19,6 +19,15 @@ public class QuadHandler : MonoBehaviour {
     public Material materialScale;
     public Material materialLip;
 
+    public static Dictionary<Vector2Int, GameObject> flags = new Dictionary<Vector2Int, GameObject>();
+
+    public static void DestroyFlag(GameObject go) {
+        Destroy(go);
+    }
+    public static GameObject CreateFlag(GameObject go, Vector3 pos, Quaternion rot){
+        return Instantiate(go, pos, rot);
+    }
+
     public void Draw(Quad[,] quads) {
         int m = quads.GetLength(0);
         int n = quads.GetLength(1);
@@ -59,5 +68,5 @@ public class QuadHandler : MonoBehaviour {
             case 8: return materialNum8;
             default: return null;
         }
-    }
+    }    
 }

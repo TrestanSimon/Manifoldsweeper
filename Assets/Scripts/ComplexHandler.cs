@@ -4,12 +4,10 @@ using System.Collections.Generic;
 using static Unity.Mathematics.math;
 
 public class ComplexHandler : MonoBehaviour {
-    public Material defaultMaterial;
-    public int ResU = 16, ResV = 16;
+    public int ResU = 16, ResV = 16*3;
     public int mineCount = 16;
     public float r = 1f, R = 3f;
     public GameObject flagPrefab;
-    private Dictionary<Vector2Int, GameObject> flags = new Dictionary<Vector2Int, GameObject>();
 
     private QuadHandler quadHandler;
     private Vector3[,] vertices;
@@ -59,32 +57,6 @@ public class ComplexHandler : MonoBehaviour {
         GenerateQuads();
     }
 
-    private void CreateQuad(
-        int u, int v,
-        Vector3 vert0, Vector3 vert1,
-        Vector3 vert2, Vector3 vert3
-    ) {
-        Quad quad = new Quad();
-        quad.u = u;
-        quad.v = v;
-        quad.go.name = "Quad " + u.ToString() + ", " + v.ToString();
-        
-        // For identifying Quad instance from GameObject
-        Tag tag = quad.go.AddComponent<Tag>();
-        tag.u = u;
-        tag.v = v;
-
-        quad.go.transform.parent = gameObject.transform;
-
-        quad.SetMaterial(defaultMaterial);
-
-        quad.GenerateMesh(
-            vert0, vert1,
-            vert2, vert3
-        );
-        quads[u,v] = quad;
-    }
-
     private void GenerateVertices() {
         vertices = new Vector3[ResU + 1, ResV + 1];
         normals = new Vector3[ResU + 1, ResV + 1];
@@ -100,7 +72,6 @@ public class ComplexHandler : MonoBehaviour {
                     r * sinu,
                     minor * sinv
                 );
-
                 normals[u, v] = new Vector3(
                     cosu * cosv,
                     sinu,
@@ -116,12 +87,13 @@ public class ComplexHandler : MonoBehaviour {
 
         for (int v = 0; v < ResV; v++) {
             for (int u = 0; u < ResU; u++) {
-                CreateQuad(
+                quadNormals[u,v] = (normals[u,v] + normals[u+1,v] + normals[u+1,v+1] + normals[u,v+1])/4;
+                quads[u,v] = new Quad(
                     u, v,
                     vertices[u,v], vertices[u+1,v],
-                    vertices[u+1,v+1], vertices[u,v+1]
+                    vertices[u+1,v+1], vertices[u,v+1],
+                    quadNormals[u,v]
                 );
-                quadNormals[u,v] = (normals[u,v] + normals[u+1,v] + normals[u+1,v+1] + normals[u,v+1])/4;
             }
         }
     }
@@ -141,10 +113,10 @@ public class ComplexHandler : MonoBehaviour {
         }
         
         // Destroy all flags
-        foreach (KeyValuePair<Vector2Int, GameObject> flag in flags) {
+        foreach (KeyValuePair<Vector2Int, GameObject> flag in QuadHandler.flags) {
             Destroy(flag.Value);
         }
-        flags.Clear();
+        QuadHandler.flags.Clear();
 
         GenerateMines();
         GenerateNumbers();
@@ -206,23 +178,7 @@ public class ComplexHandler : MonoBehaviour {
         mouseOver = MouseIdentify();
 
         if (mouseOver == null) { return; }
-        if (mouseOver.type == Quad.Type.Invalid || mouseOver.revealed) { return; }
-
-        if (mouseOver.flagged) {
-            flags.Remove(new Vector2Int(mouseOver.u, mouseOver.v));
-            Destroy(mouseOver.flag);
-        } else {
-            Vector3 normal = quadNormals[mouseOver.u, mouseOver.v];
-            Vector3 quadPos = (mouseOver.vertices[0] + mouseOver.vertices[2]) / 2f;
-            Vector3 flagPos = quadPos + normal*0.2f;
-            Quaternion flagRot = Quaternion.LookRotation(normal) * Quaternion.AngleAxis(90, Vector3.up);
-            Debug.Log(flagRot);
-
-            mouseOver.flag = Instantiate(flagPrefab, flagPos, flagRot);
-            flags.Add(new Vector2Int(mouseOver.u, mouseOver.v), mouseOver.flag);
-        }
-
-        mouseOver.flagged = !mouseOver.flagged;
+        mouseOver.Flag(flagPrefab);
         quadHandler.Draw(quads);
     }
 
@@ -257,7 +213,7 @@ public class ComplexHandler : MonoBehaviour {
 
         if (quad.flagged == true) {
             quad.flagged = false;
-            flags.Remove(new Vector2Int(quad.u, quad.v));
+            QuadHandler.flags.Remove(new Vector2Int(quad.u, quad.v));
             Destroy(quad.flag);
         }
 
@@ -279,7 +235,7 @@ public class ComplexHandler : MonoBehaviour {
         int v1 = v >= 0 ? v % ResV : v + ResV;
 
         if (IsValid(u1, v1)) { return quads[u1,v1]; }
-        else { return new Quad(); }
+        else { return null; }
     }
 
     private bool IsValid(int u, int v) {
