@@ -11,6 +11,7 @@ public class Quad {
     public GameObject go = new GameObject();
     public int u, v;
     public Vector3[] vertices;
+    public Mesh mesh;
     public Type type;
     public int number;
     public bool revealed;
@@ -28,7 +29,7 @@ public class Quad {
         Vector3 vert0, Vector3 vert1,
         Vector3 vert2, Vector3 vert3
     ) {
-        Mesh mesh = go.GetComponent<MeshFilter>().mesh;
+        mesh = go.GetComponent<MeshFilter>().mesh;
 
         vertices = new Vector3[]{
             vert0, vert1,

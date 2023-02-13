@@ -272,7 +272,7 @@ MonoBehaviour:
   materialEmpty: {fileID: 2100000, guid: ff6d208443c2a604ab34f06fd284f2f2, type: 2}
   materialMine: {fileID: 2100000, guid: eb7ff849898e5ce428c46f83d945209e, type: 2}
   materialExploded: {fileID: 2100000, guid: 063f597aa678ee64a84622158e979de6, type: 2}
-  materialFlag: {fileID: 2100000, guid: 37d05c87a8568f740abb96b6e3f2748d, type: 2}
+  materialFlag: {fileID: 2100000, guid: b8f844f8e64da6845924796c9442b474, type: 2}
   materialNum1: {fileID: 2100000, guid: d8052dcc19e824d4a815aff982a07aa7, type: 2}
   materialNum2: {fileID: 2100000, guid: 8220493e3cbe1c641933093737572cef, type: 2}
   materialNum3: {fileID: 2100000, guid: 0871a34599eda864299115cac000cc74, type: 2}
@@ -409,7 +409,7 @@ MonoBehaviour:
   defaultMaterial: {fileID: 2100000, guid: b8f844f8e64da6845924796c9442b474, type: 2}
   ResU: 16
   ResV: 48
-  mineCount: 64
+  mineCount: 128
   r: 1
   R: 3
   flagPrefab: {fileID: 2183530581894313442, guid: 48defbb49ed7ebe47927d6aa825e0696, type: 3}

@@ -13,8 +13,9 @@ public class ComplexHandler : MonoBehaviour {
 
     private QuadHandler quadHandler;
     private Vector3[,] vertices;
-    private Quad[,] quads;
     private Vector3[,] normals;
+    private Quad[,] quads;
+    private Vector3[,] quadNormals;
     private Quad mouseOver;
 
     private bool gameon;
@@ -38,12 +39,13 @@ public class ComplexHandler : MonoBehaviour {
                 Reveal();
             }
         }
+        /*
         Quad quad;
         foreach (KeyValuePair<Vector2Int, GameObject> flag in flags) {
             quad = quads[flag.Key.x, flag.Key.y];
-            // flag.Value.transform.LookAt(Camera.main.transform);
-            //flag.Value.transform.Rotate(new Vector3(0, 10f*Time.deltaTime, 0), Space.Self);
-        }
+            flag.Value.transform.LookAt(Camera.main.transform);
+            flag.Value.transform.Rotate(new Vector3(0, 10f*Time.deltaTime, 0), Space.Self);
+        }*/
     }
 
     private void NewGame() {
@@ -110,6 +112,7 @@ public class ComplexHandler : MonoBehaviour {
 
     private void GenerateQuads() {
         quads = new Quad[ResU, ResV];
+        quadNormals = new Vector3[ResU, ResV];
 
         for (int v = 0; v < ResV; v++) {
             for (int u = 0; u < ResU; u++) {
@@ -118,6 +121,7 @@ public class ComplexHandler : MonoBehaviour {
                     vertices[u,v], vertices[u+1,v],
                     vertices[u+1,v+1], vertices[u,v+1]
                 );
+                quadNormals[u,v] = (normals[u,v] + normals[u+1,v] + normals[u+1,v+1] + normals[u,v+1])/4;
             }
         }
     }
@@ -208,10 +212,10 @@ public class ComplexHandler : MonoBehaviour {
             flags.Remove(new Vector2Int(mouseOver.u, mouseOver.v));
             Destroy(mouseOver.flag);
         } else {
-            Vector3 normal = normals[mouseOver.u, mouseOver.v];
+            Vector3 normal = quadNormals[mouseOver.u, mouseOver.v];
             Vector3 quadPos = (mouseOver.vertices[0] + mouseOver.vertices[2]) / 2f;
             Vector3 flagPos = quadPos + normal*0.2f;
-            Quaternion flagRot = Quaternion.LookRotation(normal); // Add Quaternion
+            Quaternion flagRot = Quaternion.LookRotation(normal) * Quaternion.AngleAxis(90, Vector3.up);
             Debug.Log(flagRot);
 
             mouseOver.flag = Instantiate(flagPrefab, flagPos, flagRot);
