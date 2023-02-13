@@ -14,6 +14,7 @@ public class ComplexHandler : MonoBehaviour {
     private QuadHandler quadHandler;
     private Vector3[,] vertices;
     private Quad[,] quads;
+    private Vector3[,] normals;
     private Quad mouseOver;
 
     private bool gameon;
@@ -37,8 +38,11 @@ public class ComplexHandler : MonoBehaviour {
                 Reveal();
             }
         }
+        Quad quad;
         foreach (KeyValuePair<Vector2Int, GameObject> flag in flags) {
-            flag.Value.transform.LookAt(Camera.main.transform);
+            quad = quads[flag.Key.x, flag.Key.y];
+            // flag.Value.transform.LookAt(Camera.main.transform);
+            //flag.Value.transform.Rotate(new Vector3(0, 10f*Time.deltaTime, 0), Space.Self);
         }
     }
 
@@ -81,6 +85,7 @@ public class ComplexHandler : MonoBehaviour {
 
     private void GenerateVertices() {
         vertices = new Vector3[ResU + 1, ResV + 1];
+        normals = new Vector3[ResU + 1, ResV + 1];
         for (int u = 0; u <= ResU; u++) {
             sincos(2*PI*u / ResU, out float sinu, out float cosu);
             float minor = R + r*cosu;
@@ -92,6 +97,12 @@ public class ComplexHandler : MonoBehaviour {
                     minor * cosv,
                     r * sinu,
                     minor * sinv
+                );
+
+                normals[u, v] = new Vector3(
+                    cosu * cosv,
+                    sinu,
+                    cosu * sinv
                 );
             }
         }
@@ -189,6 +200,7 @@ public class ComplexHandler : MonoBehaviour {
 
     private void Flag() {
         mouseOver = MouseIdentify();
+
         if (mouseOver == null) { return; }
         if (mouseOver.type == Quad.Type.Invalid || mouseOver.revealed) { return; }
 
@@ -196,7 +208,13 @@ public class ComplexHandler : MonoBehaviour {
             flags.Remove(new Vector2Int(mouseOver.u, mouseOver.v));
             Destroy(mouseOver.flag);
         } else {
-            mouseOver.flag = Instantiate(flagPrefab, mouseOver.vertices[0], Quaternion.identity);
+            Vector3 normal = normals[mouseOver.u, mouseOver.v];
+            Vector3 quadPos = (mouseOver.vertices[0] + mouseOver.vertices[2]) / 2f;
+            Vector3 flagPos = quadPos + normal*0.2f;
+            Quaternion flagRot = Quaternion.LookRotation(normal); // Add Quaternion
+            Debug.Log(flagRot);
+
+            mouseOver.flag = Instantiate(flagPrefab, flagPos, flagRot);
             flags.Add(new Vector2Int(mouseOver.u, mouseOver.v), mouseOver.flag);
         }
 
@@ -232,6 +250,12 @@ public class ComplexHandler : MonoBehaviour {
     private void Flood(Quad quad) {
         if (quad.revealed) return;
         if (quad.type == Quad.Type.Mine || quad.type == Quad.Type.Invalid) return;
+
+        if (quad.flagged == true) {
+            quad.flagged = false;
+            flags.Remove(new Vector2Int(quad.u, quad.v));
+            Destroy(quad.flag);
+        }
 
         quad.revealed = true;
         if (quad.type == Quad.Type.Empty) {
