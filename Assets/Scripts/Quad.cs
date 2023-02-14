@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class Quad {
     public enum Type {
@@ -8,7 +9,7 @@ public class Quad {
         Number
     }
 
-    public GameObject go = new GameObject();
+    public GameObject go;
     public int u, v;
     public Vector3[] vertices;
     public Vector3 normal;
@@ -21,12 +22,17 @@ public class Quad {
 
     public GameObject flag;
 
+    public Quad() {}
+
     public Quad(
         int u, int v,
         Vector3 vert0, Vector3 vert1,
         Vector3 vert2, Vector3 vert3,
         Vector3 normal
     ) {
+        go = new GameObject();
+        go.name = "Quad " + u.ToString() + ", " + v.ToString();
+        
         MeshFilter filter = go.AddComponent<MeshFilter>();
         Mesh mesh = filter.mesh;
         MeshRenderer renderer = go.AddComponent<MeshRenderer>();
@@ -65,17 +71,17 @@ public class Quad {
         meshRenderer.material = material;
     }
 
-    public void Flag(GameObject flag = null) {
+    public void Flag(Dictionary<Vector2Int, GameObject> flags, GameObject flag = null) {
         if (type == Type.Invalid || revealed) {return;}
         if (flagged) {
-            QuadHandler.flags.Remove(new Vector2Int(u,v));
-            QuadHandler.DestroyFlag(this.flag);
+            flags.Remove(new Vector2Int(u,v));
+            Complex.DestroyFlag(this.flag);
         } else if (flag != null) {
             Vector3 stake = (vertices[0] + vertices[2]) / 2f;
             Vector3 flagPos = stake + normal*0.2f;
             Quaternion flagRot = Quaternion.LookRotation(normal) * Quaternion.AngleAxis(90, Vector3.up);
-            this.flag = QuadHandler.CreateFlag(flag, flagPos, flagRot);
-            QuadHandler.flags.Add(new Vector2Int(u,v), this.flag);
+            this.flag = Complex.CreateFlag(flag, flagPos, flagRot);
+            flags.Add(new Vector2Int(u,v), this.flag);
         }
         flagged = !flagged;
     }

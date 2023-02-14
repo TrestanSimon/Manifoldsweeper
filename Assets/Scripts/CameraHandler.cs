@@ -15,14 +15,6 @@ public class CameraHandler : MonoBehaviour {
     private float scroll;
     private Camera cam;
 
-    private ComplexHandler complexHandler;
-    private float radius;
-
-    private void Awake() {
-        complexHandler = GetComponentInParent<ComplexHandler>();
-        radius = complexHandler.R;
-    }
-
     void Update() {
         cam = Camera.main;
         // cam.transform.LookAt(Vector3.zero);

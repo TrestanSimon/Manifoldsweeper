@@ -3,24 +3,52 @@ using System.Collections.Generic;
 
 using static Unity.Mathematics.math;
 
-public class ComplexHandler : MonoBehaviour {
+public abstract class Complex : MonoBehaviour {
     public int ResU = 16, ResV = 16*3;
-    public int mineCount = 16;
-    public float r = 1f, R = 3f;
-    public GameObject flagPrefab;
+    public int mineCount = 64;
 
-    private QuadHandler quadHandler;
-    private Vector3[,] vertices;
-    private Vector3[,] normals;
-    private Quad[,] quads;
-    private Vector3[,] quadNormals;
-    private Quad mouseOver;
+    public Vector3[,] vertices;
+    public Vector3[,] normals;
+    public Quad[,] quads;
+    public Vector3[,] quadNormals;
+    public Dictionary<Vector2Int, GameObject> flags = new Dictionary<Vector2Int, GameObject>();
+    public Quad mouseOver;
+
+    public Material materialUknown;
+    public Material materialEmpty;
+    public Material materialMine;
+    public Material materialExploded;
+    public Material materialFlag;
+    public Material materialNum1;
+    public Material materialNum2;
+    public Material materialNum3;
+    public Material materialNum4;
+    public Material materialNum5;
+    public Material materialNum6;
+    public Material materialNum7;
+    public Material materialNum8;
+    public GameObject flagPrefab;
 
     private bool gameon;
     private bool gameover;
 
     private void Awake() {
-        quadHandler = GetComponentInChildren<QuadHandler>();
+        // Load materials
+        materialUknown = Resources.Load("Materials/TileUnknown", typeof(Material)) as Material;
+        materialEmpty = Resources.Load("Materials/TileEmpty", typeof(Material)) as Material;
+        materialMine = Resources.Load("Materials/TileMine", typeof(Material)) as Material;
+        materialExploded = Resources.Load("Materials/TileExploded", typeof(Material)) as Material;
+        materialFlag = Resources.Load("Materials/TileUnknown", typeof(Material)) as Material;
+        materialNum1 = Resources.Load("Materials/Tile1", typeof(Material)) as Material;
+        materialNum2 = Resources.Load("Materials/Tile2", typeof(Material)) as Material;
+        materialNum3 = Resources.Load("Materials/Tile3", typeof(Material)) as Material;
+        materialNum4 = Resources.Load("Materials/Tile4", typeof(Material)) as Material;
+        materialNum5 = Resources.Load("Materials/Tile5", typeof(Material)) as Material;
+        materialNum6 = Resources.Load("Materials/Tile6", typeof(Material)) as Material;
+        materialNum7 = Resources.Load("Materials/Tile7", typeof(Material)) as Material;
+        materialNum8 = Resources.Load("Materials/Tile8", typeof(Material)) as Material;
+        // Load flag prefab
+        flagPrefab = Resources.Load("Prefabs/Flag", typeof(GameObject)) as GameObject;
     }
 
     private void Start() {
@@ -28,6 +56,8 @@ public class ComplexHandler : MonoBehaviour {
         NewGame();
     }
 
+    // Checks for user inputs
+    // Only one should be enabled at a time
     private void Update() {
         if (Input.GetKeyDown(KeyCode.R)) { NewGame(); }
         else if (gameover != true) {
@@ -37,13 +67,6 @@ public class ComplexHandler : MonoBehaviour {
                 Reveal();
             }
         }
-        /*
-        Quad quad;
-        foreach (KeyValuePair<Vector2Int, GameObject> flag in flags) {
-            quad = quads[flag.Key.x, flag.Key.y];
-            flag.Value.transform.LookAt(Camera.main.transform);
-            flag.Value.transform.Rotate(new Vector3(0, 10f*Time.deltaTime, 0), Space.Self);
-        }*/
     }
 
     private void NewGame() {
@@ -57,30 +80,11 @@ public class ComplexHandler : MonoBehaviour {
         GenerateQuads();
     }
 
-    private void GenerateVertices() {
-        vertices = new Vector3[ResU + 1, ResV + 1];
-        normals = new Vector3[ResU + 1, ResV + 1];
-        for (int u = 0; u <= ResU; u++) {
-            sincos(2*PI*u / ResU, out float sinu, out float cosu);
-            float minor = R + r*cosu;
+    // Generates array of 3-vectors pointing to vertices
+    // Position of vertices depend on the surface
+    public abstract void GenerateVertices();
 
-            for (int v = 0; v <= ResV; v++) {
-                sincos(2*PI*v / ResV, out float sinv, out float cosv);
-
-                vertices[u, v] = new Vector3(
-                    minor * cosv,
-                    r * sinu,
-                    minor * sinv
-                );
-                normals[u, v] = new Vector3(
-                    cosu * cosv,
-                    sinu,
-                    cosu * sinv
-                );
-            }
-        }
-    }
-
+    // Generates quads from vertices
     private void GenerateQuads() {
         quads = new Quad[ResU, ResV];
         quadNormals = new Vector3[ResU, ResV];
@@ -94,6 +98,7 @@ public class ComplexHandler : MonoBehaviour {
                     vertices[u+1,v+1], vertices[u,v+1],
                     quadNormals[u,v]
                 );
+                quads[u,v].go.transform.parent = gameObject.transform;
             }
         }
     }
@@ -113,14 +118,14 @@ public class ComplexHandler : MonoBehaviour {
         }
         
         // Destroy all flags
-        foreach (KeyValuePair<Vector2Int, GameObject> flag in QuadHandler.flags) {
+        foreach (KeyValuePair<Vector2Int, GameObject> flag in flags) {
             Destroy(flag.Value);
         }
-        QuadHandler.flags.Clear();
+        flags.Clear();
 
         GenerateMines();
         GenerateNumbers();
-        quadHandler.Draw(quads);
+        Draw(quads);
     }
 
     private void GenerateMines() {
@@ -155,7 +160,7 @@ public class ComplexHandler : MonoBehaviour {
         }
     }
 
-    private int CountMines(Quad quad) {
+    public int CountMines(Quad quad) {
         int u0 = quad.u, v0 = quad.v, u, v;
         int count = 0;
 
@@ -176,10 +181,9 @@ public class ComplexHandler : MonoBehaviour {
 
     private void Flag() {
         mouseOver = MouseIdentify();
-
         if (mouseOver == null) { return; }
-        mouseOver.Flag(flagPrefab);
-        quadHandler.Draw(quads);
+        mouseOver.Flag(flags, flagPrefab);
+        Draw(quads);
     }
 
     private void Reveal() {
@@ -204,7 +208,7 @@ public class ComplexHandler : MonoBehaviour {
         }
 
         gameon = true;
-        quadHandler.Draw(quads);
+        Draw(quads);
     }
 
     private void Flood(Quad quad) {
@@ -213,7 +217,7 @@ public class ComplexHandler : MonoBehaviour {
 
         if (quad.flagged == true) {
             quad.flagged = false;
-            QuadHandler.flags.Remove(new Vector2Int(quad.u, quad.v));
+            flags.Remove(new Vector2Int(quad.u, quad.v));
             Destroy(quad.flag);
         }
 
@@ -229,17 +233,11 @@ public class ComplexHandler : MonoBehaviour {
         }
     }
 
-    // Returns a Quad given the coordinates of a neighbor
-    private Quad GetNeighbor(int u, int v) {
-        int u1 = u >= 0 ? u % ResU : u + ResU;
-        int v1 = v >= 0 ? v % ResV : v + ResV;
-
-        if (IsValid(u1, v1)) { return quads[u1,v1]; }
-        else { return null; }
-    }
-
-    private bool IsValid(int u, int v) {
-        return u >= 0 && u < ResU && v >= 0 && v < ResV;
+    // Returns a Quad given a coordinate neighboring another Quad
+    // Can be overridden to glue edges together
+    public virtual Quad GetNeighbor(int u, int v) {
+        if (u >= 0 && u < ResU && v >= 0 && v < ResV) { return quads[u,v]; }
+        else { return new Quad(); } // returns Invalid Quad
     }
 
     private void Explode(Quad quad) {
@@ -293,6 +291,7 @@ public class ComplexHandler : MonoBehaviour {
     // returns null if there is no Quad
     private Quad MouseIdentify() {
         Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Debug.Log(Input.mousePosition);
         RaycastHit hit;
         if (Physics.Raycast(inputRay, out hit)) {
             return Identify(hit.collider.gameObject);
@@ -306,4 +305,53 @@ public class ComplexHandler : MonoBehaviour {
         Tag tag = go.GetComponent<Tag>();
         return quads[tag.u, tag.v];
     }
+
+    public static void DestroyFlag(GameObject go) {
+        Destroy(go);
+    }
+    public static GameObject CreateFlag(GameObject go, Vector3 pos, Quaternion rot){
+        return Instantiate(go, pos, rot);
+    }
+
+    public void Draw(Quad[,] quads) {
+        int m = quads.GetLength(0);
+        int n = quads.GetLength(1);
+        Quad quad;
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                quad = quads[i,j];
+                quad.SetMaterial(GetState(quad));
+            }
+        }
+    }
+
+    private Material GetState(Quad quad) {
+        if (quad.revealed) { return GetRevealed(quad); }
+        else if (quad.flagged) { return materialFlag; }
+        else { return materialUknown; }
+    }
+
+    private Material GetRevealed(Quad quad) {
+        switch (quad.type) {
+            case Quad.Type.Empty: return materialEmpty;
+            case Quad.Type.Mine: return quad.exploded ? materialExploded : materialMine;
+            case Quad.Type.Number: return GetNumber(quad);
+            default: return null;
+        }
+    }
+
+    private Material GetNumber(Quad quad) {
+        switch (quad.number) {
+            case 1: return materialNum1;
+            case 2: return materialNum2;
+            case 3: return materialNum3;
+            case 4: return materialNum4;
+            case 5: return materialNum5;
+            case 6: return materialNum6;
+            case 7: return materialNum7;
+            case 8: return materialNum8;
+            default: return null;
+        }
+    }    
 }
