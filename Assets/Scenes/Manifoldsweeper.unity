@@ -135,6 +135,7 @@ GameObject:
   - component: {fileID: 519420031}
   - component: {fileID: 519420029}
   - component: {fileID: 519420033}
+  - component: {fileID: 519420034}
   m_Layer: 0
   m_Name: Camera 3D
   m_TagString: MainCamera
@@ -224,65 +225,22 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   m_MaxRayIntersections: 0
---- !u!1 &830151563
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 830151564}
-  - component: {fileID: 830151565}
-  m_Layer: 0
-  m_Name: Quad Handler
-  m_TagString: GameController
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &830151564
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 830151563}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1624380691}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &830151565
+--- !u!114 &519420034
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 830151563}
+  m_GameObject: {fileID: 519420028}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d273bd5b9175c26448ea5b64b5edc3dd, type: 3}
+  m_Script: {fileID: 11500000, guid: 1abaddd14ae099e409db0d1ba923d11b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  materialUknown: {fileID: 2100000, guid: b8f844f8e64da6845924796c9442b474, type: 2}
-  materialEmpty: {fileID: 2100000, guid: ff6d208443c2a604ab34f06fd284f2f2, type: 2}
-  materialMine: {fileID: 2100000, guid: eb7ff849898e5ce428c46f83d945209e, type: 2}
-  materialExploded: {fileID: 2100000, guid: 063f597aa678ee64a84622158e979de6, type: 2}
-  materialFlag: {fileID: 2100000, guid: b8f844f8e64da6845924796c9442b474, type: 2}
-  materialNum1: {fileID: 2100000, guid: d8052dcc19e824d4a815aff982a07aa7, type: 2}
-  materialNum2: {fileID: 2100000, guid: 8220493e3cbe1c641933093737572cef, type: 2}
-  materialNum3: {fileID: 2100000, guid: 0871a34599eda864299115cac000cc74, type: 2}
-  materialNum4: {fileID: 2100000, guid: 66ac270f59edfe74dbbdea0d0c19f8a1, type: 2}
-  materialNum5: {fileID: 2100000, guid: 34f16fcaacfb45d49bf157d4d6734516, type: 2}
-  materialNum6: {fileID: 2100000, guid: c416c821618103149bb55a046445b4b1, type: 2}
-  materialNum7: {fileID: 2100000, guid: 413a48b96a92de749b32f130fcaf7d04, type: 2}
-  materialNum8: {fileID: 2100000, guid: 3b2fb0a5f4715f7438458664b7e4b558, type: 2}
-  materialScale: {fileID: 0}
-  materialLip: {fileID: 0}
+  minFOV: 10
+  maxFOV: 90
+  sensitivity: 1
+  FOV: 60
 --- !u!1 &1215781787
 GameObject:
   m_ObjectHideFlags: 0
@@ -294,7 +252,7 @@ GameObject:
   - component: {fileID: 1215781789}
   - component: {fileID: 1215781788}
   m_Layer: 0
-  m_Name: Sky Light
+  m_Name: Sunlight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -386,33 +344,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1624380691}
-  - component: {fileID: 1624380690}
+  - component: {fileID: 1624380692}
   m_Layer: 0
-  m_Name: Complex Handler
+  m_Name: Surface
   m_TagString: GameController
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1624380690
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1624380689}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b47757a2258435245b25454663c39f24, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  defaultMaterial: {fileID: 2100000, guid: b8f844f8e64da6845924796c9442b474, type: 2}
-  ResU: 16
-  ResV: 48
-  mineCount: 128
-  r: 1
-  R: 3
-  flagPrefab: {fileID: 2183530581894313442, guid: 48defbb49ed7ebe47927d6aa825e0696, type: 3}
 --- !u!4 &1624380691
 Transform:
   m_ObjectHideFlags: 0
@@ -424,57 +363,36 @@ Transform:
   m_LocalPosition: {x: 0.3256853, y: 1.060588, z: 0.514523}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 830151564}
-  - {fileID: 2089979616}
+  m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2089979615
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2089979616}
-  - component: {fileID: 2089979617}
-  m_Layer: 0
-  m_Name: Camera Handler
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2089979616
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2089979615}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1624380691}
-  m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2089979617
+--- !u!114 &1624380692
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2089979615}
+  m_GameObject: {fileID: 1624380689}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1abaddd14ae099e409db0d1ba923d11b, type: 3}
+  m_Script: {fileID: 11500000, guid: 62d33bdee9ef08e4c962c489c1367cdc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minFOV: 10
-  maxFOV: 90
-  sensitivity: 1
-  FOV: 60
+  ResU: 64
+  ResV: 8
+  mineCount: 1
+  materialUknown: {fileID: 0}
+  materialEmpty: {fileID: 0}
+  materialMine: {fileID: 0}
+  materialExploded: {fileID: 0}
+  materialFlag: {fileID: 0}
+  materialNum1: {fileID: 0}
+  materialNum2: {fileID: 0}
+  materialNum3: {fileID: 0}
+  materialNum4: {fileID: 0}
+  materialNum5: {fileID: 0}
+  materialNum6: {fileID: 0}
+  materialNum7: {fileID: 0}
+  materialNum8: {fileID: 0}
+  flagPrefab: {fileID: 0}

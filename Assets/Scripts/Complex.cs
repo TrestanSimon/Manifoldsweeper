@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 using static Unity.Mathematics.math;
@@ -291,7 +292,6 @@ public abstract class Complex : MonoBehaviour {
     // returns null if there is no Quad
     private Quad MouseIdentify() {
         Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-        Debug.Log(Input.mousePosition);
         RaycastHit hit;
         if (Physics.Raycast(inputRay, out hit)) {
             return Identify(hit.collider.gameObject);
