@@ -8,6 +8,15 @@ public abstract class Complex : MonoBehaviour {
     public Quad[,] quads;
     public Vector3[,] quadNormals;
 
+    public float minFOV = 10f;
+    public float maxFOV = 90f;
+    public float sensitivity = 1f;
+    public float FOV = 60f;
+    public Vector3 mousePos;
+    public Vector3 dmousePos;
+    public float scroll;
+    public Camera cam;
+
     public void GenerateComplex() {
         GenerateVertices();
         GenerateQuads();
@@ -66,5 +75,23 @@ public abstract class Complex : MonoBehaviour {
     }
     public static GameObject CreateFlag(GameObject go, Vector3 pos, Quaternion rot){
         return Instantiate(go, pos, rot);
+    }
+
+    public virtual void UpdateCamera() {
+        cam = Camera.main;
+        scroll = Input.mouseScrollDelta.y * sensitivity * -1f;
+        if (Input.GetMouseButtonDown(2)) {
+            mousePos = Input.mousePosition;
+        }
+        if (Input.GetMouseButton(2) && mousePos != null) {
+            dmousePos = Input.mousePosition - mousePos;
+            cam.transform.RotateAround(Vector3.zero, Vector3.up, dmousePos.x/2f*Time.deltaTime);
+            cam.transform.RotateAround(Vector3.zero, Camera.main.transform.right, -dmousePos.y/2f*Time.deltaTime);
+        }
+        if (scroll != 0f) {
+            FOV += scroll;
+            FOV = Mathf.Clamp(FOV, minFOV, maxFOV);
+            cam.fieldOfView = FOV;
+        }
     }
 }

@@ -58,6 +58,7 @@ public class Game : MonoBehaviour {
 
     // Checks for user inputs every frame
     private void Update() {
+        complex.UpdateCamera();
         if (Input.GetKeyDown(KeyCode.R)) {
             NewGame();
         }
