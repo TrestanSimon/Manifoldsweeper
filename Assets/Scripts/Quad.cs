@@ -105,11 +105,14 @@ public class Quad {
         } else if (flag != null) {
             // Points to where flag will be planted
             Vector3 stake = (vertices[0] + vertices[2]) / 2f;
+            // Scale based on quad size
+            float flagScale = Vector3.Magnitude(vertices[0] - vertices[2]);
 
+            // Create flag for each side
             for (int i = 0; i < sideCount; i++) {
-                Vector3 flagPos = stake + normals[i]*0.2f;
+                Vector3 flagPos = stake + normals[i] * flagScale/2f;
                 Quaternion flagRot = Quaternion.LookRotation(normals[i]) * Quaternion.AngleAxis(90, Vector3.up);
-                this.flag[i] = Complex.CreateFlag(flag, flagPos, flagRot);
+                this.flag[i] = Complex.CreateFlag(flag, flagPos, flagRot, flagScale);
             }
             flags.Add(new Vector2Int(u,v), this.flag);
         }

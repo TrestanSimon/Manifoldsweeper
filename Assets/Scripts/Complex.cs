@@ -76,9 +76,11 @@ public abstract class Complex : MonoBehaviour {
     public static void DestroyFlags(GameObject[] gos) {
         foreach (GameObject go in gos) { Destroy(go); }
     }
-    
-    public static GameObject CreateFlag(GameObject go, Vector3 pos, Quaternion rot){
-        return Instantiate(go, pos, rot);
+
+    public static GameObject CreateFlag(GameObject go, Vector3 pos, Quaternion rot, float scale){
+        GameObject flag = Instantiate(go, pos, rot);
+        flag.transform.localScale *= scale;
+        return flag;
     }
 
     public virtual void UpdateCamera(bool force = false) {
