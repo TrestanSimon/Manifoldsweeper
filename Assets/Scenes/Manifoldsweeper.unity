@@ -388,11 +388,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1624380689}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 62d33bdee9ef08e4c962c489c1367cdc, type: 3}
+  m_Script: {fileID: 11500000, guid: 868fd07bcdc2baf4a8ab8581d93d685e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ResU: 72
-  ResV: 8
+  ResU: 16
+  ResV: 16
+  sideCount: 0
   minFOV: 10
   maxFOV: 90
   sensitivity: 1
@@ -401,3 +402,4 @@ MonoBehaviour:
   dmousePos: {x: 0, y: 0, z: 0}
   scroll: 0
   cam: {fileID: 0}
+  center: {x: 0, y: 0, z: 0}
