@@ -7,6 +7,10 @@ using static Unity.Mathematics.math;
 public class MobiusStrip : Complex {
     // public new int ResU = 72, ResV = 8;
 
+    public override void Awake() {
+        sideCount = 2;
+    }
+
     public override void GenerateVertices() {
         vertices = new Vector3[ResU + 1, ResV + 1];
         normals = new Vector3[ResU + 1, ResV + 1];

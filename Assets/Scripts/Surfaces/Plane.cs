@@ -5,6 +5,9 @@ using UnityEngine;
 using static Unity.Mathematics.math;
 
 public class Plane : Complex {
+    public override void Awake() {
+        sideCount = 2;
+    }
     
     public override void GenerateVertices() {
         vertices = new Vector3[ResU + 1, ResV + 1];

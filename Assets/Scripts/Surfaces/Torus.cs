@@ -12,7 +12,8 @@ public class Torus : Complex {
     private Vector3 circleMinor = Vector3.zero;
     private Vector3 camdr = 4f * Vector3.right;
 
-    private void Awake() {
+    public override void Awake() {
+        sideCount = 1;
         cam = Camera.main;
         UpdateCamera(true);
     }

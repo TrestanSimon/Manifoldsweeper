@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 1215781788}
-  m_IndirectSpecularColor: {r: 0.5789861, g: 0.5766977, b: 0.501712, a: 1}
+  m_IndirectSpecularColor: {r: 0.5789866, g: 0.576698, b: 0.5017132, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -327,8 +327,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1624380691}
-  - component: {fileID: 1624380692}
   - component: {fileID: 1624380693}
+  - component: {fileID: 1624380694}
   m_Layer: 0
   m_Name: Surface
   m_TagString: GameController
@@ -351,31 +351,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1624380692
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1624380689}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 592443ace9e1e824bbe7d743dee8c3f1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ResU: 16
-  ResV: 48
-  minFOV: 10
-  maxFOV: 90
-  sensitivity: 1
-  FOV: 60
-  mousePos: {x: 0, y: 0, z: 0}
-  dmousePos: {x: 0, y: 0, z: 0}
-  scroll: 0
-  cam: {fileID: 0}
-  r: 1
-  R: 3
-  t: 0
 --- !u!114 &1624380693
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -404,3 +379,25 @@ MonoBehaviour:
   materialNum7: {fileID: 0}
   materialNum8: {fileID: 0}
   flagPrefab: {fileID: 0}
+--- !u!114 &1624380694
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1624380689}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62d33bdee9ef08e4c962c489c1367cdc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ResU: 72
+  ResV: 8
+  minFOV: 10
+  maxFOV: 90
+  sensitivity: 1
+  FOV: 60
+  mousePos: {x: 0, y: 0, z: 0}
+  dmousePos: {x: 0, y: 0, z: 0}
+  scroll: 0
+  cam: {fileID: 0}

@@ -7,6 +7,7 @@ public abstract class Complex : MonoBehaviour {
     public Vector3[,] normals;
     public Quad[,] quads;
     public Vector3[,] quadNormals;
+    public int sideCount;
 
     public float minFOV = 10f;
     public float maxFOV = 90f;
@@ -16,6 +17,9 @@ public abstract class Complex : MonoBehaviour {
     public Vector3 dmousePos;
     public float scroll;
     public Camera cam;
+
+    // Awake() method needed to set sideCount
+    public abstract void Awake();
 
     public void GenerateComplex() {
         GenerateVertices();
@@ -33,14 +37,15 @@ public abstract class Complex : MonoBehaviour {
 
         for (int v = 0; v < ResV; v++) {
             for (int u = 0; u < ResU; u++) {
-                quadNormals[u,v] = (normals[u,v] + normals[u+1,v] + normals[u+1,v+1] + normals[u,v+1])/4;
-                quads[u,v] = new DoubleQuad(
-                    u, v,
+                quads[u,v] = new Quad(
+                    u, v, sideCount,
                     vertices[u,v], vertices[u+1,v],
-                    vertices[u+1,v+1], vertices[u,v+1],
-                    quadNormals[u,v]
+                    vertices[u+1,v+1], vertices[u,v+1]
                 );
-                quads[u,v].go.transform.parent = gameObject.transform;
+                // Make quads child of Complex GameObject
+                foreach (GameObject quad in quads[u,v].gameObjects) {
+                    quad.transform.parent = gameObject.transform;
+                }
             }
         }
     }
