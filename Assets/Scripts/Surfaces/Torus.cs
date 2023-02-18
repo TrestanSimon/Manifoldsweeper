@@ -6,13 +6,15 @@ using static Unity.Mathematics.math;
 
 public class Torus : Complex {
     public float r = 1f, R = 3f;
-    public float t = 0f;
-    private Vector3 camCenter = Vector3.zero;
+    public float tu = 0f, tv = 0f;
+    public float zoom = 10f;
+    private Vector3 circleMajor = Vector3.zero;
+    private Vector3 circleMinor = Vector3.zero;
     private Vector3 camdr = 4f * Vector3.right;
 
     private void Awake() {
         cam = Camera.main;
-        UpdateCamera();
+        UpdateCamera(true);
     }
     
     public override void GenerateVertices() {
@@ -47,33 +49,28 @@ public class Torus : Complex {
         else { return null; }
     }
 
-    public override void UpdateCamera() {
+    public override void UpdateCamera(bool force = false) {
         scroll = Input.mouseScrollDelta.y * sensitivity * -1f;
-        if (Input.GetMouseButtonDown(2)) {
+        if (Input.GetMouseButtonDown(0)) {
             mousePos = Input.mousePosition;
         }
-        if (Input.GetMouseButton(2) && mousePos != null) {
+        if ((Input.GetMouseButton(0) && mousePos != null) || force) {
             dmousePos = Input.mousePosition - mousePos;
-            t += clamp(dmousePos.x/1000f, -10f, 10f);
-            sincos(t, out float sint, out float cost);
-            camCenter = new Vector3(
-                R * cost,
-                0f,
-                R * sint
-            );
-            float camdr2 = sqrt(camdr.x*camdr.x + camdr.z*camdr.z);
-            camdr = camdr2 * camCenter/R;
-            // Vertical:
-            cam.transform.RotateAround(camCenter, Vector3.up, dmousePos.x/2f*Time.deltaTime);
-            // Horizontal:
-            cam.transform.RotateAround(camCenter, Camera.main.transform.right, -dmousePos.y/2f*Time.deltaTime);
+
+            tu += clamp(dmousePos.y/300f, -30f, 30f) * Time.deltaTime;
+            sincos(tu, out float sinu, out float cosu);
+            tv += clamp(dmousePos.x/300f, -30f, 30f) * Time.deltaTime;
+            sincos(tv, out float sinv, out float cosv);
+
+            // Major (toroidal) and minor (poloidal) circles making up torus
+            circleMajor = new Vector3(R * cosv, 0f, R * sinv);
+            circleMinor = new Vector3(r * cosu * cosv, r * sinu, r * cosu * sinv);
         }
         if (scroll != 0f) {
-            FOV += scroll;
-            FOV = Mathf.Clamp(FOV, minFOV, maxFOV);
-            cam.fieldOfView = FOV;
+            zoom += scroll;
+            zoom = clamp(zoom, 2f, 20f);
         }
-        cam.transform.position = camCenter + camdr;
-        cam.transform.LookAt(camCenter);
+        cam.transform.position = circleMajor + zoom * circleMinor;
+        cam.transform.LookAt(circleMajor);
     }
 }

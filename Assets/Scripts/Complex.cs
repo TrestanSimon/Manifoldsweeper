@@ -77,13 +77,13 @@ public abstract class Complex : MonoBehaviour {
         return Instantiate(go, pos, rot);
     }
 
-    public virtual void UpdateCamera() {
+    public virtual void UpdateCamera(bool force = false) {
         cam = Camera.main;
         scroll = Input.mouseScrollDelta.y * sensitivity * -1f;
         if (Input.GetMouseButtonDown(2)) {
             mousePos = Input.mousePosition;
         }
-        if (Input.GetMouseButton(2) && mousePos != null) {
+        if ((Input.GetMouseButton(2) && mousePos != null) || force) {
             dmousePos = Input.mousePosition - mousePos;
             cam.transform.RotateAround(Vector3.zero, Vector3.up, dmousePos.x/2f*Time.deltaTime);
             cam.transform.RotateAround(Vector3.zero, Camera.main.transform.right, -dmousePos.y/2f*Time.deltaTime);
