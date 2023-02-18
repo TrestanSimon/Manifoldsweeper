@@ -22,7 +22,7 @@ public class Game : MonoBehaviour {
     public Material materialNum7;
     public Material materialNum8;
     public GameObject flagPrefab;
-    public Dictionary<Vector2Int, GameObject> flags = new Dictionary<Vector2Int, GameObject>();
+    public Dictionary<Vector2Int, GameObject[]> flags = new Dictionary<Vector2Int, GameObject[]>();
 
     private bool gameon = false;
     private bool gameover = false;
@@ -92,8 +92,8 @@ public class Game : MonoBehaviour {
         }
         
         // Destroy all flags
-        foreach (KeyValuePair<Vector2Int, GameObject> flag in flags) {
-            Destroy(flag.Value);
+        foreach (KeyValuePair<Vector2Int, GameObject[]> flag in flags) {
+            Complex.DestroyFlags(flag.Value);
         }
         flags.Clear();
 
@@ -192,7 +192,7 @@ public class Game : MonoBehaviour {
         if (quad.flagged == true) {
             quad.flagged = false;
             flags.Remove(new Vector2Int(quad.u, quad.v));
-            Destroy(quad.flag);
+            Complex.DestroyFlags(quad.flag);
         }
 
         quad.revealed = true;

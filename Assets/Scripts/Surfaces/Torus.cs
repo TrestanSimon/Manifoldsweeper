@@ -43,6 +43,7 @@ public class Torus : Complex {
     }
 
     public override Quad GetNeighbor(int u, int v) {
+        // Wraps around u and v
         int u1 = u >= 0 ? u % ResU : u + ResU;
         int v1 = v >= 0 ? v % ResV : v + ResV;
 

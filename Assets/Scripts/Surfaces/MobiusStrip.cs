@@ -34,9 +34,12 @@ public class MobiusStrip : Complex {
     }
 
     public override Quad GetNeighbor(int u, int v) {
+        // Wraps around u
         int u1 = u >= 0 ? u % ResU : u + ResU;
         int v1 = v;
-        if (u >= ResU || u < 0) {
+
+        if (u % (2*ResU) >= ResU || u % (-2*ResU) < 0) {
+            // Flips v
             v1 = ResV - (v1 + 1);
         }
 

@@ -73,9 +73,10 @@ public abstract class Complex : MonoBehaviour {
         return quads[tag.u, tag.v];
     }
 
-    public static void DestroyFlag(GameObject go) {
-        Destroy(go);
+    public static void DestroyFlags(GameObject[] gos) {
+        foreach (GameObject go in gos) { Destroy(go); }
     }
+    
     public static GameObject CreateFlag(GameObject go, Vector3 pos, Quaternion rot){
         return Instantiate(go, pos, rot);
     }

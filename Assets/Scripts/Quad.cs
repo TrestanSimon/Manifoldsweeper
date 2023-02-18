@@ -13,7 +13,7 @@ public class Quad {
     public int u, v;
     public GameObject[] gameObjects;
     public Vector3[] vertices;
-    public Vector3 normal;
+    public Vector3[] normals;
     public Mesh[] meshes;
     public int sideCount = 1;
 
@@ -23,7 +23,7 @@ public class Quad {
     public bool flagged;
     public bool exploded;
 
-    public GameObject flag;
+    public GameObject[] flag;
 
     public Quad() {}
 
@@ -35,6 +35,8 @@ public class Quad {
         this.sideCount = sideCount;
         gameObjects = new GameObject[sideCount];
         meshes = new Mesh[sideCount];
+        normals =  new Vector3[sideCount];
+        flag = new GameObject[sideCount];
 
         vertices = new Vector3[]{
             vert0, vert1,
@@ -70,14 +72,14 @@ public class Quad {
             mesh.vertices = vertices;
             mesh.triangles = winding;
             mesh.uv = uvCoords;
+            normals[i] = Vector3.Cross(vert0 - vert1, vert0 - vert2).normalized;
 
             if (i % 2 == 1) {
                 // Reverse winding
                 mesh.triangles = mesh.triangles.Reverse().ToArray();
                 mesh.uv = mesh.uv.Reverse().ToArray();
+                normals[i] *= -1f;
             }
-
-            normal = Vector3.Cross(vert0 - vert1, vert0 - vert2).normalized;
 
             mesh.RecalculateBounds();
             mesh.RecalculateTangents();
@@ -95,16 +97,20 @@ public class Quad {
         }
     }
 
-    public void Flag(Dictionary<Vector2Int, GameObject> flags, GameObject flag = null) {
+    public void Flag(Dictionary<Vector2Int, GameObject[]> flags, GameObject flag = null) {
         if (type == Type.Invalid || revealed) {return;}
         if (flagged) {
             flags.Remove(new Vector2Int(u,v));
-            Complex.DestroyFlag(this.flag);
+            Complex.DestroyFlags(this.flag);
         } else if (flag != null) {
+            // Points to where flag will be planted
             Vector3 stake = (vertices[0] + vertices[2]) / 2f;
-            Vector3 flagPos = stake + normal*0.2f;
-            Quaternion flagRot = Quaternion.LookRotation(normal) * Quaternion.AngleAxis(90, Vector3.up);
-            this.flag = Complex.CreateFlag(flag, flagPos, flagRot);
+
+            for (int i = 0; i < sideCount; i++) {
+                Vector3 flagPos = stake + normals[i]*0.2f;
+                Quaternion flagRot = Quaternion.LookRotation(normals[i]) * Quaternion.AngleAxis(90, Vector3.up);
+                this.flag[i] = Complex.CreateFlag(flag, flagPos, flagRot);
+            }
             flags.Add(new Vector2Int(u,v), this.flag);
         }
         flagged = !flagged;
