@@ -6,7 +6,6 @@ public abstract class Complex : MonoBehaviour {
     public Vector3[,] vertices;
     public Vector3[,] normals;
     public Quad[,] quads;
-    public Vector3[,] quadNormals;
     public int sideCount;
 
     public float minFOV = 10f;
@@ -33,7 +32,6 @@ public abstract class Complex : MonoBehaviour {
     // Generates quads from vertices
     private void GenerateQuads() {
         quads = new Quad[ResU, ResV];
-        quadNormals = new Vector3[ResU, ResV];
 
         for (int v = 0; v < ResV; v++) {
             for (int u = 0; u < ResU; u++) {

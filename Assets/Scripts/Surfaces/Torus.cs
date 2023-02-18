@@ -47,7 +47,7 @@ public class Torus : Complex {
         int v1 = v >= 0 ? v % ResV : v + ResV;
 
         if (u1 >= 0 && u1 < ResU && v1 >= 0 && v1 < ResV) { return quads[u1,v1]; }
-        else { return null; }
+        else { return new Quad(); }
     }
 
     public override void UpdateCamera(bool force = false) {
@@ -58,9 +58,9 @@ public class Torus : Complex {
         if ((Input.GetMouseButton(0) && mousePos != null) || force) {
             dmousePos = Input.mousePosition - mousePos;
 
-            tu += clamp(dmousePos.y/300f, -30f, 30f) * Time.deltaTime;
+            tu -= clamp(dmousePos.y/300f, -30f, 30f) * Time.deltaTime;
             sincos(tu, out float sinu, out float cosu);
-            tv += clamp(dmousePos.x/300f, -30f, 30f) * Time.deltaTime;
+            tv -= clamp(dmousePos.x/300f, -30f, 30f) * Time.deltaTime;
             sincos(tv, out float sinv, out float cosv);
 
             // Major (toroidal) and minor (poloidal) circles making up torus
