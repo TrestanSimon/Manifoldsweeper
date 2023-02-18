@@ -69,7 +69,7 @@ public class Quad {
         collider.sharedMesh = mesh;
     }
 
-    public void SetMaterial(Material material) {
+    public virtual void SetMaterial(Material material) {
         MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();
         meshRenderer.material = material;
     }

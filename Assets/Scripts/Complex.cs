@@ -34,7 +34,7 @@ public abstract class Complex : MonoBehaviour {
         for (int v = 0; v < ResV; v++) {
             for (int u = 0; u < ResU; u++) {
                 quadNormals[u,v] = (normals[u,v] + normals[u+1,v] + normals[u+1,v+1] + normals[u,v+1])/4;
-                quads[u,v] = new Quad(
+                quads[u,v] = new DoubleQuad(
                     u, v,
                     vertices[u,v], vertices[u+1,v],
                     vertices[u+1,v+1], vertices[u,v+1],
