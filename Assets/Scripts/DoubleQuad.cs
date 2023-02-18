@@ -54,9 +54,13 @@ public class DoubleQuad : Quad {
             2, 1, 0
         };
         
-        mesh.uv = meshFlip.uv = new Vector2[]{
+        mesh.uv = new Vector2[]{
             Vector2.zero, Vector2.up,
             Vector2.one, Vector2.right
+        };
+        meshFlip.uv = new Vector2[]{
+            Vector2.right, Vector2.one,
+            Vector2.up, Vector2.zero
         };
 
         mesh.RecalculateBounds();
