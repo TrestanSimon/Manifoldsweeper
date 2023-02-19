@@ -18,7 +18,17 @@ public abstract class Complex : MonoBehaviour {
     public Camera cam;
 
     // Awake() method needed to set sideCount
-    public abstract void Awake();
+    public abstract void Setup(int ResU, int ResV);
+
+    public Game Gamify(int mineCount) {
+        Game game;
+        gameObject.TryGetComponent<Game>(out game);
+        if (game == null) {
+            game = gameObject.AddComponent<Game>();
+        }
+        game.Setup(this, mineCount);
+        return game;
+    }
 
     public void GenerateComplex() {
         GenerateVertices();
@@ -86,10 +96,10 @@ public abstract class Complex : MonoBehaviour {
     public virtual void UpdateCamera(bool force = false) {
         cam = Camera.main;
         scroll = Input.mouseScrollDelta.y * sensitivity * -1f;
-        if (Input.GetMouseButtonDown(2)) {
+        if (Input.GetMouseButtonDown(0)) {
             mousePos = Input.mousePosition;
         }
-        if ((Input.GetMouseButton(2) && mousePos != null) || force) {
+        if ((Input.GetMouseButton(0) && mousePos != null) || force) {
             dmousePos = Input.mousePosition - mousePos;
             cam.transform.RotateAround(Vector3.zero, Vector3.up, dmousePos.x/2f*Time.deltaTime);
             cam.transform.RotateAround(Vector3.zero, Camera.main.transform.right, -dmousePos.y/2f*Time.deltaTime);

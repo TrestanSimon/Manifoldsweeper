@@ -113,6 +113,8 @@ public class Quad {
                 Vector3 flagPos = stake + normals[i] * flagScale/2f;
                 Quaternion flagRot = Quaternion.LookRotation(normals[i]) * Quaternion.AngleAxis(90, Vector3.up);
                 this.flag[i] = Complex.CreateFlag(flag, flagPos, flagRot, flagScale);
+                this.flag[i].transform.parent = gameObjects[i].transform;
+                this.flag[i].name = "Flag";
             }
             flags.Add(new Vector2Int(u,v), this.flag);
         }

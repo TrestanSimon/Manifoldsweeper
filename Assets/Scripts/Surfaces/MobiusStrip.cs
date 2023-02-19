@@ -6,10 +6,14 @@ using static Unity.Mathematics.math;
 
 public class MobiusStrip : Complex {
     // public new int ResU = 72, ResV = 8;
-    public float R = 1f, tau = 2f;
+    public float R, tau;
 
-    public override void Awake() {
+    public override void Setup(int ResU, int ResV) {
         sideCount = 2;
+        this.ResU = ResU;
+        this.ResV = ResV;
+        R = ResU / 72f;
+        tau = 16f / (float)ResV;
     }
 
     public override void GenerateVertices() {
@@ -39,7 +43,7 @@ public class MobiusStrip : Complex {
         int v1 = v;
 
         if (u % (2*ResU) >= ResU || u % (-2*ResU) < 0) {
-            // Flips v
+            // Flips v when wrapping
             v1 = ResV - (v1 + 1);
         }
 

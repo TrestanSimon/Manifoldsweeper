@@ -5,15 +5,19 @@ using UnityEngine;
 using static Unity.Mathematics.math;
 
 public class Torus : Complex {
-    public float r = 1f, R = 3f;
-    public float tu = 0f, tv = 0f;
-    public float zoom = 10f;
+    public float r, R;
+    private float tu = 0f, tv = 0f;
+    private float zoom = 10f;
     private Vector3 circleMajor = Vector3.zero;
     private Vector3 circleMinor = Vector3.zero;
     private Vector3 camdr = 4f * Vector3.right;
 
-    public override void Awake() {
+    public override void Setup(int ResU, int ResV) {
         sideCount = 1;
+        this.ResU = ResU;
+        this.ResV = ResV;
+        r = ResU / 16f;
+        R = ResV / 16f;
         cam = Camera.main;
         UpdateCamera(true);
     }
@@ -64,7 +68,7 @@ public class Torus : Complex {
             tv -= clamp(dmousePos.x/300f, -30f, 30f) * Time.deltaTime;
             sincos(tv, out float sinv, out float cosv);
 
-            // Major (toroidal) and minor (poloidal) circles making up torus
+            // Major (toroidal) and minor (poloidal) circles
             circleMajor = new Vector3(R * cosv, 0f, R * sinv);
             circleMinor = new Vector3(r * cosu * cosv, r * sinu, r * cosu * sinv);
         }

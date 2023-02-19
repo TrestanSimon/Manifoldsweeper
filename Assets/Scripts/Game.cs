@@ -46,14 +46,13 @@ public class Game : MonoBehaviour {
         flagPrefab = Resources.Load("Prefabs/Flag", typeof(GameObject)) as GameObject;
     }
 
-    private void Start() {
-        complex = GetComponent<Complex>();
-        complex.GenerateComplex();
+    public void Setup(Complex complex, int mineCount) {
+        this.complex = complex;
         ResU = complex.ResU;
         ResV = complex.ResV;
-        mineCount = Mathf.Clamp(mineCount, 0, ResU*ResV);
         quads = complex.quads;
-        NewGame();
+
+        this.mineCount = Mathf.Clamp(mineCount, 0, ResU*ResV);
     }
 
     // Checks for user inputs every frame
@@ -71,7 +70,7 @@ public class Game : MonoBehaviour {
         }
     }
 
-    private void NewGame() {
+    public void NewGame() {
         gameon = false;
         gameover = false;
         GenerateField();

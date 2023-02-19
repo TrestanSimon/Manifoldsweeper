@@ -7,8 +7,11 @@ using static Unity.Mathematics.math;
 public class Plane : Complex {
     public Vector3 center;
 
-    public override void Awake() {
+    public override void Setup(int ResU, int ResV) {
         sideCount = 2;
+        this.ResU = ResU;
+        this.ResV = ResV;
+        cam = Camera.main;
         UpdateCamera(true);
     }
     
@@ -25,7 +28,6 @@ public class Plane : Complex {
     }
 
     public override void UpdateCamera(bool force = false) {
-        cam = Camera.main;
         center = new Vector3(ResU/2f, 0f, ResV/2f);
 
         if (force) {
