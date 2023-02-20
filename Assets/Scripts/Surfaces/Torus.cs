@@ -10,7 +10,6 @@ public class Torus : Complex {
     private float zoom = 10f;
     private Vector3 circleMajor = Vector3.zero;
     private Vector3 circleMinor = Vector3.zero;
-    private Vector3 camdr = 4f * Vector3.right;
 
     public override void Setup(int ResU, int ResV) {
         sideCount = 1;

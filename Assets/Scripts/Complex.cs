@@ -110,4 +110,25 @@ public abstract class Complex : MonoBehaviour {
             cam.fieldOfView = FOV;
         }
     }
+
+    // Maps vertices and quads to UV plane
+    public void MapToPlane() {
+        // Map vertices
+        for (int u = 0; u <= ResU; u++) {
+            for (int v = 0; v <= ResV; v++) {
+                vertices[u,v] = new Vector3(
+                    u, 0, v
+                );
+            }
+        }
+        // Map quads
+        for (int u = 0; u < ResU; u++) {
+            for (int v = 0; v < ResV; v++) {
+                quads[u,v].UpdateVertices(
+                    vertices[u,v], vertices[u+1,v],
+                    vertices[u+1,v+1], vertices[u,v+1]
+                );
+            }
+        }
+    }
 }

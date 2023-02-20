@@ -67,6 +67,8 @@ public class Quad {
 
             MeshFilter filter = gameObjects[i].AddComponent<MeshFilter>();
             Mesh mesh = filter.mesh;
+            meshes[i] = mesh;
+
             gameObjects[i].AddComponent<MeshRenderer>();
 
             mesh.vertices = vertices;
@@ -119,5 +121,23 @@ public class Quad {
             flags.Add(new Vector2Int(u,v), this.flag);
         }
         flagged = !flagged;
+    }
+
+    public void UpdateVertices(
+        Vector3 vert0, Vector3 vert1,
+        Vector3 vert2, Vector3 vert3
+    ) {
+        vertices = new Vector3[]{
+            vert0, vert1,
+            vert2, vert3
+        };
+        for (int i = 0; i < sideCount; i++) {
+            meshes[i].vertices = vertices;
+            meshes[i].RecalculateBounds();
+            meshes[i].RecalculateTangents();
+            meshes[i].RecalculateNormals();
+            MeshCollider collider = gameObjects[i].GetComponent<MeshCollider>();
+            collider.sharedMesh = meshes[i];
+        }
     }
 }

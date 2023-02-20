@@ -78,6 +78,13 @@ public class UIHandler : MonoBehaviour {
             case 2:
                 complex = surface.AddComponent<MobiusStrip>();
                 break;
+            case 3:
+                complex = surface.AddComponent<KleinBottle>();
+                break;
         }
+    }
+
+    public void MapToPlane() {
+        complex.MapToPlane();
     }
 }
