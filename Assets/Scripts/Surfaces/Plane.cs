@@ -37,10 +37,10 @@ public class Plane : Complex {
 
         scroll = Input.mouseScrollDelta.y * sensitivity * -1f;
 
-        if (Input.GetMouseButtonDown(2)) {
+        if (Input.GetMouseButtonDown(0)) {
             mousePos = Input.mousePosition;
         }
-        if (Input.GetMouseButton(2) && mousePos != null) {
+        if (Input.GetMouseButton(0) && mousePos != null) {
             dmousePos = Input.mousePosition - mousePos;
             cam.transform.RotateAround(center, Vector3.up, dmousePos.x/2f*Time.deltaTime);
             cam.transform.RotateAround(center, Camera.main.transform.right, -dmousePos.y/2f*Time.deltaTime);

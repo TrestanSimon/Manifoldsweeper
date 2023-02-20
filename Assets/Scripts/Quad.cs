@@ -92,6 +92,26 @@ public class Quad {
         }
     }
 
+    // Updates mesh(es) with provided vertices
+    public void UpdateVertices(
+        Vector3 vert0, Vector3 vert1,
+        Vector3 vert2, Vector3 vert3
+    ) {
+        vertices = new Vector3[]{
+            vert0, vert1,
+            vert2, vert3
+        };
+        for (int i = 0; i < sideCount; i++) {
+            meshes[i].vertices = vertices;
+            meshes[i].RecalculateBounds();
+            meshes[i].RecalculateTangents();
+            meshes[i].RecalculateNormals();
+            MeshCollider collider = gameObjects[i].GetComponent<MeshCollider>();
+            collider.sharedMesh = meshes[i];
+        }
+    }
+
+    // Sets material
     public virtual void SetMaterial(Material material) {
         for (int i = 0; i < sideCount; i++) {
             MeshRenderer meshRenderer = gameObjects[i].GetComponent<MeshRenderer>();
@@ -99,6 +119,7 @@ public class Quad {
         }
     }
 
+    // Places flag(s)
     public void Flag(Dictionary<Vector2Int, GameObject[]> flags, GameObject flag = null) {
         if (type == Type.Invalid || revealed) {return;}
         if (flagged) {
@@ -121,23 +142,5 @@ public class Quad {
             flags.Add(new Vector2Int(u,v), this.flag);
         }
         flagged = !flagged;
-    }
-
-    public void UpdateVertices(
-        Vector3 vert0, Vector3 vert1,
-        Vector3 vert2, Vector3 vert3
-    ) {
-        vertices = new Vector3[]{
-            vert0, vert1,
-            vert2, vert3
-        };
-        for (int i = 0; i < sideCount; i++) {
-            meshes[i].vertices = vertices;
-            meshes[i].RecalculateBounds();
-            meshes[i].RecalculateTangents();
-            meshes[i].RecalculateNormals();
-            MeshCollider collider = gameObjects[i].GetComponent<MeshCollider>();
-            collider.sharedMesh = meshes[i];
-        }
     }
 }

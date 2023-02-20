@@ -30,10 +30,10 @@ public class Game : MonoBehaviour {
     private void Awake() {
         // Load materials
         materialUknown = Resources.Load("Materials/TileUnknown", typeof(Material)) as Material;
-        materialEmpty = Resources.Load("Materials/TileEmpty", typeof(Material)) as Material;
+        materialEmpty = Resources.Load("Materials/TileFlat", typeof(Material)) as Material;
         materialMine = Resources.Load("Materials/TileMine", typeof(Material)) as Material;
         materialExploded = Resources.Load("Materials/TileExploded", typeof(Material)) as Material;
-        materialFlag = Resources.Load("Materials/TileUnknown", typeof(Material)) as Material;
+        materialFlag = Resources.Load("Materials/TileNo", typeof(Material)) as Material;
         materialNum1 = Resources.Load("Materials/Tile1", typeof(Material)) as Material;
         materialNum2 = Resources.Load("Materials/Tile2", typeof(Material)) as Material;
         materialNum3 = Resources.Load("Materials/Tile3", typeof(Material)) as Material;
@@ -62,9 +62,9 @@ public class Game : MonoBehaviour {
             NewGame();
         }
         else if (gameover != true) {
-            if (Input.GetMouseButtonDown(1)) {
+            if (Input.GetMouseButtonUp(1)) {
                 Flag();
-            } else if (Input.GetMouseButtonDown(0)) {
+            } else if (Input.GetMouseButtonUp(0)) {
                 Reveal();
             }
         }

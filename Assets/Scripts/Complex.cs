@@ -58,6 +58,27 @@ public abstract class Complex : MonoBehaviour {
         }
     }
 
+    // Transforms vertices and quads to UV plane
+    public void MapToPlane() {
+        // Transforms vertices
+        for (int u = 0; u <= ResU; u++) {
+            for (int v = 0; v <= ResV; v++) {
+                vertices[u,v] = new Vector3(
+                    u, 0, v
+                );
+            }
+        }
+        // Transforms quads
+        for (int u = 0; u < ResU; u++) {
+            for (int v = 0; v < ResV; v++) {
+                quads[u,v].UpdateVertices(
+                    vertices[u,v], vertices[u+1,v],
+                    vertices[u+1,v+1], vertices[u,v+1]
+                );
+            }
+        }
+    }
+
     // Returns a Quad given a coordinate neighboring another Quad
     // Can be overridden to glue edges together
     public virtual Quad GetNeighbor(int u, int v) {
@@ -108,27 +129,6 @@ public abstract class Complex : MonoBehaviour {
             FOV += scroll;
             FOV = Mathf.Clamp(FOV, minFOV, maxFOV);
             cam.fieldOfView = FOV;
-        }
-    }
-
-    // Maps vertices and quads to UV plane
-    public void MapToPlane() {
-        // Map vertices
-        for (int u = 0; u <= ResU; u++) {
-            for (int v = 0; v <= ResV; v++) {
-                vertices[u,v] = new Vector3(
-                    u, 0, v
-                );
-            }
-        }
-        // Map quads
-        for (int u = 0; u < ResU; u++) {
-            for (int v = 0; v < ResV; v++) {
-                quads[u,v].UpdateVertices(
-                    vertices[u,v], vertices[u+1,v],
-                    vertices[u+1,v+1], vertices[u,v+1]
-                );
-            }
         }
     }
 }
