@@ -11,14 +11,13 @@ public class Torus : Complex {
     private Vector3 circleMajor = Vector3.zero;
     private Vector3 circleMinor = Vector3.zero;
 
-    public override void Setup(int ResU, int ResV) {
+    public override void Setup(Camera cam, int ResU, int ResV) {
         sideCount = 1;
         this.ResU = ResU;
         this.ResV = ResV;
         r = ResU / 16f;
         R = ResV / 16f;
-        cam = Camera.main;
-        UpdateCamera(true);
+        UpdateCamera(cam, true);
     }
     
     public override void GenerateVertices() {
@@ -54,7 +53,7 @@ public class Torus : Complex {
         else { return new Quad(); }
     }
 
-    public override void UpdateCamera(bool force = false) {
+    public override void UpdateCamera(Camera cam, bool force = false) {
         scroll = Input.mouseScrollDelta.y * sensitivity * -1f;
         if (Input.GetMouseButtonDown(0)) {
             mousePos = Input.mousePosition;

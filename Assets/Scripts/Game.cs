@@ -8,6 +8,8 @@ public class Game : MonoBehaviour {
     private int ResU, ResV;
     public int mineCount = 64;
 
+    public Camera cam;
+
     public Material materialUknown;
     public Material materialEmpty;
     public Material materialMine;
@@ -47,6 +49,7 @@ public class Game : MonoBehaviour {
     }
 
     public void Setup(Complex complex, int mineCount) {
+        cam = Camera.main;
         this.complex = complex;
         ResU = complex.ResU;
         ResV = complex.ResV;
@@ -57,7 +60,7 @@ public class Game : MonoBehaviour {
 
     // Checks for user inputs every frame
     private void Update() {
-        complex.UpdateCamera();
+        complex.UpdateCamera(cam);
         if (Input.GetKeyDown(KeyCode.R)) {
             NewGame();
         }

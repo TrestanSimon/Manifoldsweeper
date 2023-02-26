@@ -8,7 +8,7 @@ public class MobiusStrip : Complex {
     // public new int ResU = 72, ResV = 8;
     public float R, tau;
 
-    public override void Setup(int ResU, int ResV) {
+    public override void Setup(Camera cam, int ResU, int ResV) {
         sideCount = 2;
         this.ResU = ResU;
         this.ResV = ResV;

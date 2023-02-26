@@ -15,10 +15,9 @@ public abstract class Complex : MonoBehaviour {
     public Vector3 mousePos;
     public Vector3 dmousePos;
     public float scroll;
-    public Camera cam;
 
-    // Awake() method needed to set sideCount
-    public abstract void Setup(int ResU, int ResV);
+    // Setup() method needed to set sideCount
+    public abstract void Setup(Camera cam, int ResU, int ResV);
 
     public Game Gamify(int mineCount) {
         Game game;
@@ -114,8 +113,7 @@ public abstract class Complex : MonoBehaviour {
         return flag;
     }
 
-    public virtual void UpdateCamera(bool force = false) {
-        cam = Camera.main;
+    public virtual void UpdateCamera(Camera cam, bool force = false) {
         scroll = Input.mouseScrollDelta.y * sensitivity * -1f;
         if (Input.GetMouseButtonDown(0)) {
             mousePos = Input.mousePosition;
@@ -129,6 +127,32 @@ public abstract class Complex : MonoBehaviour {
             FOV += scroll;
             FOV = Mathf.Clamp(FOV, minFOV, maxFOV);
             cam.fieldOfView = FOV;
+        }
+    }
+
+    // A top-down camera
+    // if force is true, camera resets position
+    public void UpdateTopDownCamera(Camera cam, bool force = false) {
+        if (force) {
+            cam.transform.position = new Vector3(ResU/2f, 30f, ResV/2f);
+            cam.transform.rotation = Quaternion.Euler(90f, 0f, 270f);
+        }
+
+        scroll = Input.mouseScrollDelta.y * sensitivity * -1f;
+        if (Input.GetMouseButtonDown(0)) {
+            mousePos = Input.mousePosition;
+        }
+
+        if ((Input.GetMouseButton(0) && mousePos != null) || force) {
+            dmousePos = Input.mousePosition - mousePos;
+            cam.transform.position += dmousePos.x/10f*Time.deltaTime * Vector3.forward;
+            cam.transform.position += dmousePos.y/10f*Time.deltaTime * Vector3.left;
+        }
+
+        if (scroll != 0f) {
+            FOV += 0.1f * scroll;
+            FOV = Mathf.Clamp(FOV, 1f, 100f);
+            cam.transform.position += scroll * Vector3.up;
         }
     }
 }

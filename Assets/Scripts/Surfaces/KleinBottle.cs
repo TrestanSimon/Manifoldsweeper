@@ -7,7 +7,7 @@ using static Unity.Mathematics.math;
 public class KleinBottle : Complex {
     // public new int ResU = 48, ResV = 16;
 
-    public override void Setup(int ResU, int ResV) {
+    public override void Setup(Camera cam, int ResU, int ResV) {
         sideCount = 2;
         this.ResU = ResU;
         this.ResV = ResV;

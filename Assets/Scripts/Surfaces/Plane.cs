@@ -7,12 +7,11 @@ using static Unity.Mathematics.math;
 public class Plane : Complex {
     public Vector3 center;
 
-    public override void Setup(int ResU, int ResV) {
+    public override void Setup(Camera cam, int ResU, int ResV) {
         sideCount = 2;
         this.ResU = ResU;
         this.ResV = ResV;
-        cam = Camera.main;
-        UpdateCamera(true);
+        UpdateCamera(cam, true);
     }
     
     public override void GenerateVertices() {
@@ -27,28 +26,7 @@ public class Plane : Complex {
         }
     }
 
-    public override void UpdateCamera(bool force = false) {
-        center = new Vector3(ResU/2f, 0f, ResV/2f);
-
-        if (force) {
-            cam.transform.position = center + 30f*Vector3.up;
-            cam.transform.rotation = Quaternion.Euler(90f, 0f, 270f);
-        }
-
-        scroll = Input.mouseScrollDelta.y * sensitivity * -1f;
-
-        if (Input.GetMouseButtonDown(0)) {
-            mousePos = Input.mousePosition;
-        }
-        if (Input.GetMouseButton(0) && mousePos != null) {
-            dmousePos = Input.mousePosition - mousePos;
-            cam.transform.RotateAround(center, Vector3.up, dmousePos.x/2f*Time.deltaTime);
-            cam.transform.RotateAround(center, Camera.main.transform.right, -dmousePos.y/2f*Time.deltaTime);
-        }
-        if (scroll != 0f) {
-            FOV += scroll;
-            FOV = Mathf.Clamp(FOV, minFOV, maxFOV);
-            cam.fieldOfView = FOV;
-        }
+    public override void UpdateCamera(Camera cam, bool force = false) {
+        UpdateTopDownCamera(cam, force);
     }
 }

@@ -64,7 +64,7 @@ public class PanelHandler : MonoBehaviour {
             Destroy(complex);
         }
         AttachComplex();
-        complex.Setup(ResU, ResV);
+        complex.Setup(Camera.main, ResU, ResV);
         complex.GenerateComplex();
         game = complex.Gamify(mineCount);
         game.NewGame();
@@ -82,7 +82,7 @@ public class PanelHandler : MonoBehaviour {
     }
 
     public void UpdateActiveMaps() {
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < manifoldToggles.Length; i++) {
             if (i == selectedManifold) {
                 manifoldMaps.GetChild(i).gameObject.SetActive(true);
             } else {
@@ -155,7 +155,6 @@ public class PanelHandler : MonoBehaviour {
             case 2: complex = surface.AddComponent<Torus>(); break;
             case 3: complex = surface.AddComponent<MobiusStrip>(); break;
             case 4: complex = surface.AddComponent<KleinBottle>(); break;
-            case 5: break;
             default: break;
         }
     }
