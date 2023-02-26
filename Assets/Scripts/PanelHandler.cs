@@ -151,7 +151,7 @@ public class PanelHandler : MonoBehaviour {
     private void AttachComplex() {
         switch (selectedManifold) {
             case 0: complex = surface.AddComponent<Plane>(); break;
-            case 1: break;
+            case 1: complex = surface.AddComponent<Cylinder>(); break;
             case 2: complex = surface.AddComponent<Torus>(); break;
             case 3: complex = surface.AddComponent<MobiusStrip>(); break;
             case 4: complex = surface.AddComponent<KleinBottle>(); break;
