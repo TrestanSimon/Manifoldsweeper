@@ -26,9 +26,12 @@ public class Game : MonoBehaviour {
     public Material materialNum8;
     public GameObject flagPrefab;
     public Dictionary<Vector2Int, GameObject[]> flags = new Dictionary<Vector2Int, GameObject[]>();
+    public GameObject breakPS;
 
     private bool gameon = false;
     private bool gameover = false;
+
+    private IEnumerator coroutinePropagate;
 
     private void Awake() {
         // Load materials
@@ -47,6 +50,7 @@ public class Game : MonoBehaviour {
         materialNum8 = Resources.Load("Materials/Tile8", typeof(Material)) as Material;
         // Load flag prefab
         flagPrefab = Resources.Load("Prefabs/Flag", typeof(GameObject)) as GameObject;
+        breakPS = Resources.Load("Prefabs/BreakPS", typeof(GameObject)) as GameObject;
     }
 
     public void Setup(Complex complex, int mineCount) {
@@ -75,6 +79,8 @@ public class Game : MonoBehaviour {
     }
 
     public void NewGame() {
+        if (coroutinePropagate != null)
+            StopCoroutine(coroutinePropagate);
         gameon = false;
         gameover = false;
         GenerateField();
@@ -178,7 +184,8 @@ public class Game : MonoBehaviour {
                 Flood(mouseOver);
                 CheckWinCondition();
                 gameon = true;
-                StartCoroutine(PropagateDraw(mouseOver));
+                coroutinePropagate = PropagateDraw(mouseOver);
+                StartCoroutine(coroutinePropagate);
                 break;
             default:
                 mouseOver.revealed = true;
@@ -226,14 +233,15 @@ public class Game : MonoBehaviour {
     // Updates materials in concentric square rings around the provided quad
     private IEnumerator PropagateDraw(Quad quad) {
         Quad quad2;
-        for (int n = 0; n < (int)Mathf.Max(ResU/2f, ResV/2f)+1; n++) {
+        for (int n = 0; n < (int)Mathf.Max(ResU, ResV); n++) {
             for (int du = -n-1; du <= n+1; du++) {
                 for (int dv = -n-1; dv <= n+1; dv++) {
                     quad2 = complex.GetNeighbor(quad.u + du, quad.v + dv);
                     quad2.SetMaterial(GetState(quad2));
+                    Complex.CreateBreakPS(breakPS, quad2.gameObjects[0].transform.position);
                 }
             }
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.01f);
         }
     }
 

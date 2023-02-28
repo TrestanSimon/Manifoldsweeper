@@ -113,6 +113,10 @@ public abstract class Complex : MonoBehaviour {
         return flag;
     }
 
+    public static void CreateBreakPS(GameObject go, Vector3 pos) {
+        GameObject breakPS = Instantiate(go, pos, Quaternion.identity);
+    }
+
     // Default camera
     public virtual void UpdateCamera(Camera cam, bool force = false) {
         scroll = Input.mouseScrollDelta.y * sensitivity * -1f;
