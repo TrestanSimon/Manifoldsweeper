@@ -113,6 +113,7 @@ public class Quad {
 
     // Sets material
     public virtual void SetMaterial(Material material) {
+        if (type == Type.Invalid) { return; }
         for (int i = 0; i < sideCount; i++) {
             MeshRenderer meshRenderer = gameObjects[i].GetComponent<MeshRenderer>();
             meshRenderer.material = material;

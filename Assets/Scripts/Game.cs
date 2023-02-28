@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -31,8 +32,8 @@ public class Game : MonoBehaviour {
 
     private void Awake() {
         // Load materials
-        materialUknown = Resources.Load("Materials/TileUnknown", typeof(Material)) as Material;
-        materialEmpty = Resources.Load("Materials/TileFlat", typeof(Material)) as Material;
+        materialUknown = Resources.Load("Materials/OceanMats/TileCloud", typeof(Material)) as Material;
+        materialEmpty = Resources.Load("Materials/OceanMats/TileOcean", typeof(Material)) as Material;
         materialMine = Resources.Load("Materials/TileMine", typeof(Material)) as Material;
         materialExploded = Resources.Load("Materials/TileExploded", typeof(Material)) as Material;
         materialFlag = Resources.Load("Materials/TileNo", typeof(Material)) as Material;
@@ -101,7 +102,7 @@ public class Game : MonoBehaviour {
 
         GenerateMines();
         GenerateNumbers();
-        Draw(quads);
+        Draw();
     }
 
     private void GenerateMines() {
@@ -159,7 +160,7 @@ public class Game : MonoBehaviour {
         mouseOver = complex.MouseIdentify();
         if (mouseOver == null) { return; }
         mouseOver.Flag(flags, flagPrefab);
-        Draw(quads);
+        Draw();
     }
 
     private void Reveal() {
@@ -176,15 +177,16 @@ public class Game : MonoBehaviour {
             case Quad.Type.Empty:
                 Flood(mouseOver);
                 CheckWinCondition();
+                gameon = true;
+                StartCoroutine(PropagateDraw(mouseOver));
                 break;
             default:
                 mouseOver.revealed = true;
                 CheckWinCondition();
+                gameon = true;
+                Draw();
                 break;
         }
-
-        gameon = true;
-        Draw(quads);
     }
 
     private void Flood(Quad quad) {
@@ -209,16 +211,29 @@ public class Game : MonoBehaviour {
         }
     }
 
-    public void Draw(Quad[,] quads) {
-        int m = quads.GetLength(0);
-        int n = quads.GetLength(1);
+    // Updates all materials instantaneously
+    public void Draw() {
         Quad quad;
 
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
+        for (int i = 0; i < ResU; i++) {
+            for (int j = 0; j < ResV; j++) {
                 quad = quads[i,j];
                 quad.SetMaterial(GetState(quad));
             }
+        }
+    }
+
+    // Updates materials in concentric square rings around the provided quad
+    private IEnumerator PropagateDraw(Quad quad) {
+        Quad quad2;
+        for (int n = 0; n < (int)Mathf.Max(ResU/2f, ResV/2f)+1; n++) {
+            for (int du = -n-1; du <= n+1; du++) {
+                for (int dv = -n-1; dv <= n+1; dv++) {
+                    quad2 = complex.GetNeighbor(quad.u + du, quad.v + dv);
+                    quad2.SetMaterial(GetState(quad2));
+                }
+            }
+            yield return new WaitForSeconds(0.1f);
         }
     }
 
@@ -268,6 +283,7 @@ public class Game : MonoBehaviour {
                 }
             }
         }
+        Draw();
     }
 
     private void CheckWinCondition() {

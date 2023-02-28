@@ -113,6 +113,7 @@ public abstract class Complex : MonoBehaviour {
         return flag;
     }
 
+    // Default camera
     public virtual void UpdateCamera(Camera cam, bool force = false) {
         scroll = Input.mouseScrollDelta.y * sensitivity * -1f;
         if (Input.GetMouseButtonDown(0)) {
@@ -124,9 +125,7 @@ public abstract class Complex : MonoBehaviour {
             cam.transform.RotateAround(Vector3.zero, Camera.main.transform.right, -dmousePos.y/2f*Time.deltaTime);
         }
         if (scroll != 0f) {
-            FOV += scroll;
-            FOV = Mathf.Clamp(FOV, minFOV, maxFOV);
-            cam.fieldOfView = FOV;
+            cam.transform.position -= scroll * cam.transform.forward.normalized;
         }
     }
 
@@ -150,8 +149,6 @@ public abstract class Complex : MonoBehaviour {
         }
 
         if (scroll != 0f) {
-            FOV += 0.1f * scroll;
-            FOV = Mathf.Clamp(FOV, 1f, 100f);
             cam.transform.position += scroll * Vector3.up;
         }
     }
