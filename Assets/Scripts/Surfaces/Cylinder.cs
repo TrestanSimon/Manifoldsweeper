@@ -38,11 +38,6 @@ public class Cylinder : Complex {
         int u1 = u >= 0 ? u % ResU : u + ResU;
         int v1 = v;
 
-        if (u % (2*ResU) >= ResU || u % (-2*ResU) < 0) {
-            // Flips v when wrapping
-            v1 = ResV - (v1 + 1);
-        }
-
         if (u1 >= 0 && u1 < ResU && v1 >= 0 && v1 < ResV) { return quads[u1,v1]; }
         else { return new Quad(); }
     }
