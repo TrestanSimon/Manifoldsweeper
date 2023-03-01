@@ -8,10 +8,7 @@ public abstract class Complex : MonoBehaviour {
     public Quad[,] quads;
     public int sideCount;
 
-    public float minFOV = 10f;
-    public float maxFOV = 90f;
     public float sensitivity = 1f;
-    public float FOV = 60f;
     public Vector3 mousePos;
     public Vector3 dmousePos;
     public float scroll;
@@ -103,18 +100,14 @@ public abstract class Complex : MonoBehaviour {
         return quads[tag.u, tag.v];
     }
 
-    public static void DestroyFlags(GameObject[] gos) {
+    public static void DestroyGOs(GameObject[] gos) {
         foreach (GameObject go in gos) { Destroy(go); }
     }
 
-    public static GameObject CreateFlag(GameObject go, Vector3 pos, Quaternion rot, float scale){
-        GameObject flag = Instantiate(go, pos, rot);
-        flag.transform.localScale *= scale;
-        return flag;
-    }
-
-    public static void CreateBreakPS(GameObject go, Vector3 pos) {
-        GameObject breakPS = Instantiate(go, pos, Quaternion.identity);
+    public static GameObject CreateGO(GameObject prefab, Vector3 pos, Quaternion rot, float scale){
+        GameObject go = Instantiate(prefab, pos, rot);
+        go.transform.localScale *= scale;
+        return go;
     }
 
     // Default camera

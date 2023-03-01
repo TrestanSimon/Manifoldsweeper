@@ -16,6 +16,7 @@ public class Quad {
     public Vector3[] normals;
     public Mesh[] meshes;
     public int sideCount = 1;
+    private float scale;
 
     public Type type;
     public int number;
@@ -24,6 +25,7 @@ public class Quad {
     public bool exploded;
 
     public GameObject[] flag;
+    public GameObject ps;
 
     public Quad() {}
 
@@ -89,6 +91,8 @@ public class Quad {
             
             MeshCollider collider = gameObjects[i].AddComponent<MeshCollider>();
             collider.sharedMesh = mesh;
+
+            scale = Vector3.Magnitude(vertices[0] - vertices[2]);
         }
     }
 
@@ -125,23 +129,27 @@ public class Quad {
         if (type == Type.Invalid || revealed) {return;}
         if (flagged) {
             flags.Remove(new Vector2Int(u,v));
-            Complex.DestroyFlags(this.flag);
+            Complex.DestroyGOs(this.flag);
         } else if (flag != null) {
             // Points to where flag will be planted
             Vector3 stake = (vertices[0] + vertices[2]) / 2f;
-            // Scale based on quad size
-            float flagScale = Vector3.Magnitude(vertices[0] - vertices[2]);
 
             // Create flag for each side
             for (int i = 0; i < sideCount; i++) {
-                Vector3 flagPos = stake + normals[i] * flagScale/2f;
+                Vector3 flagPos = stake + normals[i] * scale/2f;
                 Quaternion flagRot = Quaternion.LookRotation(normals[i]) * Quaternion.AngleAxis(90, Vector3.up);
-                this.flag[i] = Complex.CreateFlag(flag, flagPos, flagRot, flagScale);
+                this.flag[i] = Complex.CreateGO(flag, flagPos, flagRot, scale);
                 this.flag[i].transform.parent = gameObjects[i].transform;
                 this.flag[i].name = "Flag";
             }
             flags.Add(new Vector2Int(u,v), this.flag);
         }
         flagged = !flagged;
+    }
+
+    public void Break(GameObject breakPS) {
+        if (type == Quad.Type.Invalid) { return; }
+        ps = Complex.CreateGO(breakPS, vertices[0], Quaternion.identity, scale);
+        ps.transform.parent = gameObjects[0].transform;
     }
 }

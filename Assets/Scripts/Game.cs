@@ -31,7 +31,7 @@ public class Game : MonoBehaviour {
     private bool gameon = false;
     private bool gameover = false;
 
-    private IEnumerator coroutinePropagate;
+    private List<Coroutine> coroutinePropagate = new List<Coroutine>();
 
     private void Awake() {
         // Load materials
@@ -79,8 +79,14 @@ public class Game : MonoBehaviour {
     }
 
     public void NewGame() {
-        if (coroutinePropagate != null)
-            StopCoroutine(coroutinePropagate);
+        foreach (Coroutine coroutine in coroutinePropagate) {
+            if (coroutine != null) {
+                StopCoroutine(coroutine);
+            }
+        }
+        coroutinePropagate.Clear();
+        DestroyBreak();
+        
         gameon = false;
         gameover = false;
         GenerateField();
@@ -102,7 +108,7 @@ public class Game : MonoBehaviour {
         
         // Destroy all flags
         foreach (KeyValuePair<Vector2Int, GameObject[]> flag in flags) {
-            Complex.DestroyFlags(flag.Value);
+            Complex.DestroyGOs(flag.Value);
         }
         flags.Clear();
 
@@ -181,11 +187,9 @@ public class Game : MonoBehaviour {
                 if (gameon == false) {NewGame(); Reveal(); break;}
                 else {Explode(mouseOver); break;}
             case Quad.Type.Empty:
-                Flood(mouseOver);
+                coroutinePropagate.Add(StartCoroutine(Flood(mouseOver)));
                 CheckWinCondition();
                 gameon = true;
-                coroutinePropagate = PropagateDraw(mouseOver);
-                StartCoroutine(coroutinePropagate);
                 break;
             default:
                 mouseOver.revealed = true;
@@ -196,22 +200,27 @@ public class Game : MonoBehaviour {
         }
     }
 
-    private void Flood(Quad quad) {
-        if (quad.revealed) return;
-        if (quad.type == Quad.Type.Mine || quad.type == Quad.Type.Invalid) return;
+    private IEnumerator Flood(Quad quad) {
+        if (quad.revealed) yield break;
+        if (quad.type == Quad.Type.Mine || quad.type == Quad.Type.Invalid) yield break;
+
+        quad.revealed = true;
 
         if (quad.flagged == true) {
             quad.flagged = false;
             flags.Remove(new Vector2Int(quad.u, quad.v));
-            Complex.DestroyFlags(quad.flag);
+            Complex.DestroyGOs(quad.flag);
         }
 
-        quad.revealed = true;
+        Break(quad);
+
         if (quad.type == Quad.Type.Empty) {
             for (int du = -1; du <= 1; du++) {
                 for (int dv = -1; dv <= 1; dv++) {
                     if (!(du == 0 && dv == 0)) {
-                        Flood(complex.GetNeighbor(quad.u + du, quad.v + dv));
+                        coroutinePropagate.Add(StartCoroutine(Flood(complex.GetNeighbor(quad.u + du, quad.v + dv))));
+                        Debug.Log(coroutinePropagate.Count);
+                        yield return new WaitForSeconds(0.05f);
                     }
                 }
             }
@@ -230,18 +239,17 @@ public class Game : MonoBehaviour {
         }
     }
 
-    // Updates materials in concentric square rings around the provided quad
-    private IEnumerator PropagateDraw(Quad quad) {
-        Quad quad2;
-        for (int n = 0; n < (int)Mathf.Max(ResU, ResV); n++) {
-            for (int du = -n-1; du <= n+1; du++) {
-                for (int dv = -n-1; dv <= n+1; dv++) {
-                    quad2 = complex.GetNeighbor(quad.u + du, quad.v + dv);
-                    quad2.SetMaterial(GetState(quad2));
-                    Complex.CreateBreakPS(breakPS, quad2.gameObjects[0].transform.position);
-                }
+    private void Break(Quad quad) {
+        if (quad.type == Quad.Type.Invalid) { return; }
+        quad.SetMaterial(GetState(quad));
+        quad.Break(breakPS);
+    }
+
+    private void DestroyBreak() {
+        for (int u = 0; u < ResU; u++) {
+            for (int v = 0; v < ResV; v++) {
+                Destroy(quads[u,v].ps);
             }
-            yield return new WaitForSeconds(0.01f);
         }
     }
 
