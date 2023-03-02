@@ -35,19 +35,19 @@ public class Game : MonoBehaviour {
 
     private void Awake() {
         // Load materials
-        materialUknown = Resources.Load("Materials/TileUnknown", typeof(Material)) as Material;
-        materialEmpty = Resources.Load("Materials/TileFlat", typeof(Material)) as Material;
-        materialMine = Resources.Load("Materials/TileMine", typeof(Material)) as Material;
-        materialExploded = Resources.Load("Materials/TileExploded", typeof(Material)) as Material;
-        materialFlag = Resources.Load("Materials/TileNo", typeof(Material)) as Material;
-        materialNum1 = Resources.Load("Materials/Tile1", typeof(Material)) as Material;
-        materialNum2 = Resources.Load("Materials/Tile2", typeof(Material)) as Material;
-        materialNum3 = Resources.Load("Materials/Tile3", typeof(Material)) as Material;
-        materialNum4 = Resources.Load("Materials/Tile4", typeof(Material)) as Material;
-        materialNum5 = Resources.Load("Materials/Tile5", typeof(Material)) as Material;
-        materialNum6 = Resources.Load("Materials/Tile6", typeof(Material)) as Material;
-        materialNum7 = Resources.Load("Materials/Tile7", typeof(Material)) as Material;
-        materialNum8 = Resources.Load("Materials/Tile8", typeof(Material)) as Material;
+        materialUknown = Resources.Load("Materials/DesertMats/TileUnknown", typeof(Material)) as Material;
+        materialEmpty = Resources.Load("Materials/DesertMats/TileFlat", typeof(Material)) as Material;
+        materialMine = Resources.Load("Materials/DesertMats/TileMine", typeof(Material)) as Material;
+        materialExploded = Resources.Load("Materials/DesertMats/TileExploded", typeof(Material)) as Material;
+        materialFlag = Resources.Load("Materials/DesertMats/TileNo", typeof(Material)) as Material;
+        materialNum1 = Resources.Load("Materials/DesertMats/Tile1", typeof(Material)) as Material;
+        materialNum2 = Resources.Load("Materials/DesertMats/Tile2", typeof(Material)) as Material;
+        materialNum3 = Resources.Load("Materials/DesertMats/Tile3", typeof(Material)) as Material;
+        materialNum4 = Resources.Load("Materials/DesertMats/Tile4", typeof(Material)) as Material;
+        materialNum5 = Resources.Load("Materials/DesertMats/Tile5", typeof(Material)) as Material;
+        materialNum6 = Resources.Load("Materials/DesertMats/Tile6", typeof(Material)) as Material;
+        materialNum7 = Resources.Load("Materials/DesertMats/Tile7", typeof(Material)) as Material;
+        materialNum8 = Resources.Load("Materials/DesertMats/Tile8", typeof(Material)) as Material;
         // Load flag prefab
         flagPrefab = Resources.Load("Prefabs/Flag", typeof(GameObject)) as GameObject;
         breakPS = Resources.Load("Prefabs/BreakPS", typeof(GameObject)) as GameObject;
