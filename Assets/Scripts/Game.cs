@@ -7,7 +7,7 @@ public class Game : MonoBehaviour {
     private Quad[,] quads;
     private Quad mouseOver;
     private int ResU, ResV;
-    public int mineCount = 64;
+    public int mineCount;
 
     public Camera cam;
 
@@ -35,8 +35,8 @@ public class Game : MonoBehaviour {
 
     private void Awake() {
         // Load materials
-        materialUknown = Resources.Load("Materials/OceanMats/TileCloud", typeof(Material)) as Material;
-        materialEmpty = Resources.Load("Materials/OceanMats/TileOcean", typeof(Material)) as Material;
+        materialUknown = Resources.Load("Materials/TileUnknown", typeof(Material)) as Material;
+        materialEmpty = Resources.Load("Materials/TileFlat", typeof(Material)) as Material;
         materialMine = Resources.Load("Materials/TileMine", typeof(Material)) as Material;
         materialExploded = Resources.Load("Materials/TileExploded", typeof(Material)) as Material;
         materialFlag = Resources.Load("Materials/TileNo", typeof(Material)) as Material;
@@ -73,7 +73,7 @@ public class Game : MonoBehaviour {
             if (Input.GetMouseButtonUp(1)) {
                 Flag();
             } else if (Input.GetMouseButtonUp(0)) {
-                Reveal();
+                AttemptReveal();
             }
         }
     }
@@ -175,19 +175,26 @@ public class Game : MonoBehaviour {
         Draw();
     }
 
-    private void Reveal() {
+    private void AttemptReveal() {
         mouseOver = complex.MouseIdentify();
         if (mouseOver == null) { return; }
         if (mouseOver.type == Quad.Type.Invalid || mouseOver.revealed || mouseOver.flagged) {
             return;
         }
 
+        // Require first click to be an empty tile
+        if (!gameon) {
+            while (mouseOver.type != Quad.Type.Empty) {
+                NewGame();
+            }
+        }
+
         switch (mouseOver.type) {
             case Quad.Type.Mine:
-                if (gameon == false) {NewGame(); Reveal(); break;}
-                else {Explode(mouseOver); break;}
+                Explode(mouseOver); break;
             case Quad.Type.Empty:
-                coroutinePropagate.Add(StartCoroutine(Flood(mouseOver)));
+                StartCoroutine(Flood(mouseOver));
+                // coroutinePropagate.Add(StartCoroutine(Flood(mouseOver)));
                 CheckWinCondition();
                 gameon = true;
                 break;
@@ -201,6 +208,7 @@ public class Game : MonoBehaviour {
     }
 
     private IEnumerator Flood(Quad quad) {
+
         if (quad.revealed) yield break;
         if (quad.type == Quad.Type.Mine || quad.type == Quad.Type.Invalid) yield break;
 
@@ -214,13 +222,15 @@ public class Game : MonoBehaviour {
 
         Break(quad);
 
+        // Breadth-first search
         if (quad.type == Quad.Type.Empty) {
             for (int du = -1; du <= 1; du++) {
                 for (int dv = -1; dv <= 1; dv++) {
                     if (!(du == 0 && dv == 0)) {
-                        coroutinePropagate.Add(StartCoroutine(Flood(complex.GetNeighbor(quad.u + du, quad.v + dv))));
-                        Debug.Log(coroutinePropagate.Count);
-                        yield return new WaitForSeconds(0.05f);
+                        coroutinePropagate.Add(StartCoroutine(Flood(
+                            complex.GetNeighbor(quad.u + du, quad.v + dv)
+                        )));
+                        yield return new WaitForSeconds(0.02f);
                     }
                 }
             }
