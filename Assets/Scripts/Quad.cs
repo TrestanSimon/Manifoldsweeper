@@ -88,6 +88,10 @@ public class Quad {
             mesh.RecalculateBounds();
             mesh.RecalculateTangents();
             mesh.RecalculateNormals();
+
+            //mesh.normals = new Vector3[]{
+            //    normals[i], normals[i], normals[i], normals[i]
+            //};
             
             MeshCollider collider = gameObjects[i].AddComponent<MeshCollider>();
             collider.sharedMesh = mesh;
