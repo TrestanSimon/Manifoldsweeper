@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Game : MonoBehaviour {
@@ -85,7 +86,6 @@ public class Game : MonoBehaviour {
             }
         }
         coroutinePropagate.Clear();
-        DestroyBreak();
         
         gameon = false;
         gameover = false;
@@ -103,6 +103,7 @@ public class Game : MonoBehaviour {
                 quad.revealed = false;
                 quad.flagged = false;
                 quad.exploded = false;
+                quad.visited = false;
             }
         }
         
@@ -193,8 +194,7 @@ public class Game : MonoBehaviour {
             case Quad.Type.Mine:
                 Explode(mouseOver); break;
             case Quad.Type.Empty:
-                StartCoroutine(Flood(mouseOver));
-                // coroutinePropagate.Add(StartCoroutine(Flood(mouseOver)));
+                Flood(mouseOver);
                 CheckWinCondition();
                 gameon = true;
                 break;
@@ -207,11 +207,37 @@ public class Game : MonoBehaviour {
         }
     }
 
-    private IEnumerator Flood(Quad quad) {
+    private void Flood(Quad quad) {
+        Queue<Quad> queue = new Queue<Quad>();
 
-        if (quad.revealed) yield break;
-        if (quad.type == Quad.Type.Mine || quad.type == Quad.Type.Invalid) yield break;
+        // Reveal starting quad
+        quad.visited = true;
+        quad.depth = 0;
+        RevealQuad(quad);
 
+        queue.Enqueue(quad);
+
+        while (queue.Any()) {
+            quad = queue.Dequeue();
+
+            LinkedList<Quad> neighbors = complex.GetNeighbors(quad);
+
+            foreach (Quad neighbor in neighbors) {
+                if (!neighbor.revealed && !neighbor.visited) {
+                    // Add empty neighbors to queue
+                    if (neighbor.type == Quad.Type.Empty) {
+                        neighbor.visited = true;
+                        queue.Enqueue(neighbor);
+                    }
+
+                    neighbor.depth = quad.depth + 1;
+                    RevealQuad(neighbor);
+                }
+            }
+        }
+    }
+
+    private void RevealQuad(Quad quad) {
         quad.revealed = true;
 
         if (quad.flagged == true) {
@@ -220,21 +246,9 @@ public class Game : MonoBehaviour {
             Complex.DestroyGOs(quad.flag);
         }
 
-        Break(quad);
-
-        // Breadth-first search
-        if (quad.type == Quad.Type.Empty) {
-            for (int du = -1; du <= 1; du++) {
-                for (int dv = -1; dv <= 1; dv++) {
-                    if (!(du == 0 && dv == 0)) {
-                        coroutinePropagate.Add(StartCoroutine(Flood(
-                            complex.GetNeighbor(quad.u + du, quad.v + dv)
-                        )));
-                        yield return new WaitForSeconds(0.02f);
-                    }
-                }
-            }
-        }
+        coroutinePropagate.Add(
+            StartCoroutine(quad.Reveal(GetState(quad), breakPS))
+        );
     }
 
     // Updates all materials instantaneously
@@ -245,20 +259,6 @@ public class Game : MonoBehaviour {
             for (int j = 0; j < ResV; j++) {
                 quad = quads[i,j];
                 quad.SetMaterial(GetState(quad));
-            }
-        }
-    }
-
-    private void Break(Quad quad) {
-        if (quad.type == Quad.Type.Invalid) { return; }
-        quad.SetMaterial(GetState(quad));
-        quad.Break(breakPS);
-    }
-
-    private void DestroyBreak() {
-        for (int u = 0; u < ResU; u++) {
-            for (int v = 0; v < ResV; v++) {
-                Destroy(quads[u,v].ps);
             }
         }
     }
@@ -308,7 +308,7 @@ public class Game : MonoBehaviour {
                     quad.revealed = true;
                 }
             }
-        }
+        } 
         Draw();
     }
 

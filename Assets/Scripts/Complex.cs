@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Linq;
+using System.Collections.Generic;
 
 public abstract class Complex : MonoBehaviour {
     public int ResU = 16, ResV = 16*3;
@@ -80,6 +82,18 @@ public abstract class Complex : MonoBehaviour {
     public virtual Quad GetNeighbor(int u, int v) {
         if (u >= 0 && u < ResU && v >= 0 && v < ResV) { return quads[u,v]; }
         else { return new Quad(); } // returns Invalid Quad
+    }
+
+    public LinkedList<Quad> GetNeighbors(Quad quad) {
+        LinkedList<Quad> neighbors = new LinkedList<Quad>();
+        for (int du = -1; du <= 1; du++) {
+            for (int dv = -1; dv <= 1; dv++) {
+                if (!(du == 0 && dv == 0)) {
+                    neighbors.AddLast(GetNeighbor(quad.u + du, quad.v + dv));
+                }
+            }
+        }
+        return neighbors;
     }
 
     // Identifies the Quad instance the cursor is over

@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 
 public class Quad {
@@ -23,6 +24,8 @@ public class Quad {
     public bool revealed;
     public bool flagged;
     public bool exploded;
+    public bool visited;
+    public int depth;
 
     public GameObject[] flag;
     public GameObject ps;
@@ -119,6 +122,14 @@ public class Quad {
         }
     }
 
+    public IEnumerator Reveal(Material material, GameObject breakPS) {
+        if (type == Type.Invalid) { yield break; }
+        yield return new WaitForSeconds(0.02f * depth);
+        SetMaterial(material);
+        ps = Complex.CreateGO(breakPS, vertices[0], Quaternion.identity, scale);
+        ps.transform.parent = gameObjects[0].transform;
+    }
+
     // Sets material
     public void SetMaterial(Material material) {
         if (type == Type.Invalid) { return; }
@@ -149,11 +160,5 @@ public class Quad {
             flags.Add(new Vector2Int(u,v), this.flag);
         }
         flagged = !flagged;
-    }
-
-    public void Break(GameObject breakPS) {
-        if (type == Quad.Type.Invalid) { return; }
-        ps = Complex.CreateGO(breakPS, vertices[0], Quaternion.identity, scale);
-        ps.transform.parent = gameObjects[0].transform;
     }
 }
