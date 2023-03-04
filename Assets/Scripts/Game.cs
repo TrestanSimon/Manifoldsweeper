@@ -37,7 +37,7 @@ public class Game : MonoBehaviour {
     private void Awake() {
         // Load materials
         materialUknown = Resources.Load("Materials/DesertMats/TileUnknown", typeof(Material)) as Material;
-        materialEmpty = Resources.Load("Materials/DesertMats/TileFlat", typeof(Material)) as Material;
+        materialEmpty = Resources.Load("Materials/DesertMats/TileEmpty", typeof(Material)) as Material;
         materialMine = Resources.Load("Materials/DesertMats/TileMine", typeof(Material)) as Material;
         materialExploded = Resources.Load("Materials/DesertMats/TileExploded", typeof(Material)) as Material;
         materialFlag = Resources.Load("Materials/DesertMats/TileNo", typeof(Material)) as Material;
