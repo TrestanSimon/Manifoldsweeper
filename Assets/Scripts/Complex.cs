@@ -158,7 +158,7 @@ public abstract class Complex : MonoBehaviour {
 
     // Maps from cylinder to plane
     // Used in Cylinder.cs and Torus.cs
-    public Vector3[,] CylinderToPlaneMap(float progress, float radius, float offset = 0f) {
+    public Vector3[,] CylinderToPlaneMap(float progress, float radius) {
         Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
         float a, t, sinp, cosp;
 
@@ -169,9 +169,8 @@ public abstract class Complex : MonoBehaviour {
                 t = (PI - a)*progress + a; // Involute curve parameter
                 sincos(t, out sinp, out cosp);
 
-                // offset of x is necessary for the torus
                 tempVerts[p,q] = new Vector3(
-                    radius * (sinp - (t - a)*cosp) - offset,
+                    radius * (sinp - (t - a)*cosp),
                     radius * (cosp + (t - a)*sinp),
                     vertices[p,q].z
                 );

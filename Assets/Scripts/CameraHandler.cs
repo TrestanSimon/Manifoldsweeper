@@ -6,13 +6,13 @@ using static Unity.Mathematics.math;
 
 public class CameraHandler : MonoBehaviour {
     private GameObject target;
-    private float sensitivity = 1f;
+    private float sensitivity = 0.2f;
     private Vector3 mousePos;
     private Vector3 dmousePos;
     private float scroll;
 
-    Complex complex;
-    bool planar;
+    public Complex complex;
+    private bool planar;
     
     public float r, R;
     private float tu = 0f, tv = 0f;
@@ -21,7 +21,8 @@ public class CameraHandler : MonoBehaviour {
     private Vector3 circleMinor = Vector3.zero;
 
     private void Update() {
-        complex = GameObject.Find("Surface").GetComponent<Complex>();
+        if (complex == null) return;
+
         if (planar != complex.planar) {
             if (complex.planar) UpdateTopDownCamera(true);
             else Update3DCamera(true);
@@ -38,7 +39,7 @@ public class CameraHandler : MonoBehaviour {
 
         if (force) {
             StartCoroutine(LerpCameraTo(
-                new Vector3(10f, 0f, 0f), Quaternion.Euler(0f, 270f, 0f))
+                new Vector3(10f, 4f, -10f))
             );
         }
 
@@ -66,7 +67,7 @@ public class CameraHandler : MonoBehaviour {
 
         if (force) {
             StartCoroutine(LerpCameraTo(
-                new Vector3(0f, 30f, 0f), Quaternion.Euler(90f, 0f, 90f))
+                new Vector3(0f, 15f, 0f), Quaternion.Euler(90f, 0f, 90f))
             );
             return;
         }
@@ -99,6 +100,24 @@ public class CameraHandler : MonoBehaviour {
 
             Camera.main.transform.position = Vector3.Lerp(startPos, endPos, t);
             Camera.main.transform.rotation = Quaternion.Lerp(startRot, endRot, t);
+
+            time += Time.deltaTime;
+            yield return null;
+        }
+    }
+    public IEnumerator LerpCameraTo(Vector3 endPos) {
+        float time = 0f;
+        float duration = 2f;
+        float t = 0f;
+        Vector3 startPos = Camera.main.transform.position;
+        Quaternion startRot = Camera.main.transform.rotation;
+
+        while (time < duration) {
+            t = time / duration;
+            t = t*t*(3f - 2f * t);
+
+            Camera.main.transform.position = Vector3.Lerp(startPos, endPos, t);
+            Camera.main.transform.LookAt(complex.gameObject.transform);
 
             time += Time.deltaTime;
             yield return null;

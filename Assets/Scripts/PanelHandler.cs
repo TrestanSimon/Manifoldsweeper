@@ -24,6 +24,8 @@ public class PanelHandler : MonoBehaviour {
     private Animator animator;
     private bool panelOpen;
 
+    private CameraHandler cameraHandler;
+
     private void Awake() {
         manifoldsPanel = transform.Find("Manifolds Panel");
         manifoldToggles = manifoldsPanel.Find("Manifold Toggles").gameObject.GetComponentsInChildren<Toggle>();
@@ -37,6 +39,7 @@ public class PanelHandler : MonoBehaviour {
         inputFields = customColumn.GetComponentsInChildren<TMP_InputField>();
 
         animator = gameObject.GetComponent<Animator>();
+        cameraHandler = Camera.main.GetComponent<CameraHandler>();
     }
 
     private void Start() {
@@ -66,6 +69,7 @@ public class PanelHandler : MonoBehaviour {
         AttachComplex();
         complex.Setup(Camera.main, ResU, ResV);
         complex.GenerateComplex();
+        cameraHandler.complex = complex;
         game = complex.Gamify(mineCount);
         game.NewGame();
     }

@@ -79,13 +79,13 @@ public class Torus : Complex {
 
         while (time < duration) {
             progress = time / duration;
-            UpdateVertices(CylinderToPlaneMap(progress, r, R));
+            UpdateVertices(CylinderToPlaneMap(progress, r));
 
             time += Time.deltaTime;
             yield return null;
         }
         // Finalize mapping
-        vertices = CylinderToPlaneMap(1, r, R);
+        vertices = CylinderToPlaneMap(1, r);
         UpdateVertices(vertices);
     }
 
@@ -108,7 +108,8 @@ public class Torus : Complex {
                 // preserves the shape of the circles that wrap around poloidally
                 tempVerts[p,q] = new Vector3(
                     R * (cosq + (t - a)*sinq)
-                        + minor * (cosq + (t - a)*(1 - progress)*sinq),
+                        + minor * (cosq + (t - a)*(1 - progress)*sinq)
+                        + R*progress,
                     vertices[p,q].y,
                     R * (sinq - (t - a)*cosq)
                         + minor * (sinq - (t - a)*(1 - progress)*cosq)

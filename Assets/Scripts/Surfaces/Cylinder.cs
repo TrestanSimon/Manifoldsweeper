@@ -15,7 +15,7 @@ public class Cylinder : Complex {
         sideCount = 2;
         this.ResU = ResU;
         this.ResV = ResV;
-        radius = ResU/(2f*PI);
+        radius = ResU/(4f*PI);
         planar = false;
     }
 
@@ -31,7 +31,7 @@ public class Cylinder : Complex {
                 vertices[p,q] = new Vector3(
                     radius * cosp,
                     radius * sinp,
-                    q - ResV/2f
+                    (q - ResV/2f) / 2f
                 );
                 normals[p,q] = Vector3.up; // Change this
             }

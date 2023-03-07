@@ -23,8 +23,13 @@ public class Plane : Complex {
                     -u + ResU/2f,
                     0,
                     -v + ResV/2f
-                );
+                ) / 2f;
             }
         }
+    }
+
+    // Already a plane...
+    public override IEnumerator ToPlane() {
+        yield return null;
     }
 }
