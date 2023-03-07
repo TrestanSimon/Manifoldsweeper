@@ -1,33 +1,32 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 public class Game : MonoBehaviour {
-    public Complex complex;
+    private Complex complex;
     private Quad[,] quads;
     private Quad mouseOver;
     private int ResU, ResV;
-    public int mineCount;
+    private int mineCount;
 
-    public Camera cam;
+    private Camera cam;
 
-    public Material materialUknown;
-    public Material materialEmpty;
-    public Material materialMine;
-    public Material materialExploded;
-    public Material materialFlag;
-    public Material materialNum1;
-    public Material materialNum2;
-    public Material materialNum3;
-    public Material materialNum4;
-    public Material materialNum5;
-    public Material materialNum6;
-    public Material materialNum7;
-    public Material materialNum8;
-    public GameObject flagPrefab;
-    public Dictionary<Vector2Int, GameObject[]> flags = new Dictionary<Vector2Int, GameObject[]>();
-    public GameObject breakPS;
+    private Material materialUknown;
+    private Material materialEmpty;
+    private Material materialMine;
+    private Material materialExploded;
+    private Material materialFlag;
+    private Material materialNum1;
+    private Material materialNum2;
+    private Material materialNum3;
+    private Material materialNum4;
+    private Material materialNum5;
+    private Material materialNum6;
+    private Material materialNum7;
+    private Material materialNum8;
+    private GameObject flagPrefab;
+    private Dictionary<Vector2Int, GameObject[]> flags = new Dictionary<Vector2Int, GameObject[]>();
+    private GameObject breakPS;
 
     private bool gameon = false;
     private bool gameover = false;
@@ -79,39 +78,28 @@ public class Game : MonoBehaviour {
         }
     }
 
-    public void NewGame() {
+    public void NewGame(bool clearFlags = true) {
         foreach (Coroutine coroutine in coroutinePropagate) {
             if (coroutine != null) {
                 StopCoroutine(coroutine);
             }
         }
         coroutinePropagate.Clear();
+
+        if (clearFlags)
+            ClearFlags();
         
         gameon = false;
         gameover = false;
-        GenerateField();
-    }
 
-    private void GenerateField() {
-        Quad quad;
-
-        // Reset all Quad instances
-        for (int i = 0; i < ResU; i++) {
-            for (int j = 0; j < ResV; j++) {
-                quad = quads[i,j];
-                quad.type = Quad.Type.Empty;
-                quad.revealed = false;
+        foreach (Quad quad in quads) {
+            quad.type = Quad.Type.Empty;
+            quad.revealed = false;
+            quad.exploded = false;
+            quad.visited = false;
+            if (clearFlags)
                 quad.flagged = false;
-                quad.exploded = false;
-                quad.visited = false;
-            }
         }
-        
-        // Destroy all flags
-        foreach (KeyValuePair<Vector2Int, GameObject[]> flag in flags) {
-            Complex.DestroyGOs(flag.Value);
-        }
-        flags.Clear();
 
         GenerateMines();
         GenerateNumbers();
@@ -176,6 +164,13 @@ public class Game : MonoBehaviour {
         Draw();
     }
 
+    private void ClearFlags() {
+        foreach (KeyValuePair<Vector2Int, GameObject[]> flag in flags) {
+            Complex.DestroyGOs(flag.Value);
+        }
+        flags.Clear();
+    }
+
     private void AttemptReveal() {
         mouseOver = complex.MouseIdentify();
         if (mouseOver == null) { return; }
@@ -186,7 +181,7 @@ public class Game : MonoBehaviour {
         // Require first click to be an empty tile
         if (!gameon) {
             while (mouseOver.type != Quad.Type.Empty) {
-                NewGame();
+                NewGame(false);
             }
         }
 
@@ -220,7 +215,7 @@ public class Game : MonoBehaviour {
         while (queue.Any()) {
             quad = queue.Dequeue();
 
-            LinkedList<Quad> neighbors = complex.GetNeighbors(quad);
+            List<Quad> neighbors = complex.GetNeighbors(quad);
 
             foreach (Quad neighbor in neighbors) {
                 if (!neighbor.revealed && !neighbor.visited) {
@@ -253,14 +248,8 @@ public class Game : MonoBehaviour {
 
     // Updates all materials instantaneously
     public void Draw() {
-        Quad quad;
-
-        for (int i = 0; i < ResU; i++) {
-            for (int j = 0; j < ResV; j++) {
-                quad = quads[i,j];
-                quad.SetMaterial(GetState(quad));
-            }
-        }
+        foreach (Quad quad in quads)
+            quad.SetMaterial(GetState(quad));
     }
 
     public Material GetState(Quad quad) {

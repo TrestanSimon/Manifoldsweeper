@@ -160,6 +160,6 @@ public class PanelHandler : MonoBehaviour {
     }
 
     public void MapToPlane() {
-        complex.MapToPlane();
+        StartCoroutine(complex.ToPlane());
     }
 }

@@ -1,9 +1,11 @@
 using UnityEngine;
-using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 
+using static Unity.Mathematics.math;
+
 public abstract class Complex : MonoBehaviour {
-    public int ResU = 16, ResV = 16*3;
+    public int ResU, ResV;
 
     public Vector3[,] vertices;
     public Vector3[,] normals;
@@ -15,15 +17,15 @@ public abstract class Complex : MonoBehaviour {
     public Vector3 dmousePos;
     public float scroll;
 
-    // Setup() method needed to set sideCount
     public abstract void Setup(Camera cam, int ResU, int ResV);
 
     public Game Gamify(int mineCount) {
         Game game;
         gameObject.TryGetComponent<Game>(out game);
-        if (game == null) {
+
+        if (game == null)
             game = gameObject.AddComponent<Game>();
-        }
+
         game.Setup(this, mineCount);
         return game;
     }
@@ -49,47 +51,83 @@ public abstract class Complex : MonoBehaviour {
                     vertices[u+1,v+1], vertices[u,v+1]
                 );
                 // Make quads child of Complex GameObject
-                foreach (GameObject quad in quads[u,v].gameObjects) {
+                foreach (GameObject quad in quads[u,v].gameObjects)
                     quad.transform.parent = gameObject.transform;
-                }
             }
         }
     }
 
-    // Transforms vertices and quads to UV plane
-    public void MapToPlane() {
-        // Transforms vertices
-        for (int u = 0; u <= ResU; u++) {
-            for (int v = 0; v <= ResV; v++) {
-                vertices[u,v] = new Vector3(
-                    u, 0, v
-                );
-            }
-        }
-        // Transforms quads
+    public void UpdateVertices(Vector3[,] newVerts) {
         for (int u = 0; u < ResU; u++) {
             for (int v = 0; v < ResV; v++) {
                 quads[u,v].UpdateVertices(
-                    vertices[u,v], vertices[u+1,v],
-                    vertices[u+1,v+1], vertices[u,v+1]
+                    newVerts[u,v], newVerts[u+1,v],
+                    newVerts[u+1,v+1], newVerts[u,v+1]
                 );
             }
         }
+    }
+
+    public IEnumerator ComplexLerp(
+        Vector3[][,] vertSteps, float duration
+    ) {
+        float time = 0f;
+        Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
+
+        for (int i = 0; i < vertSteps.Length-1; i++) {
+            // Lerp loop
+            while (time < duration) {
+                // Update verts
+                for (int u = 0; u < ResU+1; u++) {
+                    for (int v = 0; v < ResV+1; v++) {
+                        tempVerts[u,v] = Vector3.Lerp(
+                            vertSteps[i][u,v], vertSteps[i+1][u,v], time/duration
+                        );
+                    }
+                }
+
+                UpdateVertices(tempVerts);
+                
+                time += Time.deltaTime;
+                yield return null;
+            }
+            // Finalize mapping
+            UpdateVertices(vertSteps[i+1]);
+        }
+        vertices = vertSteps[vertSteps.Length-1];
+    }
+
+    public virtual IEnumerator ToPlane() {
+        Vector3[,] newVerts = new Vector3[ResU+1,ResV+1];
+
+        // Set new verts
+        for (int u = 0; u <= ResU; u++) {
+            for (int v = 0; v <= ResV; v++) {
+                newVerts[u,v] = new Vector3(
+                    u - ResU/2f, 0, v - ResV/2f) / 2f;
+            }
+        }
+
+        yield return StartCoroutine(ComplexLerp(
+            new Vector3[][,]{vertices, newVerts}, 2f));
     }
 
     // Returns a Quad given a coordinate neighboring another Quad
     // Can be overridden to glue edges together
     public virtual Quad GetNeighbor(int u, int v) {
-        if (u >= 0 && u < ResU && v >= 0 && v < ResV) { return quads[u,v]; }
-        else { return new Quad(); } // returns Invalid Quad
+        if (u >= 0 && u < ResU && v >= 0 && v < ResV) return quads[u,v];
+        else return new Quad(); // returns Quad of type Invalid
     }
 
-    public LinkedList<Quad> GetNeighbors(Quad quad) {
-        LinkedList<Quad> neighbors = new LinkedList<Quad>();
+    public List<Quad> GetNeighbors(Quad quad) {
+        List<Quad> neighbors = new List<Quad>();
+        Quad neighbor;
         for (int du = -1; du <= 1; du++) {
             for (int dv = -1; dv <= 1; dv++) {
                 if (!(du == 0 && dv == 0)) {
-                    neighbors.AddLast(GetNeighbor(quad.u + du, quad.v + dv));
+                    neighbor = GetNeighbor(quad.u + du, quad.v + dv);
+                    if (neighbor.type != Quad.Type.Invalid)
+                        neighbors.Add(neighbor);
                 }
             }
         }
@@ -103,9 +141,7 @@ public abstract class Complex : MonoBehaviour {
         RaycastHit hit;
         if (Physics.Raycast(inputRay, out hit)) {
             return Identify(hit.collider.gameObject);
-        } else {
-            return null;
-        }
+        } else return null;
     }
 
     // Identifies the Quad instance associated with a GameObject
@@ -115,7 +151,7 @@ public abstract class Complex : MonoBehaviour {
     }
 
     public static void DestroyGOs(GameObject[] gos) {
-        foreach (GameObject go in gos) { Destroy(go); }
+        foreach (GameObject go in gos) Destroy(go);
     }
 
     public static GameObject CreateGO(GameObject prefab, Vector3 pos, Quaternion rot, float scale){
@@ -132,8 +168,10 @@ public abstract class Complex : MonoBehaviour {
         }
         if ((Input.GetMouseButton(0) && mousePos != null) || force) {
             dmousePos = Input.mousePosition - mousePos;
-            cam.transform.RotateAround(Vector3.zero, Vector3.up, dmousePos.x/2f*Time.deltaTime);
-            cam.transform.RotateAround(Vector3.zero, Camera.main.transform.right, -dmousePos.y/2f*Time.deltaTime);
+            cam.transform.RotateAround(
+                Vector3.zero, Vector3.up, dmousePos.x/2f*Time.deltaTime);
+            cam.transform.RotateAround(
+                Vector3.zero, Camera.main.transform.right, -dmousePos.y/2f*Time.deltaTime);
         }
         if (scroll != 0f) {
             cam.transform.position -= scroll * cam.transform.forward.normalized;
@@ -162,5 +200,29 @@ public abstract class Complex : MonoBehaviour {
         if (scroll != 0f) {
             cam.transform.position += scroll * Vector3.up;
         }
+    }
+
+    // Maps from cylinder to plane
+    // Used in Cylinder.cs and Torus.cs
+    public Vector3[,] CylinderToPlaneMap(float progress, float radius, float offset = 0f) {
+        Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
+        float a, t, sinp, cosp;
+
+        for (int p = 0; p < ResU+1; p++) {
+            for (int q = 0; q < ResV+1; q++) {
+                // Transformation follows involutes
+                a = 2*PI*p/ResU; // Starting point
+                t = (PI - a)*progress + a; // Involute curve parameter
+                sincos(t, out sinp, out cosp);
+
+                // offset of x is necessary for the torus
+                tempVerts[p,q] = new Vector3(
+                    radius * (sinp - (t - a)*cosp) - offset,
+                    radius * (cosp + (t - a)*sinp),
+                    vertices[p,q].z
+                );
+            }
+        }
+        return tempVerts;
     }
 }

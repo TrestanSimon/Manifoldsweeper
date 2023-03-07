@@ -28,7 +28,7 @@ public class Quad {
     public int depth;
 
     public GameObject[] flag;
-    public GameObject ps;
+    private GameObject ps;
 
     public Quad() {}
 
@@ -89,12 +89,8 @@ public class Quad {
             }
 
             mesh.RecalculateBounds();
-            mesh.RecalculateTangents();
             mesh.RecalculateNormals();
-
-            //mesh.normals = new Vector3[]{
-            //    normals[i], normals[i], normals[i], normals[i]
-            //};
+            mesh.RecalculateTangents();
             
             MeshCollider collider = gameObjects[i].AddComponent<MeshCollider>();
             collider.sharedMesh = mesh;
@@ -115,8 +111,8 @@ public class Quad {
         for (int i = 0; i < sideCount; i++) {
             meshes[i].vertices = vertices;
             meshes[i].RecalculateBounds();
-            meshes[i].RecalculateTangents();
             meshes[i].RecalculateNormals();
+            meshes[i].RecalculateTangents();
             MeshCollider collider = gameObjects[i].GetComponent<MeshCollider>();
             collider.sharedMesh = meshes[i];
         }
