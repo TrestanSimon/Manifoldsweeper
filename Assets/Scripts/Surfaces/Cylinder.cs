@@ -16,6 +16,7 @@ public class Cylinder : Complex {
         this.ResU = ResU;
         this.ResV = ResV;
         radius = ResU/(2f*PI);
+        planar = false;
     }
 
     public override void GenerateVertices() {
@@ -30,7 +31,7 @@ public class Cylinder : Complex {
                 vertices[p,q] = new Vector3(
                     radius * cosp,
                     radius * sinp,
-                    q
+                    q - ResV/2f
                 );
                 normals[p,q] = Vector3.up; // Change this
             }
@@ -65,5 +66,6 @@ public class Cylinder : Complex {
 
     public override IEnumerator ToPlane() {
         yield return StartCoroutine(CylinderToPlane());
+        planar = true;
     }
 }

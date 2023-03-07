@@ -10,10 +10,6 @@ public class Torus : Complex {
     // Necessary so that the p-u seam is at the top of the torus
     // and the mapping to a plane breaks the cylinder at this seam
     // cf angleOffset in Cylinder.cs
-    private float tu = 0f, tv = 0f;
-    private float zoom = 10f;
-    private Vector3 circleMajor = Vector3.zero;
-    private Vector3 circleMinor = Vector3.zero;
 
     public override void Setup(Camera cam, int ResU, int ResV) {
         sideCount = 2;
@@ -21,7 +17,7 @@ public class Torus : Complex {
         this.ResV = ResV;
         r = ResU / 16f;
         R = ResV / 16f;
-        UpdateCamera(cam, true);
+        planar = false;
     }
     
     public override void GenerateVertices() {
@@ -55,31 +51,6 @@ public class Torus : Complex {
 
         if (u1 >= 0 && u1 < ResU && v1 >= 0 && v1 < ResV) { return quads[u1,v1]; }
         else { return new Quad(); }
-    }
-
-    public override void UpdateCamera(Camera cam, bool force = false) {
-        scroll = Input.mouseScrollDelta.y * sensitivity * -1f;
-        if (Input.GetMouseButtonDown(0)) {
-            mousePos = Input.mousePosition;
-        }
-        if ((Input.GetMouseButton(0) && mousePos != null) || force) {
-            dmousePos = Input.mousePosition - mousePos;
-
-            tu -= clamp(dmousePos.y/300f, -30f, 30f) * Time.deltaTime;
-            sincos(tu, out float sinu, out float cosu);
-            tv -= clamp(dmousePos.x/300f, -30f, 30f) * Time.deltaTime;
-            sincos(tv, out float sinv, out float cosv);
-
-            // Major (toroidal) and minor (poloidal) circles
-            circleMajor = new Vector3(R * cosv, 0f, R * sinv);
-            circleMinor = new Vector3(r * cosu * cosv, r * sinu, r * cosu * sinv);
-        }
-        if (scroll != 0f) {
-            zoom += scroll;
-            zoom = clamp(zoom, 2f, 20f);
-        }
-        cam.transform.position = circleMajor + zoom * circleMinor;
-        cam.transform.LookAt(circleMajor);
     }
 
     public IEnumerator TorusToCylinder() {
@@ -122,7 +93,7 @@ public class Torus : Complex {
     private Vector3[,] TorusToCylinderMap(float progress) {
         Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
         float a, t, minor, sinq, cosq;
-        
+
         for (int p = 0; p < ResU+1; p++) {
             for (int q = 0; q < ResV+1; q++) {
                 // Transformation follows involutes
@@ -150,5 +121,6 @@ public class Torus : Complex {
     public override IEnumerator ToPlane() {
         yield return StartCoroutine(TorusToCylinder());
         yield return StartCoroutine(CylinderToPlane());
+        planar = true;
     }
 }

@@ -14,6 +14,7 @@ public class MobiusStrip : Complex {
         this.ResV = ResV;
         R = ResU / 72f;
         tau = 16f / (float)ResV;
+        planar = false;
     }
 
     public override void GenerateVertices() {

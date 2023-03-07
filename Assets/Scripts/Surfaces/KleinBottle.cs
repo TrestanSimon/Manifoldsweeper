@@ -11,6 +11,7 @@ public class KleinBottle : Complex {
         sideCount = 2;
         this.ResU = ResU;
         this.ResV = ResV;
+        planar = false;
     }
 
     public override void GenerateVertices() {

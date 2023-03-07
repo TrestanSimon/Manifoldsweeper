@@ -11,7 +11,7 @@ public class Plane : Complex {
         sideCount = 2;
         this.ResU = ResU;
         this.ResV = ResV;
-        UpdateCamera(cam, true);
+        planar = true;
     }
     
     public override void GenerateVertices() {
@@ -20,13 +20,11 @@ public class Plane : Complex {
         for (int u = 0; u <= ResU; u++) {
             for (int v = 0; v <= ResV; v++) {
                 vertices[u,v] = new Vector3(
-                    u, 0, v
+                    -u + ResU/2f,
+                    0,
+                    -v + ResV/2f
                 );
             }
         }
-    }
-
-    public override void UpdateCamera(Camera cam, bool force = false) {
-        UpdateTopDownCamera(cam, force);
     }
 }

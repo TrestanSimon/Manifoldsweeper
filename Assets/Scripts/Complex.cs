@@ -11,11 +11,7 @@ public abstract class Complex : MonoBehaviour {
     public Vector3[,] normals;
     public Quad[,] quads;
     public int sideCount;
-
-    public float sensitivity = 1f;
-    public Vector3 mousePos;
-    public Vector3 dmousePos;
-    public float scroll;
+    public bool planar;
 
     public abstract void Setup(Camera cam, int ResU, int ResV);
 
@@ -158,48 +154,6 @@ public abstract class Complex : MonoBehaviour {
         GameObject go = Instantiate(prefab, pos, rot);
         go.transform.localScale *= scale;
         return go;
-    }
-
-    // Default camera
-    public virtual void UpdateCamera(Camera cam, bool force = false) {
-        scroll = Input.mouseScrollDelta.y * sensitivity * -1f;
-        if (Input.GetMouseButtonDown(0)) {
-            mousePos = Input.mousePosition;
-        }
-        if ((Input.GetMouseButton(0) && mousePos != null) || force) {
-            dmousePos = Input.mousePosition - mousePos;
-            cam.transform.RotateAround(
-                Vector3.zero, Vector3.up, dmousePos.x/2f*Time.deltaTime);
-            cam.transform.RotateAround(
-                Vector3.zero, Camera.main.transform.right, -dmousePos.y/2f*Time.deltaTime);
-        }
-        if (scroll != 0f) {
-            cam.transform.position -= scroll * cam.transform.forward.normalized;
-        }
-    }
-
-    // A top-down camera
-    // if force is true, camera resets position
-    public void UpdateTopDownCamera(Camera cam, bool force = false) {
-        if (force) {
-            cam.transform.position = new Vector3(ResU/2f, 30f, ResV/2f);
-            cam.transform.rotation = Quaternion.Euler(90f, 0f, 270f);
-        }
-
-        scroll = Input.mouseScrollDelta.y * sensitivity * -1f;
-        if (Input.GetMouseButtonDown(0)) {
-            mousePos = Input.mousePosition;
-        }
-
-        if ((Input.GetMouseButton(0) && mousePos != null) || force) {
-            dmousePos = Input.mousePosition - mousePos;
-            cam.transform.position += dmousePos.x/10f*Time.deltaTime * Vector3.forward;
-            cam.transform.position += dmousePos.y/10f*Time.deltaTime * Vector3.left;
-        }
-
-        if (scroll != 0f) {
-            cam.transform.position += scroll * Vector3.up;
-        }
     }
 
     // Maps from cylinder to plane
