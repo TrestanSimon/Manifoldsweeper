@@ -151,7 +151,9 @@ public abstract class Complex : MonoBehaviour {
         for (int u = 0; u <= ResU; u++) {
             for (int v = 0; v <= ResV; v++) {
                 newVerts[u,v] = new Vector3(
-                    u - ResU/2f, 0, v - ResV/2f) / 2f;
+                    -u + ResU/2f,
+                    0,
+                    -v + ResV/2f) / 2f;
             }
         }
 

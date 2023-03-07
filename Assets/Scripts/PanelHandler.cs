@@ -14,17 +14,23 @@ public class PanelHandler : MonoBehaviour {
     private int selectedManifold, selectedMap;
     private int selectedDifficulty;
     public int ResU, ResV, mineCount;
+    private (int u, int v, int mines)[,] manifoldDifficulties;
 
     private Game game;
     private Complex complex;
     private Toggle[] manifoldToggles, mapToggles, difficultyToggles;
     private TMP_InputField[] inputFields;
+    private (TMP_Text size, TMP_Text mines)[] difficultyText;
     private Animator animator;
     private bool panelOpen;
 
     private CameraHandler cameraHandler;
 
     private void Awake() {
+        Transform difficultyTogglesHolder;
+        Transform easyColumn, medColumn, hardColumn;
+        difficultyText = new (TMP_Text, TMP_Text)[3];
+
         manifoldsPanel = transform.Find("Manifolds Panel");
         manifoldToggles = manifoldsPanel.Find("Manifold Toggles").gameObject.GetComponentsInChildren<Toggle>();
 
@@ -32,12 +38,58 @@ public class PanelHandler : MonoBehaviour {
         manifoldMaps = mapsPanel.Find("Maps Toggles");
 
         gamePanel = transform.Find("Game Panel");
-        difficultyToggles = gamePanel.Find("Difficulty Toggles").gameObject.GetComponentsInChildren<Toggle>();
-        customColumn = gamePanel.Find("Difficulty Toggles").Find("Custom Column");
+        difficultyTogglesHolder = gamePanel.Find("Difficulty Toggles");
+        difficultyToggles = difficultyTogglesHolder.gameObject.GetComponentsInChildren<Toggle>();
+
+        // Get labels for different difficulties
+        easyColumn = difficultyTogglesHolder.Find("Easy Column");
+        difficultyText[0] = (
+            easyColumn.Find("Easy Size").GetComponent<TMP_Text>(),
+            easyColumn.Find("Easy Mines").GetComponent<TMP_Text>()
+        );
+        medColumn = difficultyTogglesHolder.Find("Medium Column");
+        difficultyText[1] = (
+            medColumn.Find("Medium Size").GetComponent<TMP_Text>(),
+            medColumn.Find("Medium Mines").GetComponent<TMP_Text>()
+        );
+        hardColumn = difficultyTogglesHolder.Find("Hard Column");
+        difficultyText[2] = (
+            hardColumn.Find("Hard Size").GetComponent<TMP_Text>(),
+            hardColumn.Find("Hard Mines").GetComponent<TMP_Text>()
+        );
+
+        customColumn = difficultyTogglesHolder.Find("Custom Column");
         inputFields = customColumn.GetComponentsInChildren<TMP_InputField>();
 
         animator = gameObject.GetComponent<Animator>();
         cameraHandler = Camera.main.GetComponent<CameraHandler>();
+
+        manifoldDifficulties = new (int,int,int)[5,3];
+
+        // Plane
+        manifoldDifficulties[0,0] = (8, 8, 12);
+        manifoldDifficulties[0,1] = (16, 16, 42);
+        manifoldDifficulties[0,2] = (16, 32, 98);
+
+        // Cylinder
+        manifoldDifficulties[1,0] = (8, 8, 12);
+        manifoldDifficulties[1,1] = (16, 16, 42);
+        manifoldDifficulties[1,2] = (32, 16, 98);
+
+        // Torus
+        manifoldDifficulties[2,0] = (8, 8, 12);
+        manifoldDifficulties[2,1] = (16, 16, 42);
+        manifoldDifficulties[2,2] = (16, 32, 98);
+
+        // Mobius strip
+        manifoldDifficulties[3,0] = (16, 4, 12);
+        manifoldDifficulties[3,1] = (32, 8, 42);
+        manifoldDifficulties[3,2] = (32, 16, 98);
+
+        // Klein bottle
+        manifoldDifficulties[4,0] = (8, 8, 12);
+        manifoldDifficulties[4,1] = (16, 16, 42);
+        manifoldDifficulties[4,2] = (16, 32, 98);
     }
 
     private void Start() {
@@ -81,6 +133,7 @@ public class PanelHandler : MonoBehaviour {
             }
         }
         UpdateActiveMaps();
+        UpdateActiveDifficulties();
     }
 
     public void UpdateActiveMaps() {
@@ -106,6 +159,17 @@ public class PanelHandler : MonoBehaviour {
         }
     }
 
+    private void UpdateActiveDifficulties() {
+        int j = selectedManifold;
+        for (int i = 0; i < 3; i++) {
+            difficultyText[i].size.text
+                = $"{manifoldDifficulties[j,i].u} x {manifoldDifficulties[j,i].v}";
+            difficultyText[i].mines.text
+                = $"{manifoldDifficulties[j,i].mines}";
+        }
+        UpdateDifficulty();
+    }
+
     // Ran On Value Changed of Difficulty Toggles
     public void UpdateDifficulty() {
         for (int i = 0; i < difficultyToggles.Length; i++) {
@@ -115,17 +179,14 @@ public class PanelHandler : MonoBehaviour {
             }
         }
 
+        // If custom difficulty is selected
         if (selectedDifficulty == 3) {
             UpdateActiveCustomDifficulty(true);
         } else {
             UpdateActiveCustomDifficulty(false);
-        }
-
-        switch (selectedDifficulty) {
-            case 0: ResU = ResV = 8; mineCount = 12; break;
-            case 1: ResU = ResV = 16; mineCount = 42; break;
-            case 2: ResU = 16; ResV = 32; mineCount = 98; break;
-            case 3: UpdateCustomDifficulty(); break;
+            ResU = manifoldDifficulties[selectedManifold,selectedDifficulty].u;
+            ResV = manifoldDifficulties[selectedManifold,selectedDifficulty].v;
+            mineCount = manifoldDifficulties[selectedManifold,selectedDifficulty].mines;
         }
     }
 
