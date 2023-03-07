@@ -20,8 +20,7 @@ public class Cylinder : Complex {
     }
 
     public override void GenerateVertices() {
-        vertices = new Vector3[ResU + 1, ResV + 1];
-        normals = new Vector3[ResU + 1, ResV + 1];
+        vertices = new Vector3[ResU+1, ResV+1];
         for (int p = 0; p <= ResU; p++) {
             // Reversed sign is necessary so that tile orientation matches
             // that of the torus when it is mapped to a cylinder
@@ -33,7 +32,6 @@ public class Cylinder : Complex {
                     radius * sinp,
                     (q - ResV/2f) / 2f
                 );
-                normals[p,q] = Vector3.up; // Change this
             }
         }
     }

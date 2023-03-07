@@ -1,7 +1,7 @@
-using UnityEngine;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class Quad {
     public enum Type {

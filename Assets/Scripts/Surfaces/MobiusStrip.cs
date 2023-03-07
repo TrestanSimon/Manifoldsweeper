@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 using static Unity.Mathematics.math;
@@ -18,22 +16,20 @@ public class MobiusStrip : Complex {
     }
 
     public override void GenerateVertices() {
-        vertices = new Vector3[ResU + 1, ResV + 1];
-        normals = new Vector3[ResU + 1, ResV + 1];
-        for (int u = 0; u <= ResU; u++) {
-            sincos(2*PI*u / ResU, out float sinu, out float cosu);
-            sincos(PI*u / ResU, out float sinu2, out float cosu2);
+        vertices = new Vector3[ResU+1, ResV+1];
+        for (int p = 0; p <= ResU; p++) {
+            sincos(2*PI*p / ResU, out float sinp, out float cosp);
+            sincos(PI*p / ResU, out float sinp2, out float cosp2);
 
-            for (int v = 0; v <= ResV; v++) {
-                float v1 = v / (float)ResV - 0.5f;
-                float minor = R + v1/tau * cosu2;
+            for (int q = 0; q <= ResV; q++) {
+                float q1 = q / (float)ResV - 0.5f;
+                float minor = R + q1/tau * cosp2;
 
-                vertices[u,v] = 5f * new Vector3(
-                    minor * cosu,
-                    v1/tau * sinu2,
-                    minor * sinu
+                vertices[p,q] = 5f * new Vector3(
+                    minor * cosp,
+                    q1/tau * sinp2,
+                    minor * sinp
                 );
-                normals[u,v] = Vector3.up; // Change this
             }
         }
     }

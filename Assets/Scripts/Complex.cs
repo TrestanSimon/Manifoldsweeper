@@ -1,6 +1,6 @@
-using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 using static Unity.Mathematics.math;
 
@@ -8,7 +8,6 @@ public abstract class Complex : MonoBehaviour {
     public int ResU, ResV;
 
     public Vector3[,] vertices;
-    public Vector3[,] normals;
     public Quad[,] quads;
     public int sideCount;
     public bool planar;
@@ -31,11 +30,13 @@ public abstract class Complex : MonoBehaviour {
         GenerateQuads();
     }
 
-    // Generates array of 3-vectors pointing to vertices
-    // Position of vertices depend on the surface
+    // Generates vertices (p, q)
+    // Returns an [ResU+1, ResV+1] array with Vector3 elements
+    // Unique to each surface
     public abstract void GenerateVertices();
 
-    // Generates quads from vertices
+    // Generates quads (u, v) given vertices
+    // Returns an [ResU, ResV] array with Quad elements
     private void GenerateQuads() {
         quads = new Quad[ResU, ResV];
 
@@ -93,21 +94,6 @@ public abstract class Complex : MonoBehaviour {
         vertices = vertSteps[vertSteps.Length-1];
     }
 
-    public virtual IEnumerator ToPlane() {
-        Vector3[,] newVerts = new Vector3[ResU+1,ResV+1];
-
-        // Set new verts
-        for (int u = 0; u <= ResU; u++) {
-            for (int v = 0; v <= ResV; v++) {
-                newVerts[u,v] = new Vector3(
-                    u - ResU/2f, 0, v - ResV/2f) / 2f;
-            }
-        }
-
-        yield return StartCoroutine(ComplexLerp(
-            new Vector3[][,]{vertices, newVerts}, 2f));
-    }
-
     // Returns a Quad given a coordinate neighboring another Quad
     // Can be overridden to glue edges together
     public virtual Quad GetNeighbor(int u, int v) {
@@ -154,6 +140,25 @@ public abstract class Complex : MonoBehaviour {
         GameObject go = Instantiate(prefab, pos, rot);
         go.transform.localScale *= scale;
         return go;
+    }
+
+    public virtual IEnumerator ToPlane() {
+        Vector3[,] newVerts = new Vector3[ResU+1,ResV+1];
+
+        if (planar) yield break;
+
+        // Set new verts
+        for (int u = 0; u <= ResU; u++) {
+            for (int v = 0; v <= ResV; v++) {
+                newVerts[u,v] = new Vector3(
+                    u - ResU/2f, 0, v - ResV/2f) / 2f;
+            }
+        }
+
+        yield return StartCoroutine(ComplexLerp(
+            new Vector3[][,]{vertices, newVerts}, 2f));
+
+        planar = true;
     }
 
     // Maps from cylinder to plane

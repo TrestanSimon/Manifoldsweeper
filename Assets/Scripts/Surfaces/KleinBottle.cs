@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 using static Unity.Mathematics.math;
@@ -15,38 +13,37 @@ public class KleinBottle : Complex {
     }
 
     public override void GenerateVertices() {
-        vertices = new Vector3[ResU + 1, ResV + 1];
-        normals = new Vector3[ResU + 1, ResV + 1];
-        for (int u = 0; u <= ResU; u++) {
-            float u1 = 4f*PI*(float)u / (float)ResU;
-            sincos(u1, out float sinu, out float cosu);
-            for (int v = 0; v <= ResV; v++) {
-                float v1 = 2f*PI*(float)v / (float)ResV;
-                sincos(v1, out float sinv, out float cosv);
+        vertices = new Vector3[ResU+1, ResV+1];
+        for (int p = 0; p <= ResU; p++) {
+            float p1 = 4f*PI*(float)p / (float)ResU;
+            sincos(p1, out float sinp, out float cosp);
+            for (int q = 0; q <= ResV; q++) {
+                float q1 = 2f*PI*(float)q / (float)ResV;
+                sincos(q1, out float sinq, out float cosq);
 
-                if (u1 < PI) {
-                    vertices[u,v] = new Vector3(
-                        (2.5f - 1.5f*cosu) * cosv,
-                        (2.5f - 1.5f*cosu) * sinv,
-                        -2.5f * sinu
+                if (p1 < PI) {
+                    vertices[p,q] = new Vector3(
+                        (2.5f - 1.5f*cosp) * cosq,
+                        (2.5f - 1.5f*cosp) * sinq,
+                        -2.5f * sinp
                     );
-                } else if (u1 < 2f*PI) {
-                    vertices[u,v] = new Vector3(
-                        (2.5f - 1.5f*cosu) * cosv,
-                        (2.5f - 1.5f*cosu) * sinv,
-                        3f*u1 - 3f*PI
+                } else if (p1 < 2f*PI) {
+                    vertices[p,q] = new Vector3(
+                        (2.5f - 1.5f*cosp) * cosq,
+                        (2.5f - 1.5f*cosp) * sinq,
+                        3f*p1 - 3f*PI
                     );
-                } else if (u1 < 3f*PI) {
-                    vertices[u,v] = new Vector3(
-                        -2f + (2f + cosv) * cosu,
-                        sinv,
-                        (2f + cosv) * sinu + 3f*PI
+                } else if (p1 < 3f*PI) {
+                    vertices[p,q] = new Vector3(
+                        -2f + (2f + cosq) * cosp,
+                        sinq,
+                        (2f + cosq) * sinp + 3f*PI
                     );
                 } else {
-                    vertices[u,v] = new Vector3(
-                        -2f + 2f*cosu - cosv,
-                        sinv,
-                        -3f*u1 + 12f*PI
+                    vertices[p,q] = new Vector3(
+                        -2f + 2f*cosp - cosq,
+                        sinq,
+                        -3f*p1 + 12f*PI
                     );
                 }
             }

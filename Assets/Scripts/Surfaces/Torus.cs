@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 using static Unity.Mathematics.math;
@@ -21,8 +20,7 @@ public class Torus : Complex {
     }
     
     public override void GenerateVertices() {
-        vertices = new Vector3[ResU + 1, ResV + 1];
-        normals = new Vector3[ResU + 1, ResV + 1];
+        vertices = new Vector3[ResU+1, ResV+1];
         for (int p = 0; p <= ResU; p++) {
             sincos(2*PI*p/ResU + minorOffset, out float sinp, out float cosp);
             float minor = R + r*cosp;
@@ -34,11 +32,6 @@ public class Torus : Complex {
                     minor * cosq,
                     r * sinp,
                     minor * sinq
-                );
-                normals[p,q] = new Vector3(
-                    cosp * cosq,
-                    sinp,
-                    cosp * sinq
                 );
             }
         }
