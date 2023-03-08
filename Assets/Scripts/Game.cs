@@ -26,7 +26,8 @@ public class Game : MonoBehaviour {
     private Material materialNum7;
     private Material materialNum8;
     private GameObject flagPrefab;
-    private Dictionary<Vector2Int, GameObject[]> flags = new Dictionary<Vector2Int, GameObject[]>();
+    private Dictionary<(int u, int v), GameObject[]> flags
+        = new Dictionary<(int u, int v), GameObject[]>();
     private GameObject breakPS;
 
     private bool gameon = false;
@@ -162,7 +163,7 @@ public class Game : MonoBehaviour {
     }
 
     private void ClearFlags() {
-        foreach (KeyValuePair<Vector2Int, GameObject[]> flag in flags) {
+        foreach (KeyValuePair<(int,int), GameObject[]> flag in flags) {
             Complex.DestroyGOs(flag.Value);
         }
         flags.Clear();
@@ -234,11 +235,11 @@ public class Game : MonoBehaviour {
 
         if (quad.Flagged == true) {
             quad.Flagged = false;
-            flags.Remove(new Vector2Int(quad.U, quad.V));
+            flags.Remove((quad.U, quad.V));
         }
 
         coroutinePropagate.Add(
-            StartCoroutine(quad.Reveal(GetState(quad), breakPS))
+            StartCoroutine(quad.DelayedReveal(GetState(quad), breakPS))
         );
     }
 

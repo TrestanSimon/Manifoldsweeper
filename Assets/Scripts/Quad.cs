@@ -22,7 +22,6 @@ public class Quad {
 
     private Type _type;
 
-    
     private int _number;
     private bool _revealed;
     private bool _flagged;
@@ -180,7 +179,7 @@ public class Quad {
         }
     }
 
-    public IEnumerator Reveal(Material material, GameObject breakPS) {
+    public IEnumerator DelayedReveal(Material material, GameObject breakPS) {
         if (type == Type.Invalid) { yield break; }
         yield return new WaitForSeconds(0.02f * _depth);
         SetMaterial(material);
@@ -198,10 +197,10 @@ public class Quad {
     }
 
     // Places flag(s)
-    public void Flag(Dictionary<Vector2Int, GameObject[]> flags, GameObject flag = null) {
+    public void Flag(Dictionary<(int u, int v), GameObject[]> flags, GameObject flag = null) {
         if (type == Type.Invalid || _revealed) return;
         if (_flagged) {
-            flags.Remove(new Vector2Int(_u,_v));
+            flags.Remove((_u, _v));
             Complex.DestroyGOs(_flags);
         } else if (flag != null) {
             // Points to where flag will be planted
@@ -210,18 +209,15 @@ public class Quad {
             // Create flag for each side
             for (int i = 0; i < _sideCount; i++) {
                 Vector3 flagPos = stake + _normals[i] * _scale/2f;
-                Quaternion flagRot = Quaternion.LookRotation(_normals[i]) * Quaternion.AngleAxis(90, Vector3.up);
+                Quaternion flagRot = Quaternion.LookRotation(_normals[i])
+                    * Quaternion.AngleAxis(90, Vector3.up);
+
                 _flags[i] = Complex.CreateGO(flag, flagPos, flagRot, _scale);
                 _flags[i].transform.parent = _gameObjects[i].transform;
                 _flags[i].name = "Flag";
             }
-            flags.Add(new Vector2Int(_u,_v), _flags);
+            flags.Add((_u, _v), _flags);
         }
         _flagged = !_flagged;
-    }
-
-    public void UpdateFlags() {
-        if (type == Type.Invalid || _revealed || !_flagged) return;
-
     }
 }
