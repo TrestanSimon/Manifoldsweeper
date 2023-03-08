@@ -45,11 +45,9 @@ public abstract class Complex : MonoBehaviour {
                 quads[u,v] = new Quad(
                     u, v, sideCount,
                     vertices[u,v], vertices[u+1,v],
-                    vertices[u+1,v+1], vertices[u,v+1]
+                    vertices[u+1,v+1], vertices[u,v+1],
+                    gameObject.transform
                 );
-                // Make quads child of Complex GameObject
-                foreach (GameObject quad in quads[u,v].gameObjects)
-                    quad.transform.parent = gameObject.transform;
             }
         }
     }
@@ -107,7 +105,7 @@ public abstract class Complex : MonoBehaviour {
         for (int du = -1; du <= 1; du++) {
             for (int dv = -1; dv <= 1; dv++) {
                 if (!(du == 0 && dv == 0)) {
-                    neighbor = GetNeighbor(quad.u + du, quad.v + dv);
+                    neighbor = GetNeighbor(quad.U + du, quad.V + dv);
                     if (neighbor.type != Quad.Type.Invalid)
                         neighbors.Add(neighbor);
                 }

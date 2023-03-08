@@ -12,21 +12,40 @@ public class Quad {
         Number
     }
 
-    public int u, v;
-    public GameObject[] gameObjects;
-    public Vector3[] vertices;
-    public Vector3[] normals;
-    public Mesh[] meshes;
-    public int sideCount = 1;
-    private float scale;
+    private int _u, _v;
+    private GameObject[] _gameObjects;
+    private Vector3[] _vertices;
+    private Vector3[] _normals;
+    private Mesh[] _meshes;
+    private int _sideCount;
+    private float _scale;
 
-    public Type type;
+    private Type _type;
 
     
     private int _number;
     private bool _revealed;
     private bool _flagged;
     private bool _exploded;
+    private bool _visited;
+    private int _depth;
+
+    private GameObject[] _flags;
+    private GameObject _ps;
+
+    public int U {
+        get => _u;
+        private set => _u = value;
+    }
+    public int V {
+        get => _v;
+        private set => _v = value;
+    }
+
+    public Type type {
+        get => _type;
+        set => _type = value;
+    }
 
     public int Number {
         get => _number;
@@ -41,7 +60,16 @@ public class Quad {
             _number = value;
         }
     }
-    public bool Revealed { get; set; }
+    public bool Revealed {
+        get => _revealed;
+        set {
+            if (value && _flagged) {
+                _flagged = false;
+                Complex.DestroyGOs(_flags);
+            }
+            _revealed = value;
+        }
+    }
     public bool Flagged { 
         get => _flagged;
         set { if (!_revealed) _flagged = value; }
@@ -50,26 +78,31 @@ public class Quad {
         get => _exploded;
         set => _exploded = value;
     }
-    public bool visited;
-    public int depth;
+    public bool Visited {
+        get => _visited;
+        set => _visited = value;
+    }
+    public int Depth {
+        get => _depth;
+        set => _depth = value;
+    }
 
-    public GameObject[] flag;
-    private GameObject ps;
-
+    // Constructor for Invalid Quads
     public Quad() {}
 
     public Quad(
         int u, int v, int sideCount,
         Vector3 vert0, Vector3 vert1,
-        Vector3 vert2, Vector3 vert3
+        Vector3 vert2, Vector3 vert3,
+        Transform parent
     ) {
-        this.sideCount = sideCount;
-        gameObjects = new GameObject[sideCount];
-        meshes = new Mesh[sideCount];
-        normals =  new Vector3[sideCount];
-        flag = new GameObject[sideCount];
+        _sideCount = sideCount;
+        _gameObjects = new GameObject[sideCount];
+        _meshes = new Mesh[sideCount];
+        _normals =  new Vector3[sideCount];
+        _flags = new GameObject[sideCount];
 
-        vertices = new Vector3[]{
+        _vertices = new Vector3[]{
             vert0, vert1,
             vert2, vert3
         };
@@ -88,40 +121,43 @@ public class Quad {
         };
     
         for (int i = 0; i < sideCount; i++) {
-            gameObjects[i] = new GameObject();
-            gameObjects[i].name = "Quad" + i.ToString() + " " + u.ToString() + ", " + v.ToString();
+            _gameObjects[i] = new GameObject();
+            _gameObjects[i].name = "Quad" + i.ToString() + " " + u.ToString() + ", " + v.ToString();
+            
+            // Make quads child of Complex GameObject
+            _gameObjects[i].transform.parent = parent;
 
             // For identifying Quad instance from GameObject
-            Tag tag = gameObjects[i].AddComponent<Tag>();
-            this.u = tag.u = u;
-            this.v = tag.v = v;
+            Tag tag = _gameObjects[i].AddComponent<Tag>();
+            _u = tag.u = u;
+            _v = tag.v = v;
 
-            MeshFilter filter = gameObjects[i].AddComponent<MeshFilter>();
+            MeshFilter filter = _gameObjects[i].AddComponent<MeshFilter>();
             Mesh mesh = filter.mesh;
-            meshes[i] = mesh;
+            _meshes[i] = mesh;
 
-            gameObjects[i].AddComponent<MeshRenderer>();
+            _gameObjects[i].AddComponent<MeshRenderer>();
 
-            mesh.vertices = vertices;
+            mesh.vertices = _vertices;
             mesh.triangles = winding;
             mesh.uv = uvCoords;
-            normals[i] = Vector3.Cross(vert0 - vert1, vert0 - vert2).normalized;
+            _normals[i] = Vector3.Cross(vert0 - vert1, vert0 - vert2).normalized;
 
             if (i % 2 == 1) {
                 // Reverse winding
                 mesh.triangles = mesh.triangles.Reverse().ToArray();
                 mesh.uv = mesh.uv.Reverse().ToArray();
-                normals[i] *= -1f;
+                _normals[i] *= -1f;
             }
 
             mesh.RecalculateBounds();
             mesh.RecalculateNormals();
             mesh.RecalculateTangents();
             
-            MeshCollider collider = gameObjects[i].AddComponent<MeshCollider>();
+            MeshCollider collider = _gameObjects[i].AddComponent<MeshCollider>();
             collider.sharedMesh = mesh;
 
-            scale = Vector3.Magnitude(vertices[0] - vertices[2]);
+            _scale = Vector3.Magnitude(_vertices[0] - _vertices[2]);
         }
     }
 
@@ -130,33 +166,33 @@ public class Quad {
         Vector3 vert0, Vector3 vert1,
         Vector3 vert2, Vector3 vert3
     ) {
-        vertices = new Vector3[]{
+        _vertices = new Vector3[]{
             vert0, vert1,
             vert2, vert3
         };
-        for (int i = 0; i < sideCount; i++) {
-            meshes[i].vertices = vertices;
-            meshes[i].RecalculateBounds();
-            meshes[i].RecalculateNormals();
-            meshes[i].RecalculateTangents();
-            MeshCollider collider = gameObjects[i].GetComponent<MeshCollider>();
-            collider.sharedMesh = meshes[i];
+        for (int i = 0; i < _sideCount; i++) {
+            _meshes[i].vertices = _vertices;
+            _meshes[i].RecalculateBounds();
+            _meshes[i].RecalculateNormals();
+            _meshes[i].RecalculateTangents();
+            MeshCollider collider = _gameObjects[i].GetComponent<MeshCollider>();
+            collider.sharedMesh = _meshes[i];
         }
     }
 
     public IEnumerator Reveal(Material material, GameObject breakPS) {
         if (type == Type.Invalid) { yield break; }
-        yield return new WaitForSeconds(0.02f * depth);
+        yield return new WaitForSeconds(0.02f * _depth);
         SetMaterial(material);
-        ps = Complex.CreateGO(breakPS, vertices[0], Quaternion.identity, scale);
-        ps.transform.parent = gameObjects[0].transform;
+        _ps = Complex.CreateGO(breakPS, _vertices[0], Quaternion.identity, _scale);
+        _ps.transform.parent = _gameObjects[0].transform;
     }
 
     // Sets material
     public void SetMaterial(Material material) {
         if (type == Type.Invalid) return;
-        for (int i = 0; i < sideCount; i++) {
-            MeshRenderer meshRenderer = gameObjects[i].GetComponent<MeshRenderer>();
+        for (int i = 0; i < _sideCount; i++) {
+            MeshRenderer meshRenderer = _gameObjects[i].GetComponent<MeshRenderer>();
             meshRenderer.material = material;
         }
     }
@@ -165,21 +201,21 @@ public class Quad {
     public void Flag(Dictionary<Vector2Int, GameObject[]> flags, GameObject flag = null) {
         if (type == Type.Invalid || _revealed) return;
         if (_flagged) {
-            flags.Remove(new Vector2Int(u,v));
-            Complex.DestroyGOs(this.flag);
+            flags.Remove(new Vector2Int(_u,_v));
+            Complex.DestroyGOs(_flags);
         } else if (flag != null) {
             // Points to where flag will be planted
-            Vector3 stake = (vertices[0] + vertices[2]) / 2f;
+            Vector3 stake = (_vertices[0] + _vertices[2]) / 2f;
 
             // Create flag for each side
-            for (int i = 0; i < sideCount; i++) {
-                Vector3 flagPos = stake + normals[i] * scale/2f;
-                Quaternion flagRot = Quaternion.LookRotation(normals[i]) * Quaternion.AngleAxis(90, Vector3.up);
-                this.flag[i] = Complex.CreateGO(flag, flagPos, flagRot, scale);
-                this.flag[i].transform.parent = gameObjects[i].transform;
-                this.flag[i].name = "Flag";
+            for (int i = 0; i < _sideCount; i++) {
+                Vector3 flagPos = stake + _normals[i] * _scale/2f;
+                Quaternion flagRot = Quaternion.LookRotation(_normals[i]) * Quaternion.AngleAxis(90, Vector3.up);
+                _flags[i] = Complex.CreateGO(flag, flagPos, flagRot, _scale);
+                _flags[i].transform.parent = _gameObjects[i].transform;
+                _flags[i].name = "Flag";
             }
-            flags.Add(new Vector2Int(u,v), this.flag);
+            flags.Add(new Vector2Int(_u,_v), _flags);
         }
         _flagged = !_flagged;
     }

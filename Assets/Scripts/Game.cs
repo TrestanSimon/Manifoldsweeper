@@ -97,7 +97,7 @@ public class Game : MonoBehaviour {
             quad.type = Quad.Type.Empty;
             quad.Revealed = false;
             quad.Exploded = false;
-            quad.visited = false;
+            quad.Visited = false;
             if (clearFlags)
                 quad.Flagged = false;
         }
@@ -136,7 +136,7 @@ public class Game : MonoBehaviour {
     }
 
     public int CountMines(Quad quad) {
-        int u0 = quad.u, v0 = quad.v, u, v;
+        int u0 = quad.U, v0 = quad.V, u, v;
         int count = 0;
 
         for (int du = -1; du <= 1; du++) {
@@ -203,8 +203,8 @@ public class Game : MonoBehaviour {
         Queue<Quad> queue = new Queue<Quad>();
 
         // Reveal starting quad
-        quad.visited = true;
-        quad.depth = 0;
+        quad.Visited = true;
+        quad.Depth = 0;
         RevealQuad(quad);
 
         queue.Enqueue(quad);
@@ -215,14 +215,14 @@ public class Game : MonoBehaviour {
             List<Quad> neighbors = complex.GetNeighbors(quad);
 
             foreach (Quad neighbor in neighbors) {
-                if (!neighbor.Revealed && !neighbor.visited) {
+                if (!neighbor.Revealed && !neighbor.Visited) {
                     // Add empty neighbors to queue
                     if (neighbor.type == Quad.Type.Empty) {
-                        neighbor.visited = true;
+                        neighbor.Visited = true;
                         queue.Enqueue(neighbor);
                     }
 
-                    neighbor.depth = quad.depth + 1;
+                    neighbor.Depth = quad.Depth + 1;
                     RevealQuad(neighbor);
                 }
             }
@@ -234,8 +234,7 @@ public class Game : MonoBehaviour {
 
         if (quad.Flagged == true) {
             quad.Flagged = false;
-            flags.Remove(new Vector2Int(quad.u, quad.v));
-            Complex.DestroyGOs(quad.flag);
+            flags.Remove(new Vector2Int(quad.U, quad.V));
         }
 
         coroutinePropagate.Add(
