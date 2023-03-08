@@ -95,11 +95,11 @@ public class Game : MonoBehaviour {
 
         foreach (Quad quad in quads) {
             quad.type = Quad.Type.Empty;
-            quad.revealed = false;
-            quad.exploded = false;
+            quad.Revealed = false;
+            quad.Exploded = false;
             quad.visited = false;
             if (clearFlags)
-                quad.flagged = false;
+                quad.Flagged = false;
         }
 
         GenerateMines();
@@ -130,11 +130,7 @@ public class Game : MonoBehaviour {
                 quad = quads[i,j];
                 if (quad.type == Quad.Type.Mine) { continue; }
 
-                quad.number = CountMines(quad);
-
-                if (quad.number > 0) {
-                    quad.type = Quad.Type.Number;
-                }
+                quad.Number = CountMines(quad);
             }
         }
     }
@@ -175,7 +171,7 @@ public class Game : MonoBehaviour {
     private void AttemptReveal() {
         mouseOver = complex.MouseIdentify();
         if (mouseOver == null) { return; }
-        if (mouseOver.type == Quad.Type.Invalid || mouseOver.revealed || mouseOver.flagged) {
+        if (mouseOver.type == Quad.Type.Invalid || mouseOver.Revealed || mouseOver.Flagged) {
             return;
         }
 
@@ -195,7 +191,7 @@ public class Game : MonoBehaviour {
                 gameon = true;
                 break;
             default:
-                mouseOver.revealed = true;
+                mouseOver.Revealed = true;
                 CheckWinCondition();
                 gameon = true;
                 Draw();
@@ -219,7 +215,7 @@ public class Game : MonoBehaviour {
             List<Quad> neighbors = complex.GetNeighbors(quad);
 
             foreach (Quad neighbor in neighbors) {
-                if (!neighbor.revealed && !neighbor.visited) {
+                if (!neighbor.Revealed && !neighbor.visited) {
                     // Add empty neighbors to queue
                     if (neighbor.type == Quad.Type.Empty) {
                         neighbor.visited = true;
@@ -234,10 +230,10 @@ public class Game : MonoBehaviour {
     }
 
     private void RevealQuad(Quad quad) {
-        quad.revealed = true;
+        quad.Revealed = true;
 
-        if (quad.flagged == true) {
-            quad.flagged = false;
+        if (quad.Flagged == true) {
+            quad.Flagged = false;
             flags.Remove(new Vector2Int(quad.u, quad.v));
             Complex.DestroyGOs(quad.flag);
         }
@@ -254,22 +250,22 @@ public class Game : MonoBehaviour {
     }
 
     public Material GetState(Quad quad) {
-        if (quad.revealed) { return GetRevealed(quad); }
-        else if (quad.flagged) { return materialFlag; }
+        if (quad.Revealed) { return GetRevealed(quad); }
+        else if (quad.Flagged) { return materialFlag; }
         else { return materialUknown; }
     }
 
     private Material GetRevealed(Quad quad) {
         switch (quad.type) {
             case Quad.Type.Empty: return materialEmpty;
-            case Quad.Type.Mine: return quad.exploded ? materialExploded : materialMine;
+            case Quad.Type.Mine: return quad.Exploded ? materialExploded : materialMine;
             case Quad.Type.Number: return GetNumber(quad);
             default: return null;
         }
     }
 
     private Material GetNumber(Quad quad) {
-        switch (quad.number) {
+        switch (quad.Number) {
             case 1: return materialNum1;
             case 2: return materialNum2;
             case 3: return materialNum3;
@@ -287,15 +283,15 @@ public class Game : MonoBehaviour {
         gameover = true;
         gameon = false;
 
-        quad.revealed = true;
-        quad.exploded = true;
+        quad.Revealed = true;
+        quad.Exploded = true;
 
         for (int i = 0; i < ResU; i++) {
             for (int j = 0; j < ResV; j++) {
                 quad = quads[i,j];
 
                 if (quad.type == Quad.Type.Mine) {
-                    quad.revealed = true;
+                    quad.Revealed = true;
                 }
             }
         } 
@@ -308,7 +304,7 @@ public class Game : MonoBehaviour {
             for (int j = 0; j < ResV; j++) {
                 quad = quads[i,j];
 
-                if (quad.type != Quad.Type.Mine && !quad.revealed) {
+                if (quad.type != Quad.Type.Mine && !quad.Revealed) {
                     return;
                 }
             }
@@ -323,7 +319,7 @@ public class Game : MonoBehaviour {
                 quad = quads[i, j];
 
                 if (quad.type == Quad.Type.Mine) {
-                    quad.flagged = true;
+                    quad.Flagged = true;
                     quads[i,j] = quad;
                 }
             }

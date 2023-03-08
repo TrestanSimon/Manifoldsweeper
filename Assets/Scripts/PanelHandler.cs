@@ -77,8 +77,8 @@ public class PanelHandler : MonoBehaviour {
         manifoldDifficulties[1,2] = (32, 16, 98);
 
         // Torus
-        manifoldDifficulties[2,0] = (8, 8, 12);
-        manifoldDifficulties[2,1] = (16, 16, 42);
+        manifoldDifficulties[2,0] = (8, 16, 12);
+        manifoldDifficulties[2,1] = (16, 24, 42);
         manifoldDifficulties[2,2] = (16, 32, 98);
 
         // Mobius strip

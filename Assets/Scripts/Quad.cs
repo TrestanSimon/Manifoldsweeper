@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,10 +21,35 @@ public class Quad {
     private float scale;
 
     public Type type;
-    public int number;
-    public bool revealed;
-    public bool flagged;
-    public bool exploded;
+
+    
+    private int _number;
+    private bool _revealed;
+    private bool _flagged;
+    private bool _exploded;
+
+    public int Number {
+        get => _number;
+        set {
+            if (value < 0 || value > 8)
+                throw new ArgumentOutOfRangeException(nameof(value),
+                    "Tile number range is between 0 and 8.");
+            if (type != Quad.Type.Mine) {
+                if (value == 0) type = Quad.Type.Empty;
+                else type = Quad.Type.Number;
+            }
+            _number = value;
+        }
+    }
+    public bool Revealed { get; set; }
+    public bool Flagged { 
+        get => _flagged;
+        set { if (!_revealed) _flagged = value; }
+    }
+    public bool Exploded {
+        get => _exploded;
+        set => _exploded = value;
+    }
     public bool visited;
     public int depth;
 
@@ -128,7 +154,7 @@ public class Quad {
 
     // Sets material
     public void SetMaterial(Material material) {
-        if (type == Type.Invalid) { return; }
+        if (type == Type.Invalid) return;
         for (int i = 0; i < sideCount; i++) {
             MeshRenderer meshRenderer = gameObjects[i].GetComponent<MeshRenderer>();
             meshRenderer.material = material;
@@ -137,8 +163,8 @@ public class Quad {
 
     // Places flag(s)
     public void Flag(Dictionary<Vector2Int, GameObject[]> flags, GameObject flag = null) {
-        if (type == Type.Invalid || revealed) {return;}
-        if (flagged) {
+        if (type == Type.Invalid || _revealed) return;
+        if (_flagged) {
             flags.Remove(new Vector2Int(u,v));
             Complex.DestroyGOs(this.flag);
         } else if (flag != null) {
@@ -155,6 +181,11 @@ public class Quad {
             }
             flags.Add(new Vector2Int(u,v), this.flag);
         }
-        flagged = !flagged;
+        _flagged = !_flagged;
+    }
+
+    public void UpdateFlags() {
+        if (type == Type.Invalid || _revealed || !_flagged) return;
+
     }
 }
