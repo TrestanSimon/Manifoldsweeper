@@ -4,21 +4,23 @@ using UnityEngine;
 public class Plane : Complex {
     public Vector3 center;
 
-    public override void Setup(Camera cam, int ResU, int ResV) {
+    public override void Setup(int resU, int resV) {
         sideCount = 2;
-        this.ResU = ResU;
-        this.ResV = ResV;
+        this.resU = resU;
+        this.resV = resV;
         planar = true;
+        GenerateVertices();
+        GenerateQuads();
     }
     
-    public override void GenerateVertices() {
-        vertices = new Vector3[ResU+1, ResV+1];
-        for (int p = 0; p <= ResU; p++) {
-            for (int q = 0; q <= ResV; q++) {
+    protected override void GenerateVertices() {
+        vertices = new Vector3[resU+1, resV+1];
+        for (int p = 0; p <= resU; p++) {
+            for (int q = 0; q <= resV; q++) {
                 vertices[p,q] = new Vector3(
-                    -p + ResU/2f,
+                    -p + resU/2f,
                     0,
-                    -q + ResV/2f
+                    -q + resV/2f
                 ) / 2f;
             }
         }

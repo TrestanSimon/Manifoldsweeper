@@ -4,33 +4,35 @@ using UnityEngine;
 using static Unity.Mathematics.math;
 
 public class Cylinder : Complex {
-    // public new int ResU = 72, ResV = 8;
+    // public new int resU = 72, resV = 8;
     public float radius;
-    private float angleOffset = PI/2f; // Added to -2*PI*p/ResU
+    private float angleOffset = PI/2f; // Added to -2*PI*p/resU
     // Necessary so that the p-u seam is at the top of the cylinder
     // and the mapping to a plane breaks the cylinder at this seam
     // cf minorOffset in Torus.cs
 
-    public override void Setup(Camera cam, int ResU, int ResV) {
+    public override void Setup(int resU, int resV) {
         sideCount = 2;
-        this.ResU = ResU;
-        this.ResV = ResV;
-        radius = ResU/(4f*PI);
+        this.resU = resU;
+        this.resV = resV;
+        radius = resU/(4f*PI);
         planar = false;
+        GenerateVertices();
+        GenerateQuads();
     }
 
-    public override void GenerateVertices() {
-        vertices = new Vector3[ResU+1, ResV+1];
-        for (int p = 0; p <= ResU; p++) {
+    protected override void GenerateVertices() {
+        vertices = new Vector3[resU+1, resV+1];
+        for (int p = 0; p <= resU; p++) {
             // Reversed sign is necessary so that tile orientation matches
             // that of the torus when it is mapped to a cylinder
-            sincos(-2*PI*p/ResU + angleOffset, out float sinp, out float cosp);
+            sincos(-2*PI*p/resU + angleOffset, out float sinp, out float cosp);
 
-            for (int q = 0; q <= ResV; q++) {
+            for (int q = 0; q <= resV; q++) {
                 vertices[p,q] = new Vector3(
                     radius * cosp,
                     radius * sinp,
-                    (q - ResV/2f) / 2f
+                    (q - resV/2f) / 2f
                 );
             }
         }
@@ -38,10 +40,10 @@ public class Cylinder : Complex {
 
     public override Quad GetNeighbor(int u, int v) {
         // Wraps around u
-        int u1 = u >= 0 ? u % ResU : u + ResU;
+        int u1 = u >= 0 ? u % resU : u + resU;
         int v1 = v;
 
-        if (u1 >= 0 && u1 < ResU && v1 >= 0 && v1 < ResV) { return quads[u1,v1]; }
+        if (u1 >= 0 && u1 < resU && v1 >= 0 && v1 < resV) { return quads[u1,v1]; }
         else { return new Quad(); }
     }
 

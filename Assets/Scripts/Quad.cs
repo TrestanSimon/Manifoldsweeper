@@ -12,23 +12,18 @@ public class Quad {
         Number
     }
 
+    // Geometry-related fields
     private int _u, _v;
     private GameObject[] _gameObjects;
     private Vector3[] _vertices;
-    private Vector3[] _normals;
     private Mesh[] _meshes;
     private int _sideCount;
     private float _scale;
 
+    // Game-related fields
     private Type _type;
-
-    private int _number;
-    private bool _revealed;
-    private bool _flagged;
-    private bool _exploded;
-    private bool _visited;
-    private int _depth;
-
+    private int _number, _depth;
+    private bool _revealed, _flagged, _exploded, _visited;
     private GameObject[] _flags;
     private GameObject _ps;
 
@@ -75,7 +70,10 @@ public class Quad {
     }
     public bool Exploded {
         get => _exploded;
-        set => _exploded = value;
+        set {
+            if (_type == Quad.Type.Mine)
+                _exploded = value;
+        }
     }
     public bool Visited {
         get => _visited;
@@ -89,16 +87,20 @@ public class Quad {
     // Constructor for Invalid Quads
     public Quad() {}
 
+    // Normal constructor
     public Quad(
         int u, int v, int sideCount,
         Vector3 vert0, Vector3 vert1,
         Vector3 vert2, Vector3 vert3,
         Transform parent
     ) {
+        if (1 > sideCount ||  sideCount > 2)
+            throw new ArgumentOutOfRangeException(nameof(sideCount),
+                "Quads must have either 1 or 2 sides.");
+
         _sideCount = sideCount;
         _gameObjects = new GameObject[sideCount];
         _meshes = new Mesh[sideCount];
-        _normals =  new Vector3[sideCount];
         _flags = new GameObject[sideCount];
 
         _vertices = new Vector3[]{
@@ -106,11 +108,11 @@ public class Quad {
             vert2, vert3
         };
 
-        // Normal winding
+        // Winding for triangles and UV coordinates
         // 1 --> 2
         // |  /  |
         // 0 <-- 3
-        int[] winding = new int[]{
+        int[] triangles = new int[]{
             0, 1, 2,
             2, 3, 0
         };
@@ -121,7 +123,7 @@ public class Quad {
     
         for (int i = 0; i < sideCount; i++) {
             _gameObjects[i] = new GameObject();
-            _gameObjects[i].name = "Quad" + i.ToString() + " " + u.ToString() + ", " + v.ToString();
+            _gameObjects[i].name = $"Quad {i} ({u}, {v})";
             
             // Make quads child of Complex GameObject
             _gameObjects[i].transform.parent = parent;
@@ -131,22 +133,18 @@ public class Quad {
             _u = tag.u = u;
             _v = tag.v = v;
 
-            MeshFilter filter = _gameObjects[i].AddComponent<MeshFilter>();
-            Mesh mesh = filter.mesh;
+            _gameObjects[i].AddComponent<MeshRenderer>();
+            Mesh mesh = _gameObjects[i].AddComponent<MeshFilter>().mesh;
             _meshes[i] = mesh;
 
-            _gameObjects[i].AddComponent<MeshRenderer>();
-
             mesh.vertices = _vertices;
-            mesh.triangles = winding;
+            mesh.triangles = triangles;
             mesh.uv = uvCoords;
-            _normals[i] = Vector3.Cross(vert0 - vert1, vert0 - vert2).normalized;
 
-            if (i % 2 == 1) {
+            if (i == 1) {
                 // Reverse winding
                 mesh.triangles = mesh.triangles.Reverse().ToArray();
                 mesh.uv = mesh.uv.Reverse().ToArray();
-                _normals[i] *= -1f;
             }
 
             mesh.RecalculateBounds();
@@ -180,8 +178,9 @@ public class Quad {
     }
 
     public IEnumerator DelayedReveal(Material material, GameObject breakPS) {
-        if (type == Type.Invalid) { yield break; }
+        if (type == Type.Invalid) yield break;
         yield return new WaitForSeconds(0.02f * _depth);
+
         SetMaterial(material);
         _ps = Complex.CreateGO(breakPS, _vertices[0], Quaternion.identity, _scale);
         _ps.transform.parent = _gameObjects[0].transform;
@@ -190,10 +189,8 @@ public class Quad {
     // Sets material
     public void SetMaterial(Material material) {
         if (type == Type.Invalid) return;
-        for (int i = 0; i < _sideCount; i++) {
-            MeshRenderer meshRenderer = _gameObjects[i].GetComponent<MeshRenderer>();
-            meshRenderer.material = material;
-        }
+        for (int i = 0; i < _sideCount; i++)
+            _gameObjects[i].GetComponent<MeshRenderer>().material = material;
     }
 
     // Places flag(s)
@@ -208,8 +205,8 @@ public class Quad {
 
             // Create flag for each side
             for (int i = 0; i < _sideCount; i++) {
-                Vector3 flagPos = stake + _normals[i] * _scale/2f;
-                Quaternion flagRot = Quaternion.LookRotation(_normals[i])
+                Vector3 flagPos = stake + _meshes[i].normals[0] * _scale/2f;
+                Quaternion flagRot = Quaternion.LookRotation(_meshes[i].normals[0])
                     * Quaternion.AngleAxis(90, Vector3.up);
 
                 _flags[i] = Complex.CreateGO(flag, flagPos, flagRot, _scale);

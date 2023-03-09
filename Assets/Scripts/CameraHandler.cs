@@ -22,12 +22,12 @@ public class CameraHandler : MonoBehaviour {
     private void Update() {
         if (complex == null) return;
 
-        if (planar != complex.planar) {
-            if (complex.planar) UpdateTopDownCamera(true);
+        if (planar != complex.Planar) {
+            if (complex.Planar) UpdateTopDownCamera(true);
             else Update3DCamera(true);
         }
 
-        planar = complex.planar;
+        planar = complex.Planar;
         if (planar) UpdateTopDownCamera();
         else Update3DCamera();
     }

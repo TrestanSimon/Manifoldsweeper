@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 
 public class PanelHandler : MonoBehaviour {
-    private GameObject surface;
+    private GameObject board;
     private Transform manifoldsPanel;
     private Transform mapsPanel;
     private Transform manifoldMaps;
@@ -13,7 +13,7 @@ public class PanelHandler : MonoBehaviour {
     
     private int selectedManifold, selectedMap;
     private int selectedDifficulty;
-    public int ResU, ResV, mineCount;
+    private int ResU, ResV, mineCount;
     private (int u, int v, int mines)[,] manifoldDifficulties;
 
     private Game game;
@@ -99,7 +99,7 @@ public class PanelHandler : MonoBehaviour {
     }
 
     public void Clear() {
-        Destroy(surface);
+        Destroy(board);
     }
 
     public void PanelOpenClose() {
@@ -112,16 +112,32 @@ public class PanelHandler : MonoBehaviour {
         UpdateSelectedManifold();
         UpdateActiveMaps();
         UpdateDifficulty();
-        GenerateSurface();
-        if (complex != null) {
-            Destroy(complex);
+
+        if (board != null) {
+            if (complex != null)
+                Destroy(complex);
+            if (game != null)
+                Destroy(game);
+            Destroy(board);
         }
-        AttachComplex();
-        complex.Setup(Camera.main, ResU, ResV);
-        complex.GenerateComplex();
+        board = new GameObject();
+        board.name = "Board";
+
+        switch (selectedManifold) {
+            case 0: complex = board.AddComponent<Plane>(); break;
+            case 1: complex = board.AddComponent<Cylinder>(); break;
+            case 2: complex = board.AddComponent<Torus>(); break;
+            case 3: complex = board.AddComponent<MobiusStrip>(); break;
+            case 4: complex = board.AddComponent<KleinBottle>(); break;
+            default: break;
+        }
+        game = board.AddComponent<Game>();
+
+        complex.Setup(ResU, ResV);
+        game.Setup(complex, ResU, ResV, mineCount);
         cameraHandler.complex = complex;
-        game = complex.Gamify(mineCount);
-        game.NewGame();
+
+        game.NewGame(false);
     }
 
     // Ran On Value Changed of Manifold Toggles
@@ -201,25 +217,6 @@ public class PanelHandler : MonoBehaviour {
         int.TryParse(inputFields[0].text, out ResU);
         int.TryParse(inputFields[1].text, out ResV);
         int.TryParse(inputFields[2].text, out mineCount);
-    }
-
-    private void GenerateSurface() {
-        if (surface != null) {
-            Destroy(surface);
-        }
-        surface = new GameObject();
-        surface.name = "Surface";
-    }
-
-    private void AttachComplex() {
-        switch (selectedManifold) {
-            case 0: complex = surface.AddComponent<Plane>(); break;
-            case 1: complex = surface.AddComponent<Cylinder>(); break;
-            case 2: complex = surface.AddComponent<Torus>(); break;
-            case 3: complex = surface.AddComponent<MobiusStrip>(); break;
-            case 4: complex = surface.AddComponent<KleinBottle>(); break;
-            default: break;
-        }
     }
 
     public void MapToPlane() {

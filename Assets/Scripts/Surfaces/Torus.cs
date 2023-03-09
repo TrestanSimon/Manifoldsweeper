@@ -10,16 +10,31 @@ public class Torus : Complex {
     // and the mapping to a plane breaks the cylinder at this seam
     // cf angleOffset in Cylinder.cs
 
-    public override void Setup(Camera cam, int ResU, int ResV) {
+    public override int ResU {
+        get => resU;
+        protected set {
+            resU = Mathf.Clamp(value, 3, 99);
+        }
+    }
+    public override int ResV {
+        get => resV;
+        protected set {
+            resV = Mathf.Clamp(value, 3, 99);
+        }
+    }
+
+    public override void Setup(int ResU, int ResV) {
         sideCount = 2;
         this.ResU = ResU;
         this.ResV = ResV;
-        r = ResU / 16f;
-        R = ResV / 16f;
+        r = this.ResU / 16f;
+        R = this.ResV / 16f;
         planar = false;
+        GenerateVertices();
+        GenerateQuads();
     }
     
-    public override void GenerateVertices() {
+    protected override void GenerateVertices() {
         vertices = new Vector3[ResU+1, ResV+1];
         for (int p = 0; p <= ResU; p++) {
             sincos(2*PI*p/ResU + minorOffset, out float sinp, out float cosp);
