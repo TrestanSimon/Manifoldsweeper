@@ -32,17 +32,15 @@ public class CameraHandler : MonoBehaviour {
     public void Update3DCamera(bool force = false) {
         _scroll = Input.mouseScrollDelta.y * _sensitivity * -1f;
 
-        if (force) {
+        if (force)
             StartCoroutine(LerpCameraTo(
                 new Vector3(10f, 4f, -10f))
             );
-        }
 
-        if (Input.GetMouseButtonDown(0)) {
+        if (Input.GetMouseButtonDown(2))
             _mousePos = Input.mousePosition;
-        }
 
-        if ((Input.GetMouseButton(0) && _mousePos != null)) {
+        if ((Input.GetMouseButton(2) && _mousePos != null)) {
             _dmousePos = Input.mousePosition - _mousePos;
             Camera.main.transform.RotateAround(
                 Vector3.zero, Vector3.up, _dmousePos.x/2f*Time.deltaTime);
@@ -50,9 +48,8 @@ public class CameraHandler : MonoBehaviour {
                 Vector3.zero, Camera.main.transform.right, -_dmousePos.y/2f*Time.deltaTime);
         }
 
-        if (_scroll != 0f) {
+        if (_scroll != 0f)
             Camera.main.transform.position -= _scroll * Camera.main.transform.forward.normalized;
-        }
     }
 
     // A top-down camera
@@ -67,19 +64,17 @@ public class CameraHandler : MonoBehaviour {
             return;
         }
 
-        if (Input.GetMouseButtonDown(0)) {
+        if (Input.GetMouseButtonDown(2))
             _mousePos = Input.mousePosition;
-        }
 
-        if ((Input.GetMouseButton(0) && _mousePos != null) || force) {
+        if ((Input.GetMouseButton(2) && _mousePos != null) || force) {
             _dmousePos = Input.mousePosition - _mousePos;
             Camera.main.transform.position += _dmousePos.x/10f*Time.deltaTime * Vector3.forward;
             Camera.main.transform.position += _dmousePos.y/10f*Time.deltaTime * Vector3.left;
         }
 
-        if (_scroll != 0f) {
+        if (_scroll != 0f)
             Camera.main.transform.position += _scroll * Vector3.up;
-        }
     }
 
     public IEnumerator LerpCameraTo(Vector3 endPos, Quaternion endRot) {

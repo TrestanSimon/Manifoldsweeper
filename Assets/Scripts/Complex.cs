@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,11 +14,21 @@ public abstract class Complex : MonoBehaviour {
 
     public virtual int ResU {
         get => resU;
-        protected set => resU = value;
+        protected set {
+            if (value < 1 || value > 99)
+                throw new ArgumentOutOfRangeException(nameof(value),
+                    "U res. range is between 1 and 99.");
+            resU = value;
+        }
     }
     public virtual int ResV {
         get => resV;
-        protected set => resV = value;
+        protected set {
+            if (value < 1 || value > 99)
+                throw new ArgumentOutOfRangeException(nameof(value),
+                    "V res. range is between 1 and 99.");
+            resV = value;
+        }
     }
     public Quad[,] Quads {
         get => quads;

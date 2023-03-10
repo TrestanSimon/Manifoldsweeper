@@ -27,11 +27,30 @@ public class Quad {
 
     public int U {
         get => _u;
-        private set => _u = value;
+        private set {
+            if (value < 0 || value > 99)
+                throw new ArgumentOutOfRangeException(nameof(value),
+                    "U index range is between 0 and 99.");
+            _u = value;
+        }
     }
     public int V {
         get => _v;
-        private set => _v = value;
+        private set {
+            if (value < 0 || value > 99)
+                throw new ArgumentOutOfRangeException(nameof(value),
+                    "V index range is between 0 and 99.");
+            _v = value;
+        }
+    }
+    private int _SideCount {
+        get => _sideCount;
+        set {
+            if (value < 1 || value > 2)
+                throw new ArgumentOutOfRangeException(nameof(value),
+                    "Side count range is between 1 and 2.");
+            _sideCount = value;
+        }
     }
     private float _Scale {
         get => Vector3.Magnitude(_vertices[0] - _vertices[2]);
@@ -67,7 +86,13 @@ public class Quad {
     }
     public bool Flagged { 
         get => _flagged;
-        set { if (!_revealed) _flagged = value; }
+        set {
+            if (!_revealed) {
+                if (value && _flags == null)
+                    _flags = new GameObject[_SideCount];
+                _flagged = value;
+            }
+        }
     }
     public bool Exploded {
         get => _exploded;
@@ -95,14 +120,11 @@ public class Quad {
         Vector3 vert2, Vector3 vert3,
         Transform parent
     ) {
-        if (1 > sideCount ||  sideCount > 2)
-            throw new ArgumentOutOfRangeException(nameof(sideCount),
-                "Quads must have either 1 or 2 sides.");
-
-        _sideCount = sideCount;
+        U = u;
+        V = v;
+        _SideCount = sideCount;
         _gameObjects = new GameObject[sideCount];
         _meshes = new Mesh[sideCount];
-        _flags = new GameObject[sideCount];
 
         _vertices = new Vector3[]{
             vert0, vert1,
@@ -131,8 +153,8 @@ public class Quad {
 
             // For identifying Quad instance from GameObject
             Tag tag = _gameObjects[i].AddComponent<Tag>();
-            _u = tag.u = u;
-            _v = tag.v = v;
+            tag.u = U;
+            tag.v = V;
 
             _gameObjects[i].AddComponent<MeshRenderer>();
             Mesh mesh = _gameObjects[i].AddComponent<MeshFilter>().mesh;
@@ -176,29 +198,39 @@ public class Quad {
         }
     }
 
-    public IEnumerator DelayedReveal(Material material, GameObject breakPS) {
+    public IEnumerator DelayedReveal(Material material, GameObject breakPS = null) {
         if (type == Type.Invalid) yield break;
         yield return new WaitForSeconds(0.02f * _depth);
 
         SetMaterial(material);
-        _ps = Complex.CreateGO(breakPS, _vertices[0], Quaternion.identity, _Scale);
-        _ps.transform.parent = _gameObjects[0].transform;
+
+        if (breakPS != null) {
+            _ps = Complex.CreateGO(breakPS, _vertices[0], Quaternion.identity, _Scale);
+            _ps.transform.parent = _gameObjects[0].transform;
+        }
     }
 
     // Sets material
     public void SetMaterial(Material material) {
-        if (type == Type.Invalid) return;
         for (int i = 0; i < _sideCount; i++)
             _gameObjects[i].GetComponent<MeshRenderer>().material = material;
     }
 
     // Places flag(s)
-    public void Flag(Dictionary<(int u, int v), GameObject[]> flags, GameObject flag = null) {
-        if (type == Type.Invalid || _revealed) return;
-        if (_flagged) {
-            flags.Remove((_u, _v));
+    public void Flag(
+        Dictionary<(int u, int v), GameObject[]> flags, GameObject flagPrefab,
+        Material materialFlag, Material materialUnknown
+    ) {
+        if (type == Type.Invalid || Revealed) return;
+
+        if (Flagged) { // Manual unflag
+            Flagged = false;
+            flags.Remove((U, V));
             Complex.DestroyGOs(_flags);
-        } else if (flag != null) {
+            SetMaterial(materialUnknown);
+        } else { // Manual flag
+            Flagged = true;
+
             // Points to where flag will be planted
             Vector3 stake = (_vertices[0] + _vertices[2]) / 2f;
 
@@ -208,12 +240,12 @@ public class Quad {
                 Quaternion flagRot = Quaternion.LookRotation(_meshes[i].normals[0])
                     * Quaternion.AngleAxis(90, Vector3.up);
 
-                _flags[i] = Complex.CreateGO(flag, flagPos, flagRot, _Scale);
+                _flags[i] = Complex.CreateGO(flagPrefab, flagPos, flagRot, _Scale);
                 _flags[i].transform.parent = _gameObjects[i].transform;
                 _flags[i].name = "Flag";
             }
-            flags.Add((_u, _v), _flags);
+            flags.Add((U, V), _flags);
+            SetMaterial(materialFlag);
         }
-        _flagged = !_flagged;
     }
 }
