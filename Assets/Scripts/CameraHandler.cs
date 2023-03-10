@@ -1,40 +1,36 @@
 using System.Collections;
 using UnityEngine;
 
-using static Unity.Mathematics.math;
-
 public class CameraHandler : MonoBehaviour {
-    private GameObject target;
-    private float sensitivity = 0.2f;
-    private Vector3 mousePos;
-    private Vector3 dmousePos;
-    private float scroll;
+    private float _sensitivity = 0.2f;
+    private Vector3 _mousePos;
+    private Vector3 _dmousePos;
+    private float _scroll;
 
-    public Complex complex;
-    private bool planar;
-    
-    public float r, R;
-    private float tu = 0f, tv = 0f;
-    private float zoom = 10f;
-    private Vector3 circleMajor = Vector3.zero;
-    private Vector3 circleMinor = Vector3.zero;
+    private Complex _target;
+    private bool _planar;
+
+    public Complex Target {
+        private get => _target;
+        set => _target = value;
+    }
 
     private void Update() {
-        if (complex == null) return;
+        if (_target == null) return;
 
-        if (planar != complex.Planar) {
-            if (complex.Planar) UpdateTopDownCamera(true);
+        if (_planar != _target.Planar) {
+            if (_target.Planar) UpdateTopDownCamera(true);
             else Update3DCamera(true);
         }
 
-        planar = complex.Planar;
-        if (planar) UpdateTopDownCamera();
+        _planar = _target.Planar;
+        if (_planar) UpdateTopDownCamera();
         else Update3DCamera();
     }
 
     // Default camera
     public void Update3DCamera(bool force = false) {
-        scroll = Input.mouseScrollDelta.y * sensitivity * -1f;
+        _scroll = Input.mouseScrollDelta.y * _sensitivity * -1f;
 
         if (force) {
             StartCoroutine(LerpCameraTo(
@@ -43,26 +39,26 @@ public class CameraHandler : MonoBehaviour {
         }
 
         if (Input.GetMouseButtonDown(0)) {
-            mousePos = Input.mousePosition;
+            _mousePos = Input.mousePosition;
         }
 
-        if ((Input.GetMouseButton(0) && mousePos != null)) {
-            dmousePos = Input.mousePosition - mousePos;
+        if ((Input.GetMouseButton(0) && _mousePos != null)) {
+            _dmousePos = Input.mousePosition - _mousePos;
             Camera.main.transform.RotateAround(
-                Vector3.zero, Vector3.up, dmousePos.x/2f*Time.deltaTime);
+                Vector3.zero, Vector3.up, _dmousePos.x/2f*Time.deltaTime);
             Camera.main.transform.RotateAround(
-                Vector3.zero, Camera.main.transform.right, -dmousePos.y/2f*Time.deltaTime);
+                Vector3.zero, Camera.main.transform.right, -_dmousePos.y/2f*Time.deltaTime);
         }
 
-        if (scroll != 0f) {
-            Camera.main.transform.position -= scroll * Camera.main.transform.forward.normalized;
+        if (_scroll != 0f) {
+            Camera.main.transform.position -= _scroll * Camera.main.transform.forward.normalized;
         }
     }
 
     // A top-down camera
     // if force is true, camera resets position
     public void UpdateTopDownCamera(bool force = false) {
-        scroll = Input.mouseScrollDelta.y * sensitivity * -1f;
+        _scroll = Input.mouseScrollDelta.y * _sensitivity * -1f;
 
         if (force) {
             StartCoroutine(LerpCameraTo(
@@ -72,17 +68,17 @@ public class CameraHandler : MonoBehaviour {
         }
 
         if (Input.GetMouseButtonDown(0)) {
-            mousePos = Input.mousePosition;
+            _mousePos = Input.mousePosition;
         }
 
-        if ((Input.GetMouseButton(0) && mousePos != null) || force) {
-            dmousePos = Input.mousePosition - mousePos;
-            Camera.main.transform.position += dmousePos.x/10f*Time.deltaTime * Vector3.forward;
-            Camera.main.transform.position += dmousePos.y/10f*Time.deltaTime * Vector3.left;
+        if ((Input.GetMouseButton(0) && _mousePos != null) || force) {
+            _dmousePos = Input.mousePosition - _mousePos;
+            Camera.main.transform.position += _dmousePos.x/10f*Time.deltaTime * Vector3.forward;
+            Camera.main.transform.position += _dmousePos.y/10f*Time.deltaTime * Vector3.left;
         }
 
-        if (scroll != 0f) {
-            Camera.main.transform.position += scroll * Vector3.up;
+        if (_scroll != 0f) {
+            Camera.main.transform.position += _scroll * Vector3.up;
         }
     }
 
@@ -116,37 +112,10 @@ public class CameraHandler : MonoBehaviour {
             t = t*t*(3f - 2f * t);
 
             Camera.main.transform.position = Vector3.Lerp(startPos, endPos, t);
-            Camera.main.transform.LookAt(complex.gameObject.transform);
+            Camera.main.transform.LookAt(_target.gameObject.transform);
 
             time += Time.deltaTime;
             yield return null;
         }
-    }
-
-    // Custom camera for torus
-    // Follows poloidal and toroidal coordinates
-    public void TorusCamera(Camera cam, bool force = false) {
-        scroll = Input.mouseScrollDelta.y * sensitivity * -1f;
-        if (Input.GetMouseButtonDown(0)) {
-            mousePos = Input.mousePosition;
-        }
-        if ((Input.GetMouseButton(0) && mousePos != null) || force) {
-            dmousePos = Input.mousePosition - mousePos;
-
-            tu -= clamp(dmousePos.y/300f, -30f, 30f) * Time.deltaTime;
-            sincos(tu, out float sinu, out float cosu);
-            tv -= clamp(dmousePos.x/300f, -30f, 30f) * Time.deltaTime;
-            sincos(tv, out float sinv, out float cosv);
-
-            // Major (toroidal) and minor (poloidal) circles
-            circleMajor = new Vector3(R * cosv, 0f, R * sinv);
-            circleMinor = new Vector3(r * cosu * cosv, r * sinu, r * cosu * sinv);
-        }
-        if (scroll != 0f) {
-            zoom += scroll;
-            zoom = clamp(zoom, 2f, 20f);
-        }
-        cam.transform.position = circleMajor + zoom * circleMinor;
-        cam.transform.LookAt(circleMajor);
     }
 }

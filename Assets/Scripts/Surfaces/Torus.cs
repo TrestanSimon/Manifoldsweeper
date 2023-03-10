@@ -4,11 +4,7 @@ using UnityEngine;
 using static Unity.Mathematics.math;
 
 public class Torus : Complex {
-    public enum Map {
-        Planar,
-        Donut
-    }
-    public float r, R;
+    private float r, R;
     private float minorOffset = PI/2f; // Added to 2*PI*p/ResU
     // Necessary so that the p-u seam is at the top of the torus
     // and the mapping to a plane breaks the cylinder at this seam
@@ -61,8 +57,8 @@ public class Torus : Complex {
         int u1 = u >= 0 ? u % ResU : u + ResU;
         int v1 = v >= 0 ? v % ResV : v + ResV;
 
-        if (u1 >= 0 && u1 < ResU && v1 >= 0 && v1 < ResV) { return quads[u1,v1]; }
-        else { return new Quad(); }
+        if (u1 >= 0 && u1 < ResU && v1 >= 0 && v1 < ResV) return quads[u1,v1];
+        else return new Quad();
     }
 
     public IEnumerator TorusToCylinder(bool reverse = false) {
@@ -134,12 +130,12 @@ public class Torus : Complex {
     }
 
     public override IEnumerator ToPlane() {
-        if (planar) {
-            yield return StartCoroutine(CylinderToPlane(true));
-            yield return StartCoroutine(TorusToCylinder(true));
-        } else {
+        if (!planar) {
             yield return StartCoroutine(TorusToCylinder());
             yield return StartCoroutine(CylinderToPlane());
+        } else {
+            yield return StartCoroutine(CylinderToPlane(true));
+            yield return StartCoroutine(TorusToCylinder(true));
         }
         planar = !planar;
     }

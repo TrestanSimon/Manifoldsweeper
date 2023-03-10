@@ -3,8 +3,6 @@ using UnityEngine;
 using static Unity.Mathematics.math;
 
 public class KleinBottle : Complex {
-    // public new int resU = 48, resV = 16;
-
     public override void Setup(int resU, int resV) {
         sideCount = 2;
         this.resU = resU;
@@ -57,12 +55,11 @@ public class KleinBottle : Complex {
         int u1 = u >= 0 ? u % resU : u + resU;
         int v1 = v >= 0 ? v % resV : v + resV;
 
-        if (u % (2*resU) >= resU || u % (-2*resU) < 0) {
-            // Flips v when wrapping
+        // Flips v when wrapping
+        if (u % (2*resU) >= resU || u % (-2*resU) < 0)    
             v1 = resV - (v1 + 1);
-        }
 
-        if (u1 >= 0 && u1 < resU && v1 >= 0 && v1 < resV) { return quads[u1,v1]; }
-        else { return new Quad(); }
+        if (u1 >= 0 && u1 < resU && v1 >= 0 && v1 < resV) return quads[u1,v1];
+        else return new Quad();
     }
 }

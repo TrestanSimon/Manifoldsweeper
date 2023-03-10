@@ -4,7 +4,12 @@ using UnityEngine;
 using static Unity.Mathematics.math;
 
 public class Cylinder : Complex {
-    // public new int resU = 72, resV = 8;
+    public enum Map {
+        Planar,
+        Tube,
+        Annulus
+    }
+
     public float radius;
     private float angleOffset = PI/2f; // Added to -2*PI*p/resU
     // Necessary so that the p-u seam is at the top of the cylinder

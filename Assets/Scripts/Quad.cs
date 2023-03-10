@@ -8,17 +8,15 @@ public class Quad {
     public enum Type {
         Invalid,
         Empty,
-        Mine,
-        Number
+        Number,
+        Mine
     }
 
     // Geometry-related fields
-    private int _u, _v;
+    private int _u, _v, _sideCount;
     private GameObject[] _gameObjects;
     private Vector3[] _vertices;
     private Mesh[] _meshes;
-    private int _sideCount;
-    private float _scale;
 
     // Game-related fields
     private Type _type;
@@ -34,6 +32,9 @@ public class Quad {
     public int V {
         get => _v;
         private set => _v = value;
+    }
+    private float _Scale {
+        get => Vector3.Magnitude(_vertices[0] - _vertices[2]);
     }
 
     public Type type {
@@ -153,8 +154,6 @@ public class Quad {
             
             MeshCollider collider = _gameObjects[i].AddComponent<MeshCollider>();
             collider.sharedMesh = mesh;
-
-            _scale = Vector3.Magnitude(_vertices[0] - _vertices[2]);
         }
     }
 
@@ -182,7 +181,7 @@ public class Quad {
         yield return new WaitForSeconds(0.02f * _depth);
 
         SetMaterial(material);
-        _ps = Complex.CreateGO(breakPS, _vertices[0], Quaternion.identity, _scale);
+        _ps = Complex.CreateGO(breakPS, _vertices[0], Quaternion.identity, _Scale);
         _ps.transform.parent = _gameObjects[0].transform;
     }
 
@@ -205,11 +204,11 @@ public class Quad {
 
             // Create flag for each side
             for (int i = 0; i < _sideCount; i++) {
-                Vector3 flagPos = stake + _meshes[i].normals[0] * _scale/2f;
+                Vector3 flagPos = stake + _meshes[i].normals[0] * _Scale/2f;
                 Quaternion flagRot = Quaternion.LookRotation(_meshes[i].normals[0])
                     * Quaternion.AngleAxis(90, Vector3.up);
 
-                _flags[i] = Complex.CreateGO(flag, flagPos, flagRot, _scale);
+                _flags[i] = Complex.CreateGO(flag, flagPos, flagRot, _Scale);
                 _flags[i].transform.parent = _gameObjects[i].transform;
                 _flags[i].name = "Flag";
             }

@@ -141,7 +141,7 @@ public class PanelHandler : MonoBehaviour {
 
         complex.Setup(ResU, ResV);
         game.Setup(complex, ResU, ResV, mineCount);
-        cameraHandler.complex = complex;
+        cameraHandler.Target = complex;
 
         game.NewGame(false);
     }
