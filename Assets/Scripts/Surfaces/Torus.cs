@@ -4,6 +4,10 @@ using UnityEngine;
 using static Unity.Mathematics.math;
 
 public class Torus : Complex {
+    public enum Map {
+        Planar,
+        Donut
+    }
     public float r, R;
     private float minorOffset = PI/2f; // Added to 2*PI*p/ResU
     // Necessary so that the p-u seam is at the top of the torus
@@ -61,39 +65,41 @@ public class Torus : Complex {
         else { return new Quad(); }
     }
 
-    public IEnumerator TorusToCylinder() {
+    public IEnumerator TorusToCylinder(bool reverse = false) {
         float time = 0f;
         float duration = 1f;
-        float progress = 0f;
+        float progress;
         Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
 
         while (time < duration) {
             progress = time/duration;
-            UpdateVertices(TorusToCylinderMap(progress));
+            UpdateVertices(TorusToCylinderMap(
+                reverse ? 1f - progress : progress));
 
             time += Time.deltaTime;
             yield return null;
         }
 
         // Finalize mapping
-        vertices = TorusToCylinderMap(1);
+        vertices = TorusToCylinderMap(reverse ? 0f : 1f);
         UpdateVertices(vertices);
     }
 
-    public IEnumerator CylinderToPlane() {
+    public IEnumerator CylinderToPlane(bool reverse = false) {
         float time = 0f;
         float duration = 1f;
-        float progress = 0f;
+        float progress;
 
         while (time < duration) {
             progress = time / duration;
-            UpdateVertices(CylinderToPlaneMap(progress, r));
+            UpdateVertices(CylinderToPlaneMap(
+                (reverse ? 1f - progress : progress), r));
 
             time += Time.deltaTime;
             yield return null;
         }
         // Finalize mapping
-        vertices = CylinderToPlaneMap(1, r);
+        vertices = CylinderToPlaneMap((reverse ? 0f : 1f), r);
         UpdateVertices(vertices);
     }
 
@@ -128,8 +134,13 @@ public class Torus : Complex {
     }
 
     public override IEnumerator ToPlane() {
-        yield return StartCoroutine(TorusToCylinder());
-        yield return StartCoroutine(CylinderToPlane());
-        planar = true;
+        if (planar) {
+            yield return StartCoroutine(CylinderToPlane(true));
+            yield return StartCoroutine(TorusToCylinder(true));
+        } else {
+            yield return StartCoroutine(TorusToCylinder());
+            yield return StartCoroutine(CylinderToPlane());
+        }
+        planar = !planar;
     }
 }

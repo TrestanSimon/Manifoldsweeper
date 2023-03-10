@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -19,14 +21,17 @@ public class PanelHandler : MonoBehaviour {
     private Game game;
     private Complex complex;
     private Toggle[] manifoldToggles, mapToggles, difficultyToggles;
+    private Button mapButton;
     private TMP_InputField[] inputFields;
     private (TMP_Text size, TMP_Text mines)[] difficultyText;
     private Animator animator;
     private bool panelOpen;
 
     private CameraHandler cameraHandler;
+    private List<Coroutine> coroutines;
 
     private void Awake() {
+        coroutines = new List<Coroutine>();
         Transform difficultyTogglesHolder;
         Transform easyColumn, medColumn, hardColumn;
         difficultyText = new (TMP_Text, TMP_Text)[3];
@@ -36,6 +41,7 @@ public class PanelHandler : MonoBehaviour {
 
         mapsPanel = transform.Find("Maps Panel");
         manifoldMaps = mapsPanel.Find("Maps Toggles");
+        mapButton = mapsPanel.Find("Map Button").GetComponent<Button>();
 
         gamePanel = transform.Find("Game Panel");
         difficultyTogglesHolder = gamePanel.Find("Difficulty Toggles");
@@ -220,6 +226,12 @@ public class PanelHandler : MonoBehaviour {
     }
 
     public void MapToPlane() {
-        StartCoroutine(complex.ToPlane());
+        StartCoroutine(MapToPlane2());
+    }
+
+    private IEnumerator MapToPlane2() {
+        mapButton.interactable = false;
+        yield return StartCoroutine(complex.ToPlane());
+        mapButton.interactable = true;
     }
 }

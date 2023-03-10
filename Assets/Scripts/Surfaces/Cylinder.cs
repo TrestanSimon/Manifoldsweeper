@@ -43,29 +43,30 @@ public class Cylinder : Complex {
         int u1 = u >= 0 ? u % resU : u + resU;
         int v1 = v;
 
-        if (u1 >= 0 && u1 < resU && v1 >= 0 && v1 < resV) { return quads[u1,v1]; }
-        else { return new Quad(); }
+        if (u1 >= 0 && u1 < resU && v1 >= 0 && v1 < resV) return quads[u1,v1];
+        else return new Quad();
     }
 
-    public IEnumerator CylinderToPlane() {
+    public IEnumerator CylinderToPlane(bool reverse = false) {
         float time = 0f;
         float duration = 1f;
-        float progress = 0f;
+        float progress;
 
         while (time < duration) {
             progress = time / duration;
-            UpdateVertices(CylinderToPlaneMap(progress, radius));
+            UpdateVertices(CylinderToPlaneMap(
+                (reverse ? 1f - progress : progress), radius));
 
             time += Time.deltaTime;
             yield return null;
         }
         // Finalize mapping
-        vertices = CylinderToPlaneMap(1, radius);
+        vertices = CylinderToPlaneMap((reverse ? 0f : 1f), radius);
         UpdateVertices(vertices);
     }
 
     public override IEnumerator ToPlane() {
-        yield return StartCoroutine(CylinderToPlane());
-        planar = true;
+        yield return StartCoroutine(CylinderToPlane(planar));
+        planar = !planar;
     }
 }
