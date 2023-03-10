@@ -13,7 +13,7 @@ public class Quad {
     }
 
     // Geometry-related fields
-    private int _u, _v, _sideCount;
+    private readonly int _u, _v, _sideCount;
     private GameObject[] _gameObjects;
     private Vector3[] _vertices;
     private Mesh[] _meshes;
@@ -25,33 +25,9 @@ public class Quad {
     private GameObject[] _flags;
     private GameObject _ps;
 
-    public int U {
-        get => _u;
-        private set {
-            if (value < 0 || value > 99)
-                throw new ArgumentOutOfRangeException(nameof(value),
-                    "U index range is between 0 and 99.");
-            _u = value;
-        }
-    }
-    public int V {
-        get => _v;
-        private set {
-            if (value < 0 || value > 99)
-                throw new ArgumentOutOfRangeException(nameof(value),
-                    "V index range is between 0 and 99.");
-            _v = value;
-        }
-    }
-    private int _SideCount {
-        get => _sideCount;
-        set {
-            if (value < 1 || value > 2)
-                throw new ArgumentOutOfRangeException(nameof(value),
-                    "Side count range is between 1 and 2.");
-            _sideCount = value;
-        }
-    }
+    public int U { get => _u; }
+    public int V { get => _v; }
+    private int _SideCount { get => _sideCount; }
     private float _Scale {
         get => Vector3.Magnitude(_vertices[0] - _vertices[2]);
     }
@@ -84,7 +60,7 @@ public class Quad {
             _revealed = value;
         }
     }
-    public bool Flagged { 
+    public bool Flagged {
         get => _flagged;
         set {
             if (!_revealed) {
@@ -118,11 +94,21 @@ public class Quad {
         int u, int v, int sideCount,
         Vector3 vert0, Vector3 vert1,
         Vector3 vert2, Vector3 vert3,
-        Transform parent
+        Complex complex
     ) {
-        U = u;
-        V = v;
-        _SideCount = sideCount;
+        if (u < 0 || u > 99)
+            throw new ArgumentOutOfRangeException(nameof(u),
+                "U index range is between 0 and 99.");
+        else _u = u;
+        if (v < 0 || v > 99)
+            throw new ArgumentOutOfRangeException(nameof(v),
+                "V index range is between 0 and 99.");
+        else _v = v;
+        if (sideCount < 1 || sideCount > 2)
+            throw new ArgumentOutOfRangeException(nameof(sideCount),
+                "Side count range is between 1 and 2.");
+        _sideCount = sideCount;
+
         _gameObjects = new GameObject[sideCount];
         _meshes = new Mesh[sideCount];
 
@@ -149,7 +135,7 @@ public class Quad {
             _gameObjects[i].name = $"Quad {i} ({u}, {v})";
             
             // Make quads child of Complex GameObject
-            _gameObjects[i].transform.parent = parent;
+            _gameObjects[i].transform.parent = complex.transform;
 
             // For identifying Quad instance from GameObject
             Tag tag = _gameObjects[i].AddComponent<Tag>();

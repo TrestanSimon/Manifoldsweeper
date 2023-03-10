@@ -57,7 +57,7 @@ public abstract class Complex : MonoBehaviour {
                     u, v, sideCount,
                     vertices[u,v], vertices[u+1,v],
                     vertices[u+1,v+1], vertices[u,v+1],
-                    gameObject.transform
+                    this
                 );
             }
         }
