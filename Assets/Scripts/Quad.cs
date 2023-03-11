@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Quad {
@@ -13,21 +12,44 @@ public class Quad {
     }
 
     // Geometry-related fields
-    private readonly int _u, _v, _sideCount;
+    private int _u, _v, _sideCount;
     private GameObject[] _gameObjects;
     private Vector3[] _vertices;
     private Mesh[] _meshes;
 
     // Game-related fields
     private Type _type;
-    private int _number, _depth;
-    private bool _revealed, _flagged, _exploded, _visited;
+    private int _number; // Number of mines in neighborhood
+    private bool _revealed, _flagged, _exploded;
     private GameObject[] _flags;
-    private GameObject _ps;
+    private GameObject _revealPS; // Particle system for tile reveal
 
-    public int U { get => _u; }
-    public int V { get => _v; }
-    private int _SideCount { get => _sideCount; }
+    public int U {
+        get => _u;
+        private set {
+            if (value < 0 || value > 99)
+                throw new ArgumentOutOfRangeException(nameof(value),
+                    "U index range is between 0 and 99.");
+            else _u = value;
+        }
+    }
+    public int V {
+        get => _v;
+        private set {
+            if (value < 0 || value > 99)
+                throw new ArgumentOutOfRangeException(nameof(value),
+                    "V index range is between 0 and 99.");
+            else _v = value;
+        }
+    }
+    public int SideCount {
+        set {
+            if (value < 1 || value > 2)
+                throw new ArgumentOutOfRangeException(nameof(value),
+                    "Side count range is between 1 and 2.");
+            _sideCount = value;
+        }
+    }
     private float _Scale {
         get => Vector3.Magnitude(_vertices[0] - _vertices[2]);
     }
@@ -53,10 +75,8 @@ public class Quad {
     public bool Revealed {
         get => _revealed;
         set {
-            if (value && _flagged) {
+            if (value && _flagged)
                 _flagged = false;
-                Complex.DestroyGOs(_flags);
-            }
             _revealed = value;
         }
     }
@@ -65,7 +85,9 @@ public class Quad {
         set {
             if (!_revealed) {
                 if (value && _flags == null)
-                    _flags = new GameObject[_SideCount];
+                    _flags = new GameObject[_sideCount];
+                else if (!value && _flags != null)
+                    Complex.DestroyGOs(_flags);
                 _flagged = value;
             }
         }
@@ -77,14 +99,8 @@ public class Quad {
                 _exploded = value;
         }
     }
-    public bool Visited {
-        get => _visited;
-        set => _visited = value;
-    }
-    public int Depth {
-        get => _depth;
-        set => _depth = value;
-    }
+    public bool Visited { get; set; }
+    public int Depth { get; set; }
 
     // Constructor for Invalid Quads
     public Quad() {}
@@ -96,22 +112,11 @@ public class Quad {
         Vector3 vert2, Vector3 vert3,
         Complex complex
     ) {
-        if (u < 0 || u > 99)
-            throw new ArgumentOutOfRangeException(nameof(u),
-                "U index range is between 0 and 99.");
-        else _u = u;
-        if (v < 0 || v > 99)
-            throw new ArgumentOutOfRangeException(nameof(v),
-                "V index range is between 0 and 99.");
-        else _v = v;
-        if (sideCount < 1 || sideCount > 2)
-            throw new ArgumentOutOfRangeException(nameof(sideCount),
-                "Side count range is between 1 and 2.");
-        _sideCount = sideCount;
+        U = u; V = v;
+        SideCount = sideCount;
 
         _gameObjects = new GameObject[sideCount];
         _meshes = new Mesh[sideCount];
-
         _vertices = new Vector3[]{
             vert0, vert1,
             vert2, vert3
@@ -139,8 +144,7 @@ public class Quad {
 
             // For identifying Quad instance from GameObject
             Tag tag = _gameObjects[i].AddComponent<Tag>();
-            tag.u = U;
-            tag.v = V;
+            tag.u = U; tag.v = V;
 
             _gameObjects[i].AddComponent<MeshRenderer>();
             Mesh mesh = _gameObjects[i].AddComponent<MeshFilter>().mesh;
@@ -184,15 +188,16 @@ public class Quad {
         }
     }
 
+    // Delay revealing based on flood depth
     public IEnumerator DelayedReveal(Material material, GameObject breakPS = null) {
         if (type == Type.Invalid) yield break;
-        yield return new WaitForSeconds(0.02f * _depth);
+        yield return new WaitForSeconds(0.02f * Depth);
 
         SetMaterial(material);
 
         if (breakPS != null) {
-            _ps = Complex.CreateGO(breakPS, _vertices[0], Quaternion.identity, _Scale);
-            _ps.transform.parent = _gameObjects[0].transform;
+            _revealPS = Complex.CreateGO(breakPS, _vertices[0], Quaternion.identity, _Scale);
+            _revealPS.transform.parent = _gameObjects[0].transform;
         }
     }
 
@@ -203,16 +208,13 @@ public class Quad {
     }
 
     // Places flag(s)
-    public void Flag(
-        Dictionary<(int u, int v), GameObject[]> flags, GameObject flagPrefab,
+    public void Flag(GameObject flagPrefab,
         Material materialFlag, Material materialUnknown
     ) {
         if (type == Type.Invalid || Revealed) return;
 
         if (Flagged) { // Manual unflag
             Flagged = false;
-            flags.Remove((U, V));
-            Complex.DestroyGOs(_flags);
             SetMaterial(materialUnknown);
         } else { // Manual flag
             Flagged = true;
@@ -230,7 +232,6 @@ public class Quad {
                 _flags[i].transform.parent = _gameObjects[i].transform;
                 _flags[i].name = "Flag";
             }
-            flags.Add((U, V), _flags);
             SetMaterial(materialFlag);
         }
     }

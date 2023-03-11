@@ -142,7 +142,8 @@ public abstract class Complex : MonoBehaviour {
     }
 
     public static void DestroyGOs(GameObject[] gos) {
-        foreach (GameObject go in gos) Destroy(go);
+        foreach (GameObject go in gos)
+            if (go != null) Destroy(go);
     }
 
     public static GameObject CreateGO(GameObject prefab, Vector3 pos, Quaternion rot, float scale){

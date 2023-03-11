@@ -21,8 +21,6 @@ public class Game : MonoBehaviour {
     private Material _materialNum7;
     private Material _materialNum8;
     private GameObject _flagPrefab, _breakPS;
-    private Dictionary<(int u, int v), GameObject[]> _flags
-        = new Dictionary<(int, int), GameObject[]>();
 
     private bool _gameon, _gameover;
 
@@ -52,7 +50,7 @@ public class Game : MonoBehaviour {
     private void Update() {
         if (Input.GetKeyDown(KeyCode.R)) NewGame();
         else if (_gameover != true) {
-            if (Input.GetMouseButtonDown(1)) FlagMouseOver();
+            if (Input.GetMouseButtonDown(1)) AttemptFlagMouseOver();
             else if (Input.GetMouseButtonDown(0)) AttemptRevealMouseOver();
         }
     }
@@ -67,8 +65,6 @@ public class Game : MonoBehaviour {
             if (coroutine != null) StopCoroutine(coroutine);
 
         _coroutinePropagate.Clear();
-
-        if (clearFlags) ClearFlags();
         
         _gameon = false;
         _gameover = false;
@@ -86,7 +82,7 @@ public class Game : MonoBehaviour {
 
         // Set all quad materials according to type/state
         foreach (Quad quad in _complex.Quads)
-            quad.SetMaterial(GetState(quad));
+            quad.SetMaterial(GetMaterial(quad));
     }
 
     private void GenerateMines() {
@@ -126,15 +122,9 @@ public class Game : MonoBehaviour {
         return count;
     }
 
-    private void FlagMouseOver() {
+    private void AttemptFlagMouseOver() {
         _mouseOver = _complex.MouseIdentify();
-        _mouseOver?.Flag(_flags, _flagPrefab, _materialFlag, _materialUknown);
-    }
-
-    private void ClearFlags() {
-        foreach (KeyValuePair<(int,int), GameObject[]> flag in _flags)
-            Complex.DestroyGOs(flag.Value);
-        _flags.Clear();
+        _mouseOver?.Flag(_flagPrefab, _materialFlag, _materialUknown);
     }
 
     private void AttemptRevealMouseOver() {
@@ -171,10 +161,10 @@ public class Game : MonoBehaviour {
         quad.Revealed = true;
         quad.Exploded = true;
 
-        for (int i = 0; i < _complex.ResU; i++)
-            for (int j = 0; j < _complex.ResV; j++)
-                if (_complex.Quads[i,j].type == Quad.Type.Mine)
-                    RevealQuad(_complex.Quads[i,j]);
+        foreach (Quad quad1 in _complex.Quads) {
+            if (quad1.type == Quad.Type.Mine)
+                RevealQuad(quad1);
+        }
     }
 
     private void Flood(Quad quad) {
@@ -209,23 +199,33 @@ public class Game : MonoBehaviour {
 
     private void RevealQuad(Quad quad) {
         quad.Revealed = true;
-
-        if (quad.Flagged) {
-            quad.Flagged = false;
-            _flags.Remove((quad.U, quad.V));
-        }
-
-        _coroutinePropagate.Add(
-            StartCoroutine(quad.DelayedReveal(GetState(quad), _breakPS)));
+        _coroutinePropagate.Add(StartCoroutine(
+            quad.DelayedReveal(GetMaterial(quad), _breakPS)));
     }
 
-    private Material GetState(Quad quad) {
-        if (quad.Revealed) return GetRevealed(quad);
+    private void CheckWinCondition() {
+        // Check if all non-mines have been revealed
+        foreach (Quad quad in _complex.Quads)
+            if (quad.type != Quad.Type.Mine
+                && !quad.Revealed) return;
+
+        // Flag all mines
+        foreach (Quad quad in _complex.Quads)
+            if (quad.type == Quad.Type.Mine)
+                quad.Flagged = true;
+
+        Debug.Log("Game win");
+        _gameover = true;
+        _gameon = false;
+    }
+
+    private Material GetMaterial(Quad quad) {
+        if (quad.Revealed) return GetRevealedMaterial(quad);
         else if (quad.Flagged) return _materialFlag;
         else return _materialUknown;
     }
 
-    private Material GetRevealed(Quad quad) {
+    private Material GetRevealedMaterial(Quad quad) {
         switch (quad.type) {
             case Quad.Type.Empty: return _materialEmpty;
             case Quad.Type.Mine: return quad.Exploded ? _materialExploded : _materialMine;
@@ -246,23 +246,5 @@ public class Game : MonoBehaviour {
             case 8: return _materialNum8;
             default: return null;
         }
-    }
-
-    private void CheckWinCondition() {
-        // Check if all non-mines have been revealed
-        for (int i = 0; i < _complex.ResU; i++)
-            for (int j = 0; j < _complex.ResV; j++)
-                if (_complex.Quads[i,j].type != Quad.Type.Mine
-                    && !_complex.Quads[i,j].Revealed) return;
-
-        Debug.Log("Game win");
-        _gameover = true;
-        _gameon = false;
-
-        // Flag all mines
-        for (int i = 0; i < _complex.ResU; i++)
-            for (int j = 0; j < _complex.ResV; j++)
-                if (_complex.Quads[i,j].type == Quad.Type.Mine)
-                    _complex.Quads[i,j].Flagged = true;
     }
 }
