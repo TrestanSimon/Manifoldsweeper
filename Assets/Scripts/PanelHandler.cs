@@ -20,9 +20,10 @@ public class PanelHandler : MonoBehaviour {
 
     private Game game;
     private Complex complex;
-    private Toggle[] manifoldToggles, mapToggles, difficultyToggles;
+    private Toggle[] manifoldToggles, mapToggles;
     private Button mapButton;
     private TMP_InputField[] inputFields;
+    private TMP_Dropdown difficultyDropdown;
     private (TMP_Text size, TMP_Text mines)[] difficultyText;
     private Animator animator;
     private bool panelOpen;
@@ -32,8 +33,6 @@ public class PanelHandler : MonoBehaviour {
 
     private void Awake() {
         coroutines = new List<Coroutine>();
-        Transform difficultyTogglesHolder;
-        Transform easyColumn, medColumn, hardColumn;
         difficultyText = new (TMP_Text, TMP_Text)[3];
 
         manifoldsPanel = transform.Find("Manifolds Panel");
@@ -44,27 +43,8 @@ public class PanelHandler : MonoBehaviour {
         mapButton = mapsPanel.Find("Map Button").GetComponent<Button>();
 
         gamePanel = transform.Find("Game Panel");
-        difficultyTogglesHolder = gamePanel.Find("Difficulty Toggles");
-        difficultyToggles = difficultyTogglesHolder.gameObject.GetComponentsInChildren<Toggle>();
-
-        // Get labels for different difficulties
-        easyColumn = difficultyTogglesHolder.Find("Easy Column");
-        difficultyText[0] = (
-            easyColumn.Find("Easy Size").GetComponent<TMP_Text>(),
-            easyColumn.Find("Easy Mines").GetComponent<TMP_Text>()
-        );
-        medColumn = difficultyTogglesHolder.Find("Medium Column");
-        difficultyText[1] = (
-            medColumn.Find("Medium Size").GetComponent<TMP_Text>(),
-            medColumn.Find("Medium Mines").GetComponent<TMP_Text>()
-        );
-        hardColumn = difficultyTogglesHolder.Find("Hard Column");
-        difficultyText[2] = (
-            hardColumn.Find("Hard Size").GetComponent<TMP_Text>(),
-            hardColumn.Find("Hard Mines").GetComponent<TMP_Text>()
-        );
-
-        customColumn = difficultyTogglesHolder.Find("Custom Column");
+        difficultyDropdown = gamePanel.Find("Difficulty Dropdown").GetComponent<TMP_Dropdown>();
+        customColumn = gamePanel.Find("Custom Column");
         inputFields = customColumn.GetComponentsInChildren<TMP_InputField>();
 
         animator = gameObject.GetComponent<Animator>();
@@ -155,7 +135,7 @@ public class PanelHandler : MonoBehaviour {
             }
         }
         UpdateActiveMaps();
-        UpdateActiveDifficulties();
+        UpdateDifficulty();
     }
 
     public void UpdateActiveMaps() {
@@ -181,25 +161,9 @@ public class PanelHandler : MonoBehaviour {
         }
     }
 
-    private void UpdateActiveDifficulties() {
-        int j = selectedManifold;
-        for (int i = 0; i < 3; i++) {
-            difficultyText[i].size.text
-                = $"{manifoldDifficulties[j,i].u} x {manifoldDifficulties[j,i].v}";
-            difficultyText[i].mines.text
-                = $"{manifoldDifficulties[j,i].mines}";
-        }
-        UpdateDifficulty();
-    }
-
     // Ran On Value Changed of Difficulty Toggles
     public void UpdateDifficulty() {
-        for (int i = 0; i < difficultyToggles.Length; i++) {
-            if (difficultyToggles[i].isOn) {
-                selectedDifficulty = i;
-                break;
-            }
-        }
+        selectedDifficulty = difficultyDropdown.value;
 
         // If custom difficulty is selected
         if (selectedDifficulty == 3) {
@@ -209,6 +173,10 @@ public class PanelHandler : MonoBehaviour {
             ResU = manifoldDifficulties[selectedManifold,selectedDifficulty].u;
             ResV = manifoldDifficulties[selectedManifold,selectedDifficulty].v;
             mineCount = manifoldDifficulties[selectedManifold,selectedDifficulty].mines;
+
+            inputFields[0].text = ResU.ToString();
+            inputFields[1].text = ResV.ToString();
+            inputFields[2].text = mineCount.ToString();
         }
     }
 
