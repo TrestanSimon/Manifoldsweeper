@@ -4,8 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class PanelHandler : MonoBehaviour {
+public class UIHandler : MonoBehaviour {
     private GameObject board;
+    private Transform panel, topPanel;
     private Transform manifoldsPanel;
     private Transform mapsPanel;
     private Transform manifoldMaps;
@@ -22,9 +23,9 @@ public class PanelHandler : MonoBehaviour {
     private Complex complex;
     private Toggle[] manifoldToggles, mapToggles;
     private Button mapButton;
+    private TMP_Text timerText, flagText;
     private TMP_InputField[] inputFields;
     private TMP_Dropdown difficultyDropdown;
-    private (TMP_Text size, TMP_Text mines)[] difficultyText;
     private Animator animator;
     private bool panelOpen;
 
@@ -33,21 +34,29 @@ public class PanelHandler : MonoBehaviour {
 
     private void Awake() {
         coroutines = new List<Coroutine>();
-        difficultyText = new (TMP_Text, TMP_Text)[3];
 
-        manifoldsPanel = transform.Find("Manifolds Panel");
+        // Panel data
+        panel = transform.Find("Panel");
+
+        manifoldsPanel = panel.Find("Manifolds Panel");
         manifoldToggles = manifoldsPanel.Find("Manifold Toggles").gameObject.GetComponentsInChildren<Toggle>();
 
-        mapsPanel = transform.Find("Maps Panel");
+        mapsPanel = panel.Find("Maps Panel");
         manifoldMaps = mapsPanel.Find("Maps Toggles");
         mapButton = mapsPanel.Find("Map Button").GetComponent<Button>();
 
-        gamePanel = transform.Find("Game Panel");
+        gamePanel = panel.Find("Game Panel");
         difficultyDropdown = gamePanel.Find("Difficulty Dropdown").GetComponent<TMP_Dropdown>();
         customColumn = gamePanel.Find("Custom Column");
         inputFields = customColumn.GetComponentsInChildren<TMP_InputField>();
 
-        animator = gameObject.GetComponent<Animator>();
+        animator = panel.GetComponent<Animator>();
+
+        // Top panel data
+        topPanel = transform.Find("Top Panel");
+        timerText = topPanel.Find("Timer Label").GetComponent<TMP_Text>();
+        flagText = topPanel.Find("Flag Label").GetComponent<TMP_Text>();
+
         cameraHandler = Camera.main.GetComponent<CameraHandler>();
 
         manifoldDifficulties = new (int,int,int)[5,3];
@@ -76,12 +85,21 @@ public class PanelHandler : MonoBehaviour {
         manifoldDifficulties[4,0] = (8, 8, 12);
         manifoldDifficulties[4,1] = (16, 16, 42);
         manifoldDifficulties[4,2] = (16, 32, 98);
+
+        mineCount = 0;
     }
 
     private void Start() {
         UpdateSelectedManifold();
         UpdateActiveMaps();
         UpdateDifficulty();
+    }
+
+    private void Update() {
+        if (game != null) {
+            flagText.text = $"{game.FlagCount}/{game.MineCount}";
+            timerText.text = game.Timer.ToString();
+        }
     }
 
     public void Clear() {
@@ -180,7 +198,7 @@ public class PanelHandler : MonoBehaviour {
         }
     }
 
-    public void UpdateActiveCustomDifficulty(bool active) {
+    private void UpdateActiveCustomDifficulty(bool active) {
         for (int i = 0; i < inputFields.Length; i++) {
             inputFields[i].interactable = active;
         }

@@ -5,7 +5,8 @@ using UnityEngine;
 public class Game : MonoBehaviour {
     private Complex _complex;
     private Quad _mouseOver;
-    private int _mineCount;
+    private int _mineCount, _flagCount;
+    private float _timer;
 
     private Material _materialUknown;
     private Material _materialEmpty;
@@ -25,6 +26,16 @@ public class Game : MonoBehaviour {
     private bool _gameon, _gameover;
 
     private List<Coroutine> _coroutinePropagate = new List<Coroutine>();
+
+    public int MineCount {
+        get => _mineCount;
+    }
+    public int FlagCount {
+        get => _flagCount;
+    }
+    public int Timer {
+        get => (int)_timer;
+    }
 
     private void Awake() {
         // Load materials
@@ -53,11 +64,14 @@ public class Game : MonoBehaviour {
             if (Input.GetMouseButtonDown(1)) AttemptFlagMouseOver();
             else if (Input.GetMouseButtonDown(0)) AttemptRevealMouseOver();
         }
+        if (_gameon) _timer += Time.deltaTime;
     }
 
     public void Setup(Complex complex, int ResU, int ResV, int mineCount) {
         _complex = complex;
         _mineCount = Mathf.Clamp(mineCount, 0, ResU*ResV - 1);
+        _flagCount = 0;
+        _timer = 0f;
     }
 
     public void NewGame(bool clearFlags = true) {
@@ -68,6 +82,8 @@ public class Game : MonoBehaviour {
         
         _gameon = false;
         _gameover = false;
+        _timer = 0f;
+        if (clearFlags) _flagCount = 0;
 
         foreach (Quad quad in _complex.Quads) {
             quad.type = Quad.Type.Empty;
@@ -124,7 +140,9 @@ public class Game : MonoBehaviour {
 
     private void AttemptFlagMouseOver() {
         _mouseOver = _complex.MouseIdentify();
-        _mouseOver?.Flag(_flagPrefab, _materialFlag, _materialUknown);
+        if (_mouseOver != null)
+            _flagCount += _mouseOver.FlagToggle(
+                _flagPrefab, _materialFlag, _materialUknown);
     }
 
     private void AttemptRevealMouseOver() {
@@ -144,11 +162,13 @@ public class Game : MonoBehaviour {
                 Flood(_mouseOver);
                 CheckWinCondition();
                 _gameon = true;
+                Debug.Log("first");
                 break;
             default:
                 RevealQuad(_mouseOver);
                 CheckWinCondition();
                 _gameon = true;
+                Debug.Log("second");
                 break;
         }
     }
@@ -212,7 +232,7 @@ public class Game : MonoBehaviour {
         // Flag all mines
         foreach (Quad quad in _complex.Quads)
             if (quad.type == Quad.Type.Mine)
-                quad.Flagged = true;
+                _flagCount += quad.Flag(_flagPrefab, _materialFlag);
 
         Debug.Log("Game win");
         _gameover = true;

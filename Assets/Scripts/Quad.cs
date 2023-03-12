@@ -75,8 +75,8 @@ public class Quad {
     public bool Revealed {
         get => _revealed;
         set {
-            if (value && _flagged)
-                _flagged = false;
+            if (value && Flagged)
+                Flagged = false;
             _revealed = value;
         }
     }
@@ -208,31 +208,41 @@ public class Quad {
     }
 
     // Places flag(s)
-    public void Flag(GameObject flagPrefab,
+    public int FlagToggle(GameObject flagPrefab,
         Material materialFlag, Material materialUnknown
     ) {
-        if (type == Type.Invalid || Revealed) return;
+        if (Flagged) return UnFlag(flagPrefab, materialUnknown);
+        else return Flag(flagPrefab, materialFlag);
+    }
 
-        if (Flagged) { // Manual unflag
-            Flagged = false;
-            SetMaterial(materialUnknown);
-        } else { // Manual flag
-            Flagged = true;
+    public int Flag(GameObject flagPrefab, Material materialFlag) {
+        if (type == Type.Invalid || Revealed || Flagged) return 0;
 
-            // Points to where flag will be planted
-            Vector3 stake = (_vertices[0] + _vertices[2]) / 2f;
+        Flagged = true;
+        
+        // Points to where flag will be planted
+        Vector3 stake = (_vertices[0] + _vertices[2]) / 2f;
 
-            // Create flag for each side
-            for (int i = 0; i < _sideCount; i++) {
-                Vector3 flagPos = stake + _meshes[i].normals[0] * _Scale/2f;
-                Quaternion flagRot = Quaternion.LookRotation(_meshes[i].normals[0])
-                    * Quaternion.AngleAxis(90, Vector3.up);
+        // Create flag for each side
+        for (int i = 0; i < _sideCount; i++) {
+            Vector3 flagPos = stake + _meshes[i].normals[0] * _Scale/2f;
+            Quaternion flagRot = Quaternion.LookRotation(_meshes[i].normals[0])
+                * Quaternion.AngleAxis(90, Vector3.up);
 
-                _flags[i] = Complex.CreateGO(flagPrefab, flagPos, flagRot, _Scale);
-                _flags[i].transform.parent = _gameObjects[i].transform;
-                _flags[i].name = "Flag";
-            }
-            SetMaterial(materialFlag);
+            _flags[i] = Complex.CreateGO(flagPrefab, flagPos, flagRot, _Scale);
+            _flags[i].transform.parent = _gameObjects[i].transform;
+            _flags[i].name = "Flag";
         }
+        SetMaterial(materialFlag);
+        return 1;
+    }
+
+    public int UnFlag(GameObject flagPrefab, Material materialUnknown) {
+        if (type == Type.Invalid || Revealed || !Flagged) return 0;
+
+        Flagged = false;
+
+        SetMaterial(materialUnknown);
+        return -1;
     }
 }
