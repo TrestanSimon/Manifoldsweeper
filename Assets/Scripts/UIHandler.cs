@@ -11,7 +11,7 @@ public class UIHandler : MonoBehaviour {
     private Transform mapsPanel;
     private Transform manifoldMaps;
     private Transform gamePanel;
-    private Transform customColumn;
+    private Transform customInputs;
 
     
     private int selectedManifold, selectedMap;
@@ -21,11 +21,10 @@ public class UIHandler : MonoBehaviour {
 
     private Game game;
     private Complex complex;
-    private Toggle[] manifoldToggles, mapToggles;
     private Button mapButton;
     private TMP_Text timerText, flagText;
     private TMP_InputField[] inputFields;
-    private TMP_Dropdown difficultyDropdown;
+    private TMP_Dropdown manifoldDropdown, difficultyDropdown, mapDropdown;
     private Animator animator;
     private bool panelOpen;
 
@@ -39,16 +38,16 @@ public class UIHandler : MonoBehaviour {
         panel = transform.Find("Panel");
 
         manifoldsPanel = panel.Find("Manifolds Panel");
-        manifoldToggles = manifoldsPanel.Find("Manifold Toggles").gameObject.GetComponentsInChildren<Toggle>();
+        manifoldDropdown = manifoldsPanel.Find("Manifold Dropdown").gameObject.GetComponent<TMP_Dropdown>();
 
         mapsPanel = panel.Find("Maps Panel");
-        manifoldMaps = mapsPanel.Find("Maps Toggles");
+        manifoldMaps = mapsPanel.Find("Maps Dropdowns");
         mapButton = mapsPanel.Find("Map Button").GetComponent<Button>();
 
         gamePanel = panel.Find("Game Panel");
         difficultyDropdown = gamePanel.Find("Difficulty Dropdown").GetComponent<TMP_Dropdown>();
-        customColumn = gamePanel.Find("Custom Column");
-        inputFields = customColumn.GetComponentsInChildren<TMP_InputField>();
+        customInputs = gamePanel.Find("Custom Inputs");
+        inputFields = customInputs.GetComponentsInChildren<TMP_InputField>();
 
         animator = panel.GetComponent<Animator>();
 
@@ -146,18 +145,14 @@ public class UIHandler : MonoBehaviour {
 
     // Ran On Value Changed of Manifold Toggles
     public void UpdateSelectedManifold() {
-        for (int i = 0; i < manifoldToggles.Length; i++) {
-            if (manifoldToggles[i].isOn) {
-                selectedManifold = i;
-                break;
-            }
-        }
+        selectedManifold = manifoldDropdown.value;
+
         UpdateActiveMaps();
         UpdateDifficulty();
     }
 
     public void UpdateActiveMaps() {
-        for (int i = 0; i < manifoldToggles.Length; i++) {
+        for (int i = 0; i < 5; i++) {
             if (i == selectedManifold) {
                 manifoldMaps.GetChild(i).gameObject.SetActive(true);
             } else {
@@ -165,18 +160,13 @@ public class UIHandler : MonoBehaviour {
             }
         }
 
-        mapToggles = manifoldMaps.GetChild(selectedManifold).gameObject.GetComponentsInChildren<Toggle>();
+        mapDropdown = manifoldMaps.GetChild(selectedManifold).gameObject.GetComponent<TMP_Dropdown>();
         UpdateSelectedMap();
     }
 
     // Ran On Value Changed of Mapping Toggles
     public void UpdateSelectedMap() {
-        for (int i = 0; i < mapToggles.Length; i++) {
-            if (mapToggles[i].isOn) {
-                selectedMap = i;
-                break;
-            }
-        }
+        selectedMap = mapDropdown.value;
     }
 
     // Ran On Value Changed of Difficulty Toggles
