@@ -125,6 +125,10 @@ public abstract class Complex : MonoBehaviour {
         return neighbors;
     }
 
+    public virtual void RepeatComplex() {
+        if (!planar) return;
+    }
+
     // Identifies the Quad instance the cursor is over
     // returns null if there is no Quad
     public Quad MouseIdentify() {
@@ -137,7 +141,7 @@ public abstract class Complex : MonoBehaviour {
 
     // Identifies the Quad instance associated with a GameObject
     private Quad Identify(GameObject go) {
-        Tag tag = go.GetComponent<Tag>();
+        go.TryGetComponent<Tag>(out Tag tag);
         return quads[tag.u, tag.v];
     }
 

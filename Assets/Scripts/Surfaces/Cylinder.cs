@@ -52,6 +52,16 @@ public class Cylinder : Complex {
         else return new Quad();
     }
 
+    public override void RepeatComplex() {
+        // if (!planar) return;
+        Instantiate(gameObject,
+            2f*(vertices[0,resV/2] + radius*Vector3.up),
+            Quaternion.identity);
+        Instantiate(gameObject,
+            -2f*(vertices[0,resV/2] + radius*Vector3.up),
+            Quaternion.identity);
+    }
+
     public IEnumerator CylinderToPlane(bool reverse = false) {
         float time = 0f;
         float duration = 1f;
@@ -68,6 +78,8 @@ public class Cylinder : Complex {
         // Finalize mapping
         vertices = CylinderToPlaneMap((reverse ? 0f : 1f), radius);
         UpdateVertices(vertices);
+        if (!reverse)
+            RepeatComplex();
     }
 
     public override IEnumerator ToPlane() {
