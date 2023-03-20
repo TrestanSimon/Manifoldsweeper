@@ -136,7 +136,7 @@ public class UIHandler : MonoBehaviour {
         }
         game = board.AddComponent<Game>();
 
-        complex.Setup(ResU, ResV);
+        complex.Setup(ResU, ResV, Complex.Map.Flat);
         game.Setup(complex, ResU, ResV, mineCount);
         cameraHandler.Target = complex;
 

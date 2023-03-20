@@ -3,27 +3,20 @@ using UnityEngine;
 using static Unity.Mathematics.math;
 
 public class MobiusStrip : Complex {
-    public enum Map {
-        Planar,
-        Strip,
-        CrossCap,
-        Sudanese
-    }
-
     public float R, tau;
 
-    public override void Setup(int resU, int resV) {
+    public override void Setup(int resU, int resV, Map initMap) {
         sideCount = 2;
         this.resU = resU;
         this.resV = resV;
         R = resU / 72f;
         tau = 16f / (float)resV;
         planar = false;
-        GenerateVertices();
+        GenerateVertices(initMap);
         GenerateQuads();
     }
 
-    protected override void GenerateVertices() {
+    protected override void GenerateVertices(Map map) {
         vertices = new Vector3[resU+1, resV+1];
         for (int p = 0; p <= resU; p++) {
             sincos(2*PI*p / resU, out float sinp, out float cosp);

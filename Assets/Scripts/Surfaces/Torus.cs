@@ -23,33 +23,20 @@ public class Torus : Complex {
         }
     }
 
-    public override void Setup(int ResU, int ResV) {
+    public override void Setup(int ResU, int ResV, Map initMap) {
         sideCount = 2;
         this.ResU = ResU;
         this.ResV = ResV;
         r = this.ResU / 16f;
         R = this.ResV / 16f;
         planar = false;
-        GenerateVertices();
+        GenerateVertices(initMap);
         GenerateQuads();
     }
     
-    protected override void GenerateVertices() {
-        vertices = new Vector3[ResU+1, ResV+1];
-        for (int p = 0; p <= ResU; p++) {
-            sincos(2*PI*p/ResU + minorOffset, out float sinp, out float cosp);
-            float minor = R + r*cosp;
-
-            for (int q = 0; q <= ResV; q++) {
-                sincos(2*PI*q/ResV, out float sinq, out float cosq);
-
-                vertices[p,q] = new Vector3(
-                    minor * cosq,
-                    r * sinp,
-                    minor * sinq
-                );
-            }
-        }
+    protected override void GenerateVertices(Map map) {
+        vertices = new Vector3[ResU+1,ResV+1];
+        vertices = TorusToCylinderMap(0);
     }
 
     public override Quad GetNeighbor(int u, int v) {
@@ -102,16 +89,17 @@ public class Torus : Complex {
     // Maps from torus to cylinder
     private Vector3[,] TorusToCylinderMap(float progress) {
         Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
-        float a, t, minor, sinq, cosq;
+        float a, t, minor, sinq, cosq, sinp, cosp;
 
         for (int p = 0; p < ResU+1; p++) {
             for (int q = 0; q < ResV+1; q++) {
                 // Transformation follows involutes
                 a = 2*PI*q/ResV; // Starting point
                 t = (PI - a)*progress + a; // Involute curve parameter
-                minor = r * cos(2*PI*p/ResU + minorOffset)
-                    /sqrt(1 + (t - a)*(t - a)*(1 - progress)*(1 - progress));
                 sincos(t, out sinq, out cosq);
+                sincos(2*PI*p/ResU + minorOffset, out sinp, out cosp);
+                minor = r * cosp
+                    /sqrt(1 + (t - a)*(t - a)*(1 - progress)*(1 - progress));
 
                 // In x and z, the first term gives the involutes of the circles
                 // that wrap around the torus toroidally, and the second term
@@ -120,7 +108,7 @@ public class Torus : Complex {
                     R * (cosq + (t - a)*sinq)
                         + minor * (cosq + (t - a)*(1 - progress)*sinq)
                         + R*progress,
-                    vertices[p,q].y,
+                    r * sinp,
                     R * (sinq - (t - a)*cosq)
                         + minor * (sinq - (t - a)*(1 - progress)*cosq)
                 );

@@ -4,29 +4,22 @@ using UnityEngine;
 using static Unity.Mathematics.math;
 
 public class Cylinder : Complex {
-    public enum Map {
-        Planar,
-        Tube,
-        Annulus
-    }
-
     public float radius;
     private float angleOffset = PI/2f; // Added to -2*PI*p/resU
     // Necessary so that the p-u seam is at the top of the cylinder
     // and the mapping to a plane breaks the cylinder at this seam
     // cf minorOffset in Torus.cs
 
-    public override void Setup(int resU, int resV) {
+    public override void Setup(int resU, int resV, Map initMap) {
         sideCount = 2;
         this.resU = resU;
         this.resV = resV;
         radius = resU/(4f*PI);
-        planar = false;
-        GenerateVertices();
+        GenerateVertices(initMap);
         GenerateQuads();
     }
 
-    protected override void GenerateVertices() {
+    protected override void GenerateVertices(Map map) {
         vertices = new Vector3[resU+1, resV+1];
         for (int p = 0; p <= resU; p++) {
             // Reversed sign is necessary so that tile orientation matches

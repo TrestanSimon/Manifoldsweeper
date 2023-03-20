@@ -6,6 +6,13 @@ using UnityEngine;
 using static Unity.Mathematics.math;
 
 public abstract class Complex : MonoBehaviour {
+    public enum Map {
+        Flat,
+        Cylinder, Annulus,
+        Torus,
+        MobiusStrip, MobiusSudanese,
+        KleinBottle
+    }
     protected int resU, resV;
     protected Vector3[,] vertices;
     protected Quad[,] quads;
@@ -39,12 +46,12 @@ public abstract class Complex : MonoBehaviour {
         set => planar = value;
     }
 
-    public abstract void Setup(int resU, int resV);
+    public abstract void Setup(int resU, int resV, Map initMap);
 
-    // Generates vertices (p, q)
+    // Generates vertices (p, q) according to mapping
     // Returns an [resU+1, resV+1] array with Vector3 elements
     // Unique to each surface
-    protected abstract void GenerateVertices();
+    protected abstract void GenerateVertices(Map map);
 
     // Generates quads (u, v) given vertices
     // Returns an [resU, resV] array with Quad elements
