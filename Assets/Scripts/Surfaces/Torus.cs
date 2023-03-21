@@ -29,7 +29,7 @@ public class Torus : Complex {
         this.ResV = ResV;
         r = this.ResU / 16f;
         R = this.ResV / 16f;
-        planar = false;
+        currentMap = initMap;
         GenerateVertices(initMap);
         GenerateQuads();
     }
@@ -118,13 +118,14 @@ public class Torus : Complex {
     }
 
     public override IEnumerator ToPlane() {
-        if (!planar) {
+        if (currentMap != Map.Flat) {
             yield return StartCoroutine(TorusToCylinder());
             yield return StartCoroutine(CylinderToPlane());
+            currentMap = Map.Flat;
         } else {
             yield return StartCoroutine(CylinderToPlane(true));
             yield return StartCoroutine(TorusToCylinder(true));
+            currentMap = Map.Torus;
         }
-        planar = !planar;
     }
 }

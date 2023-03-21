@@ -11,7 +11,7 @@ public class MobiusStrip : Complex {
         this.resV = resV;
         R = resU / 72f;
         tau = 16f / (float)resV;
-        planar = false;
+        currentMap = initMap;
         GenerateVertices(initMap);
         GenerateQuads();
     }

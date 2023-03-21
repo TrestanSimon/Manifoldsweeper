@@ -14,10 +14,10 @@ public abstract class Complex : MonoBehaviour {
         KleinBottle
     }
     protected int resU, resV;
+    protected Map currentMap;
     protected Vector3[,] vertices;
     protected Quad[,] quads;
     protected int sideCount;
-    protected bool planar;
 
     public virtual int ResU {
         get => resU;
@@ -37,13 +37,13 @@ public abstract class Complex : MonoBehaviour {
             resV = value;
         }
     }
+    public Map CurrentMap {
+        get => currentMap;
+        set => currentMap = value;
+    }
     public Quad[,] Quads {
         get => quads;
         private set => quads = value;
-    }
-    public bool Planar {
-        get => planar;
-        set => planar = value;
     }
 
     public abstract void Setup(int resU, int resV, Map initMap);
@@ -133,7 +133,7 @@ public abstract class Complex : MonoBehaviour {
     }
 
     public virtual void RepeatComplex() {
-        if (!planar) return;
+        if (currentMap != Map.Flat) return;
     }
 
     // Identifies the Quad instance the cursor is over
@@ -166,7 +166,7 @@ public abstract class Complex : MonoBehaviour {
     public virtual IEnumerator ToPlane() {
         Vector3[,] newVerts = new Vector3[resU+1,resV+1];
 
-        if (planar) yield break;
+        if (currentMap == Map.Flat) yield break;
 
         // Set new verts
         for (int u = 0; u <= resU; u++) {
@@ -182,7 +182,7 @@ public abstract class Complex : MonoBehaviour {
         yield return StartCoroutine(ComplexLerp(
             new Vector3[][,]{vertices, newVerts}, 2f));
 
-        planar = true;
+        currentMap = Map.Flat;
     }
 
     // Maps from cylinder to plane

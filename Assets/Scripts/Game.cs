@@ -33,8 +33,8 @@ public class Game : MonoBehaviour {
     public int FlagCount {
         get => _flagCount;
     }
-    public int Timer {
-        get => (int)_timer;
+    public float Timer {
+        get => _timer;
     }
 
     private void Awake() {
@@ -146,7 +146,6 @@ public class Game : MonoBehaviour {
     }
 
     private void AttemptRevealMouseOver() {
-        Debug.Log(_complex.MouseIdentify());
         _mouseOver = _complex.MouseIdentify();
         if (_mouseOver == null || _mouseOver.type == Quad.Type.Invalid
             || _mouseOver.Revealed || _mouseOver.Flagged) return;

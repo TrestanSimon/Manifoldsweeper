@@ -15,6 +15,7 @@ public class Cylinder : Complex {
         this.resU = resU;
         this.resV = resV;
         radius = resU/(4f*PI);
+        currentMap = initMap;
         GenerateVertices(initMap);
         GenerateQuads();
     }
@@ -76,7 +77,13 @@ public class Cylinder : Complex {
     }
 
     public override IEnumerator ToPlane() {
-        yield return StartCoroutine(CylinderToPlane(planar));
-        planar = !planar;
+        if (currentMap == Map.Flat) {
+            yield return StartCoroutine(CylinderToPlane(true));
+            currentMap = Map.Cylinder;
+        }
+        else {
+            yield return StartCoroutine(CylinderToPlane(false));
+            currentMap = Map.Flat;
+        }
     }
 }

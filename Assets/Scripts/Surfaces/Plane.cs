@@ -6,7 +6,7 @@ public class Plane : Complex {
         sideCount = 2;
         this.resU = resU;
         this.resV = resV;
-        planar = true;
+        currentMap = initMap;
         GenerateVertices(initMap);
         GenerateQuads();
     }

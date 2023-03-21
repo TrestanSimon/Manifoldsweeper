@@ -8,7 +8,7 @@ public class CameraHandler : MonoBehaviour {
     private float _scroll;
 
     private Complex _target;
-    private bool _planar;
+    private Complex.Map _map;
 
     public Complex Target {
         private get => _target;
@@ -18,13 +18,13 @@ public class CameraHandler : MonoBehaviour {
     private void Update() {
         if (_target == null) return;
 
-        if (_planar != _target.Planar) {
-            if (_target.Planar) UpdateTopDownCamera(true);
+        if (_map != _target.CurrentMap) {
+            if (_target.CurrentMap == Complex.Map.Flat) UpdateTopDownCamera(true);
             else Update3DCamera(true);
         }
 
-        _planar = _target.Planar;
-        if (_planar) UpdateTopDownCamera();
+        _map = _target.CurrentMap;
+        if (_map == Complex.Map.Flat) UpdateTopDownCamera();
         else Update3DCamera();
     }
 

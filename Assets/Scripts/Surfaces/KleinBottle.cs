@@ -6,7 +6,7 @@ public class KleinBottle : Complex {
         sideCount = 2;
         this.resU = resU;
         this.resV = resV;
-        planar = false;
+        currentMap = initMap;
         GenerateVertices(initMap);
         GenerateQuads();
     }

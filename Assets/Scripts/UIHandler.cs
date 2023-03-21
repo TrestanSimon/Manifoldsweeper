@@ -97,7 +97,8 @@ public class UIHandler : MonoBehaviour {
     private void Update() {
         if (game != null) {
             flagText.text = $"{game.FlagCount}/{game.MineCount}";
-            timerText.text = game.Timer.ToString();
+            timerText.text =
+                $"{(int)game.Timer/600}{((int)game.Timer/60)%10}:{((int)game.Timer/10)%6}{((int)game.Timer)%10}.{((int)(game.Timer*10))%10}";
         }
     }
 
