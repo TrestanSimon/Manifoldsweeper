@@ -1,7 +1,15 @@
+using System.Collections.Generic;
 using UnityEngine;
 using static Unity.Mathematics.math;
 
 public class KleinBottle : Complex {
+    public new static Dictionary<string, Map> MapDict {
+        get => new Dictionary<string, Map>(){
+            {"Flat", Map.Flat},
+            {"Bottle", Map.KleinBottle}
+        };
+    }
+    
     public override void Setup(int resU, int resV, Map initMap) {
         sideCount = 2;
         this.resU = resU;

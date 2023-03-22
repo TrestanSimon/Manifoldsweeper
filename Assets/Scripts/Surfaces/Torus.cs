@@ -1,9 +1,18 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 using static Unity.Mathematics.math;
 
 public class Torus : Complex {
+    public new static Dictionary<string, Map> MapDict {
+        get => new Dictionary<string, Map>(){
+            {"Flat", Map.Flat},
+            {"Torus", Map.Torus}
+        };
+    }
+    
     private float r, R;
     private float minorOffset = PI/2f; // Added to 2*PI*p/ResU
     // Necessary so that the p-u seam is at the top of the torus
@@ -36,7 +45,11 @@ public class Torus : Complex {
     
     protected override void GenerateVertices(Map map) {
         vertices = new Vector3[ResU+1,ResV+1];
-        vertices = TorusToCylinderMap(0);
+
+        switch(map) {
+            case Map.Flat: vertices = CylinderToPlaneMap(1, r); break;
+            case Map.Torus: vertices = TorusToCylinderMap(0); break;
+        }
     }
 
     public override Quad GetNeighbor(int u, int v) {

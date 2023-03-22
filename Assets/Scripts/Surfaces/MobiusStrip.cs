@@ -1,8 +1,17 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 using static Unity.Mathematics.math;
 
 public class MobiusStrip : Complex {
+    public new static Dictionary<string, Map> MapDict {
+        get => new Dictionary<string, Map>(){
+            {"Flat", Map.Flat},
+            {"Strip", Map.MobiusStrip},
+            {"Sudanese", Map.MobiusSudanese}
+        };
+    }
+    
     public float R, tau;
 
     public override void Setup(int resU, int resV, Map initMap) {

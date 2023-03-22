@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -9,12 +11,11 @@ public class UIHandler : MonoBehaviour {
     private Transform panel, topPanel;
     private Transform manifoldsPanel;
     private Transform mapsPanel;
-    private Transform manifoldMaps;
     private Transform gamePanel;
     private Transform customInputs;
 
     
-    private int selectedManifold, selectedMap;
+    private int selectedManifold;
     private int selectedDifficulty;
     private int ResU, ResV, mineCount;
     private (int u, int v, int mines)[,] manifoldDifficulties;
@@ -31,6 +32,22 @@ public class UIHandler : MonoBehaviour {
     private CameraHandler cameraHandler;
     private List<Coroutine> coroutines;
 
+    private Dictionary<string, Complex.Map> SelectedMapDict {
+        get {
+            switch (selectedManifold) {
+                case 0: return Plane.MapDict;
+                case 1: return Cylinder.MapDict;
+                case 2: return Torus.MapDict;
+                case 3: return MobiusStrip.MapDict;
+                case 4: return KleinBottle.MapDict;
+                default: throw new System.Exception();
+            }
+        }
+    }
+    private Complex.Map SelectedMap {
+        get => SelectedMapDict[mapDropdown.captionText.GetParsedText()];
+    }
+
     private void Awake() {
         coroutines = new List<Coroutine>();
 
@@ -41,7 +58,6 @@ public class UIHandler : MonoBehaviour {
         manifoldDropdown = manifoldsPanel.Find("Manifold Dropdown").gameObject.GetComponent<TMP_Dropdown>();
 
         mapsPanel = panel.Find("Maps Panel");
-        manifoldMaps = mapsPanel.Find("Maps Dropdowns");
         mapButton = mapsPanel.Find("Map Button").GetComponent<Button>();
 
         gamePanel = panel.Find("Game Panel");
@@ -113,10 +129,6 @@ public class UIHandler : MonoBehaviour {
     }
 
     public void Generate() {
-        UpdateSelectedManifold();
-        UpdateActiveMaps();
-        UpdateDifficulty();
-
         if (board != null) {
             if (complex != null)
                 Destroy(complex);
@@ -137,14 +149,14 @@ public class UIHandler : MonoBehaviour {
         }
         game = board.AddComponent<Game>();
 
-        complex.Setup(ResU, ResV, Complex.Map.Flat);
+        complex.Setup(ResU, ResV, SelectedMap);
         game.Setup(complex, ResU, ResV, mineCount);
         cameraHandler.Target = complex;
 
         game.NewGame(false);
     }
 
-    // Ran On Value Changed of Manifold Toggles
+    // Ran On Value Changed of Manifold dropdown
     public void UpdateSelectedManifold() {
         selectedManifold = manifoldDropdown.value;
 
@@ -153,24 +165,13 @@ public class UIHandler : MonoBehaviour {
     }
 
     public void UpdateActiveMaps() {
-        for (int i = 0; i < 5; i++) {
-            if (i == selectedManifold) {
-                manifoldMaps.GetChild(i).gameObject.SetActive(true);
-            } else {
-                manifoldMaps.GetChild(i).gameObject.SetActive(false);
-            }
-        }
+        mapDropdown = mapsPanel.GetComponentInChildren<TMP_Dropdown>();
 
-        mapDropdown = manifoldMaps.GetChild(selectedManifold).gameObject.GetComponent<TMP_Dropdown>();
-        UpdateSelectedMap();
+        mapDropdown.ClearOptions();
+        mapDropdown.AddOptions(SelectedMapDict.Keys.ToList());
     }
 
-    // Ran On Value Changed of Mapping Toggles
-    public void UpdateSelectedMap() {
-        selectedMap = mapDropdown.value;
-    }
-
-    // Ran On Value Changed of Difficulty Toggles
+    // Ran On Value Changed of Difficulty dropdown
     public void UpdateDifficulty() {
         selectedDifficulty = difficultyDropdown.value;
 
@@ -200,6 +201,10 @@ public class UIHandler : MonoBehaviour {
         int.TryParse(inputFields[0].text, out ResU);
         int.TryParse(inputFields[1].text, out ResV);
         int.TryParse(inputFields[2].text, out mineCount);
+    }
+
+    public void ReMap() {
+        throw new NotImplementedException();
     }
 
     public void MapToPlane() {

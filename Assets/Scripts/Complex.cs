@@ -13,6 +13,15 @@ public abstract class Complex : MonoBehaviour {
         MobiusStrip, MobiusSudanese,
         KleinBottle
     }
+
+    // Dictionary for IDing acceptable mappings
+    // Manually hide in children with "new" keyword
+    public static Dictionary<String, Map> MapDict {
+        get => new Dictionary<string, Map>(){
+            {"Flat", Map.Flat}
+        };
+    }
+
     protected int resU, resV;
     protected Map currentMap;
     protected Vector3[,] vertices;
@@ -111,11 +120,8 @@ public abstract class Complex : MonoBehaviour {
     }
 
     // Returns a Quad given a coordinate neighboring another Quad
-    // Can be overridden to glue edges together
-    public virtual Quad GetNeighbor(int u, int v) {
-        if (u >= 0 && u < resU && v >= 0 && v < resV) return quads[u,v];
-        else return new Quad(); // returns Quad of type Invalid
-    }
+    // Depends on edge gluing
+    public abstract Quad GetNeighbor(int u, int v);
 
     public List<Quad> GetNeighbors(Quad quad) {
         List<Quad> neighbors = new List<Quad>();
@@ -201,7 +207,7 @@ public abstract class Complex : MonoBehaviour {
                 tempVerts[p,q] = new Vector3(
                     radius * (sinp - (t - a)*cosp),
                     radius * (cosp + (t - a)*sinp),
-                    vertices[p,q].z
+                    (q - resV/2f) / 2f
                 );
             }
         }
