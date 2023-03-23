@@ -186,6 +186,7 @@ public class Quad {
             MeshCollider collider = _gameObjects[i].GetComponent<MeshCollider>();
             collider.sharedMesh = _meshes[i];
         }
+        if (Flagged) UpdateFlags();
     }
 
     // Delay revealing based on flood depth
@@ -244,5 +245,14 @@ public class Quad {
 
         SetMaterial(materialUnknown);
         return -1;
+    }
+
+    private void UpdateFlags() {
+        Vector3 stake = (_vertices[0] + _vertices[2]) / 2f;
+        for (int i = 0; i < _sideCount; i++) {
+            _flags[i].transform.position = stake + _meshes[i].normals[0] * _Scale/2f;
+            _flags[i].transform.rotation = Quaternion.LookRotation(_meshes[i].normals[0])
+                * Quaternion.AngleAxis(90, Vector3.up);
+        }
     }
 }

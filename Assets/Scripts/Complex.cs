@@ -7,6 +7,7 @@ using static Unity.Mathematics.math;
 
 public abstract class Complex : MonoBehaviour {
     public enum Map {
+        Invalid,
         Flat,
         Cylinder, Annulus,
         Torus,
