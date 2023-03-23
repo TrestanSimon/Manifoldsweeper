@@ -19,12 +19,12 @@ public class CameraHandler : MonoBehaviour {
         if (_target == null) return;
 
         if (_map != _target.CurrentMap) {
-            if (_target.CurrentMap == Complex.Map.Flat) UpdateTopDownCamera(true);
+            if (_target.CurrentMap == Complex.Map.Flat) Update2DCamera(true);
             else Update3DCamera(true);
         }
 
         _map = _target.CurrentMap;
-        if (_map == Complex.Map.Flat) UpdateTopDownCamera();
+        if (_map == Complex.Map.Flat) Update2DCamera();
         else Update3DCamera();
     }
 
@@ -34,8 +34,8 @@ public class CameraHandler : MonoBehaviour {
 
         if (force)
             StartCoroutine(LerpCameraTo(
-                new Vector3(10f, 4f, -10f))
-            );
+                new Vector3(10f, 4f, -10f)
+            ));
 
         if (Input.GetMouseButtonDown(2))
             _mousePos = Input.mousePosition;
@@ -54,7 +54,7 @@ public class CameraHandler : MonoBehaviour {
 
     // A top-down camera
     // if force is true, camera resets position
-    public void UpdateTopDownCamera(bool force = false) {
+    public void Update2DCamera(bool force = false) {
         _scroll = Input.mouseScrollDelta.y * _sensitivity * -1f;
 
         if (force) {
@@ -100,6 +100,7 @@ public class CameraHandler : MonoBehaviour {
         float duration = 2f;
         float t = 0f;
         Vector3 startPos = Camera.main.transform.position;
+        Vector3 startUp = Camera.main.transform.up;
         Quaternion startRot = Camera.main.transform.rotation;
 
         while (time < duration) {
@@ -107,7 +108,8 @@ public class CameraHandler : MonoBehaviour {
             t = t*t*(3f - 2f * t);
 
             Camera.main.transform.position = Vector3.Lerp(startPos, endPos, t);
-            Camera.main.transform.LookAt(_target.gameObject.transform);
+            Camera.main.transform.LookAt(_target.transform,
+                Vector3.Lerp(startUp, Vector3.up, t)); // Rotate smoothly
 
             time += Time.deltaTime;
             yield return null;

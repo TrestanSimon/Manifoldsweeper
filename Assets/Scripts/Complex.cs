@@ -208,7 +208,7 @@ public abstract class Complex : MonoBehaviour {
                 tempVerts[p,q] = new Vector3(
                     radius * (sinp - (t - a)*cosp),
                     radius * (cosp + (t - a)*sinp),
-                    (q - resV/2f) / 2f
+                    PI * (resV/2f - q) / 8f
                 );
             }
         }

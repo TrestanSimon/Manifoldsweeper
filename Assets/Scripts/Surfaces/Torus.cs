@@ -65,12 +65,10 @@ public class Torus : Complex {
         float time = 0f;
         float duration = 1f;
         float progress;
-        Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
 
         while (time < duration) {
-            progress = time/duration;
-            UpdateVertices(TorusToCylinderMap(
-                reverse ? 1f - progress : progress));
+            progress = reverse ? 1f - time/duration : time/duration;
+            UpdateVertices(TorusToCylinderMap(progress));
 
             time += Time.deltaTime;
             yield return null;
