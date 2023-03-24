@@ -58,7 +58,10 @@ public class UIHandler : MonoBehaviour {
         manifoldDropdown = manifoldsPanel.Find("Manifold Dropdown").gameObject.GetComponent<TMP_Dropdown>();
 
         mapsPanel = panel.Find("Maps Panel");
+        mapDropdown = mapsPanel.GetComponentInChildren<TMP_Dropdown>();
+        mapDropdown.interactable = false;
         mapButton = mapsPanel.Find("Map Button").GetComponent<Button>();
+        mapButton.interactable = false;
 
         gamePanel = panel.Find("Game Panel");
         difficultyDropdown = gamePanel.Find("Difficulty Dropdown").GetComponent<TMP_Dropdown>();
@@ -114,7 +117,7 @@ public class UIHandler : MonoBehaviour {
         if (game != null) {
             flagText.text = $"{game.FlagCount}/{game.MineCount}";
             timerText.text =
-                $"{(int)game.Timer/600}{((int)game.Timer/60)%10}:{((int)game.Timer/10)%6}{((int)game.Timer)%10}.{((int)(game.Timer*10))%10}";
+                $"{(int)game.Timer}.{((int)(game.Timer*10))%10}";
         }
     }
 
@@ -153,6 +156,9 @@ public class UIHandler : MonoBehaviour {
         game.Setup(complex, ResU, ResV, mineCount);
         cameraHandler.Target = complex;
 
+        mapDropdown.interactable = true;
+        mapButton.interactable = true;
+
         game.NewGame(false);
     }
 
@@ -165,8 +171,6 @@ public class UIHandler : MonoBehaviour {
     }
 
     public void UpdateActiveMaps() {
-        mapDropdown = mapsPanel.GetComponentInChildren<TMP_Dropdown>();
-
         mapDropdown.ClearOptions();
         mapDropdown.AddOptions(SelectedMapDict.Keys.ToList());
     }
