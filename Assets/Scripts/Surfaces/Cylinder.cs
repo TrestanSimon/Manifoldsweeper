@@ -22,7 +22,7 @@ public class Cylinder : Complex {
         sideCount = 2;
         this.resU = resU;
         this.resV = resV;
-        radius = resU/(4f*PI);
+        radius = resU / 16f;
         currentMap = initMap;
         GenerateVertices(initMap);
         GenerateQuads();
@@ -39,7 +39,7 @@ public class Cylinder : Complex {
                 vertices[p,q] = new Vector3(
                     radius * cosp,
                     radius * sinp,
-                    (q - resV/2f) / 2f
+                    PI * (resV/2f - q) / 8f
                 );
             }
         }
@@ -80,8 +80,6 @@ public class Cylinder : Complex {
         // Finalize mapping
         vertices = CylinderToPlaneMap((reverse ? 0f : 1f), radius);
         UpdateVertices(vertices);
-        if (!reverse)
-            RepeatComplex();
     }
 
     public override IEnumerator ToPlane() {
