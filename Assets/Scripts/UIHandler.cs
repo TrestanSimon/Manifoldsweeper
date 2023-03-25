@@ -17,7 +17,7 @@ public class UIHandler : MonoBehaviour {
     
     private int selectedManifold;
     private int selectedDifficulty;
-    private int ResU, ResV, mineCount;
+    private int _resU, _resV, mineCount;
     private (int u, int v, int mines)[,] manifoldDifficulties;
 
     private Game game;
@@ -59,7 +59,6 @@ public class UIHandler : MonoBehaviour {
 
         mapsPanel = panel.Find("Maps Panel");
         mapDropdown = mapsPanel.GetComponentInChildren<TMP_Dropdown>();
-        mapDropdown.interactable = false;
         mapButton = mapsPanel.Find("Map Button").GetComponent<Button>();
         mapButton.interactable = false;
 
@@ -69,7 +68,7 @@ public class UIHandler : MonoBehaviour {
         inputFields = customInputs.GetComponentsInChildren<TMP_InputField>();
 
         animator = panel.GetComponent<Animator>();
-
+                
         // Top panel data
         topPanel = transform.Find("Top Panel");
         timerText = topPanel.Find("Timer Label").GetComponent<TMP_Text>();
@@ -111,6 +110,9 @@ public class UIHandler : MonoBehaviour {
         UpdateSelectedManifold();
         UpdateActiveMaps();
         UpdateDifficulty();
+
+        manifoldDropdown.value = 2; // Default manifold is torus
+        mapDropdown.value = 1; // Default map is Map.Torus
     }
 
     private void Update() {
@@ -152,11 +154,10 @@ public class UIHandler : MonoBehaviour {
         }
         game = board.AddComponent<Game>();
 
-        complex.Setup(ResU, ResV, SelectedMap);
-        game.Setup(complex, ResU, ResV, mineCount);
+        complex.Setup(_resU, _resV, SelectedMap);
+        game.Setup(complex, _resU, _resV, mineCount);
         cameraHandler.Target = complex;
 
-        mapDropdown.interactable = true;
         mapButton.interactable = true;
 
         game.NewGame(false);
@@ -184,12 +185,12 @@ public class UIHandler : MonoBehaviour {
             UpdateActiveCustomDifficulty(true);
         } else {
             UpdateActiveCustomDifficulty(false);
-            ResU = manifoldDifficulties[selectedManifold,selectedDifficulty].u;
-            ResV = manifoldDifficulties[selectedManifold,selectedDifficulty].v;
+            _resU = manifoldDifficulties[selectedManifold,selectedDifficulty].u;
+            _resV = manifoldDifficulties[selectedManifold,selectedDifficulty].v;
             mineCount = manifoldDifficulties[selectedManifold,selectedDifficulty].mines;
 
-            inputFields[0].text = ResU.ToString();
-            inputFields[1].text = ResV.ToString();
+            inputFields[0].text = _resU.ToString();
+            inputFields[1].text = _resV.ToString();
             inputFields[2].text = mineCount.ToString();
         }
     }
@@ -202,8 +203,8 @@ public class UIHandler : MonoBehaviour {
 
     // Ran On Value Changed of Custom Difficulty Text Inputs
     public void UpdateCustomDifficulty() {
-        int.TryParse(inputFields[0].text, out ResU);
-        int.TryParse(inputFields[1].text, out ResV);
+        int.TryParse(inputFields[0].text, out _resU);
+        int.TryParse(inputFields[1].text, out _resV);
         int.TryParse(inputFields[2].text, out mineCount);
     }
 

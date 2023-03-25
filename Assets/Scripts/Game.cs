@@ -201,7 +201,7 @@ public class Game : MonoBehaviour {
             List<Quad> neighbors = _complex.GetNeighbors(quad);
 
             foreach (Quad neighbor in neighbors) {
-                if (!neighbor.Revealed && !neighbor.Visited) {
+                if (!neighbor.Revealed && !neighbor.Visited && !neighbor.Flagged) {
                     // Add empty neighbors to queue
                     if (neighbor.type == Quad.Type.Empty) {
                         neighbor.Visited = true;
