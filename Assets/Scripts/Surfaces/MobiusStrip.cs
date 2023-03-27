@@ -26,7 +26,25 @@ public class MobiusStrip : Complex {
     }
 
     protected override void GenerateVertices(Map map) {
-        vertices = new Vector3[resU+1, resV+1];
+        StripMap();
+    }
+
+    public override Quad GetNeighbor(int u, int v) {
+        // Wraps around u
+        int u1 = u >= 0 ? u % resU : u + resU;
+        int v1 = v;
+
+        // Flips v when wrapping
+        if (u % (2*resU) >= resU || u % (-2*resU) < 0)
+            v1 = resV - (v1 + 1);
+
+        if (u1 >= 0 && u1 < resU && v1 >= 0 && v1 < resV) return quads[u1,v1];
+        else return new Quad();
+    }
+
+    private void StripMap() {
+        if (vertices == null) vertices = new Vector3[resU+1, resV+1];
+
         for (int p = 0; p <= resU; p++) {
             sincos(2*PI*p / resU, out float sinp, out float cosp);
             sincos(PI*p / resU, out float sinp2, out float cosp2);
@@ -44,22 +62,10 @@ public class MobiusStrip : Complex {
         }
     }
 
-    public override Quad GetNeighbor(int u, int v) {
-        // Wraps around u
-        int u1 = u >= 0 ? u % resU : u + resU;
-        int v1 = v;
-
-        // Flips v when wrapping
-        if (u % (2*resU) >= resU || u % (-2*resU) < 0)
-            v1 = resV - (v1 + 1);
-
-        if (u1 >= 0 && u1 < resU && v1 >= 0 && v1 < resV) return quads[u1,v1];
-        else return new Quad();
-    }
-
-    private void SudaneseVertices() {
+    private void SudaneseMap() {
         float x, y, z, w, ys, ws;
-        vertices = new Vector3[resU+1, resV+1];
+        if (vertices == null) vertices = new Vector3[resU+1, resV+1];
+
         for (int p = 0; p <= resU; p++) {
             sincos(2*PI*p / resU, out float sin2p, out float cos2p);
             sincos(PI*p / resU, out float sinp, out float cosp);
