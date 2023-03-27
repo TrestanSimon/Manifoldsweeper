@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -21,11 +23,11 @@ public class MobiusStrip : Complex {
         R = resU / 72f;
         tau = 16f / (float)resV;
         currentMap = initMap;
-        GenerateVertices(initMap);
-        GenerateQuads();
+        InitVertices(initMap);
+        InitQuads();
     }
 
-    protected override void GenerateVertices(Map map) {
+    protected override void InitVertices(Map map) {
         StripMap();
     }
 
@@ -40,6 +42,10 @@ public class MobiusStrip : Complex {
 
         if (u1 >= 0 && u1 < resU && v1 >= 0 && v1 < resV) return quads[u1,v1];
         else return new Quad();
+    }
+
+    public override IEnumerator ReMap(Map newMap) {
+        yield return null;
     }
 
     private void StripMap() {

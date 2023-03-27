@@ -24,11 +24,11 @@ public class Cylinder : Complex {
         this.resV = resV;
         radius = resU / 16f;
         currentMap = initMap;
-        GenerateVertices(initMap);
-        GenerateQuads();
+        InitVertices(initMap);
+        InitQuads();
     }
 
-    protected override void GenerateVertices(Map map) {
+    protected override void InitVertices(Map map) {
         vertices = new Vector3[resU+1, resV+1];
         for (int p = 0; p <= resU; p++) {
             // Reversed sign is necessary so that tile orientation matches
@@ -52,6 +52,10 @@ public class Cylinder : Complex {
 
         if (u1 >= 0 && u1 < resU && v1 >= 0 && v1 < resV) return quads[u1,v1];
         else return new Quad();
+    }
+
+    public override IEnumerator ReMap(Map newMap) {
+        yield return null;
     }
 
     public override void RepeatComplex() {

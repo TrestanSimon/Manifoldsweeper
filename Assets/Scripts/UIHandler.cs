@@ -208,17 +208,13 @@ public class UIHandler : MonoBehaviour {
         int.TryParse(inputFields[2].text, out mineCount);
     }
 
-    public void ReMap() {
-        throw new NotImplementedException();
+    public void ReMapStart() {
+        StartCoroutine(ReMapCoroutine());
     }
 
-    public void MapToPlane() {
-        StartCoroutine(MapToPlane2());
-    }
-
-    private IEnumerator MapToPlane2() {
+    private IEnumerator ReMapCoroutine() {
         mapButton.interactable = false;
-        yield return StartCoroutine(complex.ToPlane());
+        yield return StartCoroutine(complex.ReMap(SelectedMap));
         mapButton.interactable = true;
     }
 }

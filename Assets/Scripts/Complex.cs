@@ -49,7 +49,10 @@ public abstract class Complex : MonoBehaviour {
     }
     public Map CurrentMap {
         get => currentMap;
-        set => currentMap = value;
+        set {
+            ReMap(value);
+            currentMap = value;
+        }
     }
     public Quad[,] Quads {
         get => quads;
@@ -61,11 +64,11 @@ public abstract class Complex : MonoBehaviour {
     // Generates vertices (p, q) according to mapping
     // Returns an [resU+1, resV+1] array with Vector3 elements
     // Unique to each surface
-    protected abstract void GenerateVertices(Map map);
+    protected abstract void InitVertices(Map map);
 
     // Generates quads (u, v) given vertices
     // Returns an [resU, resV] array with Quad elements
-    protected void GenerateQuads() {
+    protected void InitQuads() {
         quads = new Quad[resU, resV];
 
         for (int v = 0; v < resV; v++) {
@@ -169,6 +172,8 @@ public abstract class Complex : MonoBehaviour {
         go.transform.localScale *= scale;
         return go;
     }
+
+    public abstract IEnumerator ReMap(Map newMap);
 
     public virtual IEnumerator ToPlane() {
         Vector3[,] newVerts = new Vector3[resU+1,resV+1];

@@ -1,5 +1,8 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
 using static Unity.Mathematics.math;
 
 public class KleinBottle : Complex {
@@ -15,11 +18,11 @@ public class KleinBottle : Complex {
         this.resU = resU;
         this.resV = resV;
         currentMap = initMap;
-        GenerateVertices(initMap);
-        GenerateQuads();
+        InitVertices(initMap);
+        InitQuads();
     }
 
-    protected override void GenerateVertices(Map map) {
+    protected override void InitVertices(Map map) {
         vertices = new Vector3[resU+1, resV+1];
         for (int p = 0; p <= resU; p++) {
             float p1 = 4f*PI*(float)p / (float)resU;
@@ -68,5 +71,9 @@ public class KleinBottle : Complex {
 
         if (u1 >= 0 && u1 < resU && v1 >= 0 && v1 < resV) return quads[u1,v1];
         else return new Quad();
+    }
+
+    public override IEnumerator ReMap(Map newMap) {
+        yield return null;
     }
 }

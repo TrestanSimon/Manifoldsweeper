@@ -39,11 +39,11 @@ public class Torus : Complex {
         r = this.ResU / 16f;
         R = this.ResV / 16f;
         currentMap = initMap;
-        GenerateVertices(initMap);
-        GenerateQuads();
+        InitVertices(initMap);
+        InitQuads();
     }
     
-    protected override void GenerateVertices(Map map) {
+    protected override void InitVertices(Map map) {
         vertices = new Vector3[ResU+1,ResV+1];
 
         switch(map) {
@@ -59,6 +59,10 @@ public class Torus : Complex {
 
         if (u1 >= 0 && u1 < ResU && v1 >= 0 && v1 < ResV) return quads[u1,v1];
         else return new Quad();
+    }
+
+    public override IEnumerator ReMap(Map newMap) {
+        yield return StartCoroutine(ToPlane());
     }
 
     public IEnumerator TorusToCylinder(bool reverse = false) {

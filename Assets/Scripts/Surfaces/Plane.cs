@@ -14,11 +14,11 @@ public class Plane : Complex {
         this.resU = resU;
         this.resV = resV;
         currentMap = initMap;
-        GenerateVertices(initMap);
-        GenerateQuads();
+        InitVertices(initMap);
+        InitQuads();
     }
     
-    protected override void GenerateVertices(Map map) {
+    protected override void InitVertices(Map map) {
         vertices = new Vector3[resU+1, resV+1];
         for (int p = 0; p <= resU; p++) {
             for (int q = 0; q <= resV; q++) {
@@ -34,5 +34,9 @@ public class Plane : Complex {
     public override Quad GetNeighbor(int u, int v) {
         if (u >= 0 && u < resU && v >= 0 && v < resV) return quads[u,v];
         else return new Quad(); // returns Quad of type Invalid
+    }
+
+    public override IEnumerator ReMap(Map newMap) {
+        yield return null;
     }
 }
