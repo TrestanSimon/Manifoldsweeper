@@ -175,6 +175,20 @@ public abstract class Complex : MonoBehaviour {
 
     public abstract IEnumerator ReMap(Map newMap);
 
+    public virtual Vector3[,] PlaneMap() {
+        Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
+        for (int p = 0; p <= resU; p++) {
+            for (int q = 0; q <= resV; q++) {
+                tempVerts[p,q] = new Vector3(
+                    -p + resU/2f,
+                    0,
+                    -q + resV/2f
+                ) / 2f;
+            }
+        }
+        return tempVerts;
+    }
+
     public virtual IEnumerator ToPlane() {
         Vector3[,] newVerts = new Vector3[resU+1,resV+1];
 

@@ -28,7 +28,11 @@ public class MobiusStrip : Complex {
     }
 
     protected override void InitVertices(Map map) {
-        StripMap();
+        switch(map) {
+            case Map.Flat: vertices = PlaneMap(); break;
+            case Map.MobiusStrip: vertices = StripMap(); break;
+            case Map.MobiusSudanese: vertices = SudaneseMap(); break;
+        }
     }
 
     public override Quad GetNeighbor(int u, int v) {
@@ -48,29 +52,31 @@ public class MobiusStrip : Complex {
         yield return null;
     }
 
-    private void StripMap() {
-        if (vertices == null) vertices = new Vector3[resU+1, resV+1];
+    private Vector3[,] StripMap() {
+        Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
+        float q1, minor;
 
         for (int p = 0; p <= resU; p++) {
             sincos(2*PI*p / resU, out float sinp, out float cosp);
             sincos(PI*p / resU, out float sinp2, out float cosp2);
 
             for (int q = 0; q <= resV; q++) {
-                float q1 = q / (float)resV - 0.5f;
-                float minor = R + q1/tau * cosp2;
+                q1 = q / (float)resV - 0.5f;
+                minor = R + q1/tau * cosp2;
 
-                vertices[p,q] = 5f * new Vector3(
+                tempVerts[p,q] = 5f * new Vector3(
                     minor * cosp,
                     q1/tau * sinp2,
                     minor * sinp
                 );
             }
         }
+        return tempVerts;
     }
 
-    private void SudaneseMap() {
+    private Vector3[,] SudaneseMap() {
+        Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
         float x, y, z, w, ys, ws;
-        if (vertices == null) vertices = new Vector3[resU+1, resV+1];
 
         for (int p = 0; p <= resU; p++) {
             sincos(2*PI*p / resU, out float sin2p, out float cos2p);
@@ -88,12 +94,13 @@ public class MobiusStrip : Complex {
                 // Stereographic projection
                 ys = (w + y) / sqrt(2f);
                 ws = (w - y) / sqrt(2f);
-                vertices[p,q] = new Vector3(
+                tempVerts[p,q] = new Vector3(
                     x / (1 - ws),
                     ys / (1 - ws),
                     z / (1 - ws)
                 );
             }
         }
+        return tempVerts;
     }
 }
