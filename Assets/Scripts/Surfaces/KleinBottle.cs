@@ -23,40 +23,9 @@ public class KleinBottle : Complex {
     }
 
     protected override void InitVertices(Map map) {
-        vertices = new Vector3[resU+1, resV+1];
-        for (int p = 0; p <= resU; p++) {
-            float p1 = 4f*PI*(float)p / (float)resU;
-            sincos(p1, out float sinp, out float cosp);
-            for (int q = 0; q <= resV; q++) {
-                float q1 = 2f*PI*(float)q / (float)resV;
-                sincos(q1, out float sinq, out float cosq);
-
-                if (p1 < PI) {
-                    vertices[p,q] = new Vector3(
-                        (2.5f - 1.5f*cosp) * cosq,
-                        (2.5f - 1.5f*cosp) * sinq,
-                        -2.5f * sinp
-                    );
-                } else if (p1 < 2f*PI) {
-                    vertices[p,q] = new Vector3(
-                        (2.5f - 1.5f*cosp) * cosq,
-                        (2.5f - 1.5f*cosp) * sinq,
-                        3f*p1 - 3f*PI
-                    );
-                } else if (p1 < 3f*PI) {
-                    vertices[p,q] = new Vector3(
-                        -2f + (2f + cosq) * cosp,
-                        sinq,
-                        (2f + cosq) * sinp + 3f*PI
-                    );
-                } else {
-                    vertices[p,q] = new Vector3(
-                        -2f + 2f*cosp - cosq,
-                        sinq,
-                        -3f*p1 + 12f*PI
-                    );
-                }
-            }
+        switch(map) {
+            case Map.Flat: vertices = PlaneMap(); break;
+            case Map.KleinBottle: vertices = KleinMap(); break;
         }
     }
 
@@ -74,6 +43,53 @@ public class KleinBottle : Complex {
     }
 
     public override IEnumerator ReMap(Map newMap) {
-        yield return null;
+        if (newMap == currentMap) yield return null;
+        else if (newMap == Map.Flat) {
+            yield return StartCoroutine(ComplexLerp(
+                new Vector3[][,]{vertices, PlaneMap()}, 2f));
+        } else if (newMap == Map.KleinBottle) {
+            yield return StartCoroutine(ComplexLerp(
+                new Vector3[][,]{vertices, KleinMap()}, 2f));
+        }
+        currentMap = newMap;
+    }
+
+    private Vector3[,] KleinMap() {
+        Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
+        for (int p = 0; p <= resU; p++) {
+            float p1 = 4f*PI*(float)p / (float)resU;
+            sincos(p1, out float sinp, out float cosp);
+            for (int q = 0; q <= resV; q++) {
+                float q1 = 2f*PI*(float)q / (float)resV;
+                sincos(q1, out float sinq, out float cosq);
+
+                if (p1 < PI) {
+                    tempVerts[p,q] = new Vector3(
+                        (2.5f - 1.5f*cosp) * cosq,
+                        (2.5f - 1.5f*cosp) * sinq,
+                        -2.5f * sinp
+                    );
+                } else if (p1 < 2f*PI) {
+                    tempVerts[p,q] = new Vector3(
+                        (2.5f - 1.5f*cosp) * cosq,
+                        (2.5f - 1.5f*cosp) * sinq,
+                        3f*p1 - 3f*PI
+                    );
+                } else if (p1 < 3f*PI) {
+                    tempVerts[p,q] = new Vector3(
+                        -2f + (2f + cosq) * cosp,
+                        sinq,
+                        (2f + cosq) * sinp + 3f*PI
+                    );
+                } else {
+                    tempVerts[p,q] = new Vector3(
+                        -2f + 2f*cosp - cosq,
+                        sinq,
+                        -3f*p1 + 12f*PI
+                    );
+                }
+            }
+        }
+        return tempVerts;
     }
 }

@@ -185,28 +185,6 @@ public abstract class Complex : MonoBehaviour {
         return tempVerts;
     }
 
-    public virtual IEnumerator ToPlane() {
-        Vector3[,] newVerts = new Vector3[resU+1,resV+1];
-
-        if (currentMap == Map.Flat) yield break;
-
-        // Set new verts
-        for (int u = 0; u <= resU; u++) {
-            for (int v = 0; v <= resV; v++) {
-                newVerts[u,v] = new Vector3(
-                    -u + resU/2f,
-                    0,
-                    -v + resV/2f
-                ) / 2f;
-            }
-        }
-
-        yield return StartCoroutine(ComplexLerp(
-            new Vector3[][,]{vertices, newVerts}, 2f));
-
-        currentMap = Map.Flat;
-    }
-
     // Maps from cylinder to plane
     // Used in Cylinder.cs and Torus.cs
     public Vector3[,] CylinderInvoluteMap(float progress, float radius) {

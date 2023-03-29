@@ -49,7 +49,18 @@ public class MobiusStrip : Complex {
     }
 
     public override IEnumerator ReMap(Map newMap) {
-        yield return null;
+        if (newMap == currentMap) yield return null;
+        else if (newMap == Map.Flat) {
+            yield return StartCoroutine(ComplexLerp(
+                new Vector3[][,]{vertices, PlaneMap()}, 2f));
+        } else if (newMap == Map.MobiusStrip) {
+            yield return StartCoroutine(ComplexLerp(
+                new Vector3[][,]{vertices, StripMap()}, 2f));
+        } else if (newMap == Map.MobiusSudanese) {
+            yield return StartCoroutine(ComplexLerp(
+                new Vector3[][,]{vertices, SudaneseMap()}, 2f));
+        }
+        currentMap = newMap;
     }
 
     private Vector3[,] StripMap() {
