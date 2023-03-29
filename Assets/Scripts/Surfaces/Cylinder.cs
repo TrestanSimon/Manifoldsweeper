@@ -12,11 +12,7 @@ public class Cylinder : Complex {
         };
     }
     
-    public float radius;
-    private float angleOffset = PI/2f; // Added to -2*PI*p/resU
-    // Necessary so that the p-u seam is at the top of the cylinder
-    // and the mapping to a plane breaks the cylinder at this seam
-    // cf minorOffset in Torus.cs
+    private float radius;
 
     public override void Setup(int resU, int resV, Map initMap) {
         sideCount = 2;
@@ -29,19 +25,9 @@ public class Cylinder : Complex {
     }
 
     protected override void InitVertices(Map map) {
-        vertices = new Vector3[resU+1, resV+1];
-        for (int p = 0; p <= resU; p++) {
-            // Reversed sign is necessary so that tile orientation matches
-            // that of the torus when it is mapped to a cylinder
-            sincos(-2*PI*p/resU + angleOffset, out float sinp, out float cosp);
-
-            for (int q = 0; q <= resV; q++) {
-                vertices[p,q] = new Vector3(
-                    radius * cosp,
-                    radius * sinp,
-                    PI * (resV/2f - q) / 8f
-                );
-            }
+        switch(map) {
+            case Map.Flat: vertices = CylinderInvoluteMap(1, radius); break;
+            case Map.Cylinder: vertices = CylinderInvoluteMap(0, radius); break;
         }
     }
 
@@ -55,11 +41,16 @@ public class Cylinder : Complex {
     }
 
     public override IEnumerator ReMap(Map newMap) {
-        yield return null;
+        if (newMap == currentMap) yield return null;
+        else if (newMap == Map.Flat) {
+            yield return StartCoroutine(CylinderToPlane());
+        } else if (newMap == Map.Cylinder) {
+            yield return StartCoroutine(CylinderToPlane(true));
+        }
+        currentMap = newMap;
     }
 
     public override void RepeatComplex() {
-        // if (!planar) return;
         Instantiate(gameObject,
             2f*(vertices[0,resV/2] + radius*Vector3.up),
             Quaternion.identity);
@@ -75,25 +66,14 @@ public class Cylinder : Complex {
 
         while (time < duration) {
             progress = time / duration;
-            UpdateVertices(CylinderToPlaneMap(
+            UpdateVertices(CylinderInvoluteMap(
                 (reverse ? 1f - progress : progress), radius));
 
             time += Time.deltaTime;
             yield return null;
         }
         // Finalize mapping
-        vertices = CylinderToPlaneMap((reverse ? 0f : 1f), radius);
+        vertices = CylinderInvoluteMap((reverse ? 0f : 1f), radius);
         UpdateVertices(vertices);
-    }
-
-    public override IEnumerator ToPlane() {
-        if (currentMap == Map.Flat) {
-            yield return StartCoroutine(CylinderToPlane(true));
-            currentMap = Map.Cylinder;
-        }
-        else {
-            yield return StartCoroutine(CylinderToPlane(false));
-            currentMap = Map.Flat;
-        }
     }
 }

@@ -49,10 +49,6 @@ public abstract class Complex : MonoBehaviour {
     }
     public Map CurrentMap {
         get => currentMap;
-        set {
-            ReMap(value);
-            currentMap = value;
-        }
     }
     public Quad[,] Quads {
         get => quads;
@@ -213,7 +209,7 @@ public abstract class Complex : MonoBehaviour {
 
     // Maps from cylinder to plane
     // Used in Cylinder.cs and Torus.cs
-    public Vector3[,] CylinderToPlaneMap(float progress, float radius) {
+    public Vector3[,] CylinderInvoluteMap(float progress, float radius) {
         Vector3[,] tempVerts = new Vector3[resU+1,resV+1];
         float a, t, sinp, cosp;
 

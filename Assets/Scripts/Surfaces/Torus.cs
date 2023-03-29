@@ -17,7 +17,6 @@ public class Torus : Complex {
     private float minorOffset = PI/2f; // Added to 2*PI*p/ResU
     // Necessary so that the p-u seam is at the top of the torus
     // and the mapping to a plane breaks the cylinder at this seam
-    // cf angleOffset in Cylinder.cs
 
     public override int ResU {
         get => resU;
@@ -44,11 +43,9 @@ public class Torus : Complex {
     }
     
     protected override void InitVertices(Map map) {
-        vertices = new Vector3[ResU+1,ResV+1];
-
         switch(map) {
-            case Map.Flat: vertices = CylinderToPlaneMap(1, r); break;
-            case Map.Torus: vertices = TorusToCylinderMap(0); break;
+            case Map.Flat: vertices = CylinderInvoluteMap(1, r); break;
+            case Map.Torus: vertices = TorusInvolutesMap(0); break;
         }
     }
 
@@ -62,7 +59,15 @@ public class Torus : Complex {
     }
 
     public override IEnumerator ReMap(Map newMap) {
-        yield return StartCoroutine(ToPlane());
+        if (newMap == currentMap) yield return null;
+        else if (newMap == Map.Flat) {
+            yield return StartCoroutine(TorusToCylinder());
+            yield return StartCoroutine(CylinderToPlane());
+        } else if (newMap == Map.Torus) {
+            yield return StartCoroutine(CylinderToPlane(true));
+            yield return StartCoroutine(TorusToCylinder(true));
+        }
+        currentMap = newMap;
     }
 
     public IEnumerator TorusToCylinder(bool reverse = false) {
@@ -72,14 +77,14 @@ public class Torus : Complex {
 
         while (time < duration) {
             progress = reverse ? 1f - time/duration : time/duration;
-            UpdateVertices(TorusToCylinderMap(progress));
+            UpdateVertices(TorusInvolutesMap(progress));
 
             time += Time.deltaTime;
             yield return null;
         }
 
         // Finalize mapping
-        vertices = TorusToCylinderMap(reverse ? 0f : 1f);
+        vertices = TorusInvolutesMap(reverse ? 0f : 1f);
         UpdateVertices(vertices);
     }
 
@@ -90,57 +95,46 @@ public class Torus : Complex {
 
         while (time < duration) {
             progress = time / duration;
-            UpdateVertices(CylinderToPlaneMap(
+            UpdateVertices(CylinderInvoluteMap(
                 (reverse ? 1f - progress : progress), r));
 
             time += Time.deltaTime;
             yield return null;
         }
         // Finalize mapping
-        vertices = CylinderToPlaneMap((reverse ? 0f : 1f), r);
+        vertices = CylinderInvoluteMap((reverse ? 0f : 1f), r);
         UpdateVertices(vertices);
     }
 
     // Maps from torus to cylinder
-    private Vector3[,] TorusToCylinderMap(float progress) {
+    private Vector3[,] TorusInvolutesMap(float progress) {
         Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
-        float a, t, minor, sinq, cosq, sinp, cosp;
+        float p1, q1, t, minor, sinq, cosq, sinp, cosp;
 
         for (int p = 0; p < ResU+1; p++) {
+            p1 = 2*PI*p/ResU + minorOffset;
             for (int q = 0; q < ResV+1; q++) {
+                q1 = 2*PI*q/ResV;
                 // Transformation follows involutes
-                a = 2*PI*q/ResV; // Starting point
-                t = (PI - a)*progress + a; // Involute curve parameter
+                t = (PI - q1)*progress + q1; // Involute curve parameter
                 sincos(t, out sinq, out cosq);
-                sincos(2*PI*p/ResU + minorOffset, out sinp, out cosp);
+                sincos(p1, out sinp, out cosp);
                 minor = r * cosp
-                    /sqrt(1 + (t - a)*(t - a)*(1 - progress)*(1 - progress));
+                    /sqrt(1 + (t - q1)*(t - q1)*(1 - progress)*(1 - progress));
 
                 // In x and z, the first term gives the involutes of the circles
                 // that wrap around the torus toroidally, and the second term
                 // preserves the shape of the circles that wrap around poloidally
                 tempVerts[p,q] = new Vector3(
-                    R * (cosq + (t - a)*sinq)
-                        + minor * (cosq + (t - a)*(1 - progress)*sinq)
+                    R * (cosq + (t - q1)*sinq)
+                        + minor * (cosq + (t - q1)*(1 - progress)*sinq)
                         + R*progress,
                     r * sinp,
-                    R * (sinq - (t - a)*cosq)
-                        + minor * (sinq - (t - a)*(1 - progress)*cosq)
+                    R * (sinq - (t - q1)*cosq)
+                        + minor * (sinq - (t - q1)*(1 - progress)*cosq)
                 );
             }
         }
         return tempVerts;
-    }
-
-    public override IEnumerator ToPlane() {
-        if (currentMap != Map.Flat) {
-            yield return StartCoroutine(TorusToCylinder());
-            yield return StartCoroutine(CylinderToPlane());
-            currentMap = Map.Flat;
-        } else {
-            yield return StartCoroutine(CylinderToPlane(true));
-            yield return StartCoroutine(TorusToCylinder(true));
-            currentMap = Map.Torus;
-        }
     }
 }

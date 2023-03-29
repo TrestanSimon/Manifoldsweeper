@@ -44,8 +44,9 @@ public class UIHandler : MonoBehaviour {
             }
         }
     }
+    // Map selected in dropdown
     private Complex.Map SelectedMap {
-        get => SelectedMapDict[mapDropdown.captionText.GetParsedText()];
+        get => SelectedMapDict.ElementAt(mapDropdown.value).Value;
     }
 
     private void Awake() {
@@ -158,7 +159,7 @@ public class UIHandler : MonoBehaviour {
         game.Setup(complex, _resU, _resV, mineCount);
         cameraHandler.Target = complex;
 
-        mapButton.interactable = true;
+        mapButton.interactable = false;
 
         game.NewGame(false);
     }
@@ -174,6 +175,7 @@ public class UIHandler : MonoBehaviour {
     public void UpdateActiveMaps() {
         mapDropdown.ClearOptions();
         mapDropdown.AddOptions(SelectedMapDict.Keys.ToList());
+        mapDropdown.RefreshShownValue();
     }
 
     // Ran On Value Changed of Difficulty dropdown
@@ -213,8 +215,19 @@ public class UIHandler : MonoBehaviour {
     }
 
     private IEnumerator ReMapCoroutine() {
+        mapDropdown.interactable = false;
         mapButton.interactable = false;
         yield return StartCoroutine(complex.ReMap(SelectedMap));
-        mapButton.interactable = true;
+        mapDropdown.interactable = true;
+    }
+
+    // Ran On Value Changed of mapDropdown
+    public void UpdateReMapInteractability() {
+        if (complex == null) {
+            mapButton.interactable = false;
+            return;
+        }
+        if (SelectedMap == complex.CurrentMap) mapButton.interactable = false;
+        else mapButton.interactable = true;
     }
 }
