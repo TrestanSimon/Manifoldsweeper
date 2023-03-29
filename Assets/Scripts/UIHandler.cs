@@ -117,11 +117,16 @@ public class UIHandler : MonoBehaviour {
     }
 
     private void Update() {
-        if (game != null) {
-            flagText.text = $"{game.FlagCount}/{game.MineCount}";
-            timerText.text =
-                $"{(int)game.Timer}.{((int)(game.Timer*10))%10}";
-        }
+        if (game is null || complex is null) return;
+
+        topPanel.Find("GameStart Message").gameObject.SetActive(
+            !game.GameOn && !game.GameLost && !game.GameWon);
+        topPanel.Find("GameOver Message").gameObject.SetActive(game.GameLost);
+        topPanel.Find("GameWin Message").gameObject.SetActive(game.GameWon);
+
+        flagText.text = $"{game.FlagCount}/{game.MineCount}";
+        timerText.text =
+            $"{(int)game.Timer}.{((int)(game.Timer*10))%10}";
     }
 
     public void Clear() {
@@ -160,6 +165,8 @@ public class UIHandler : MonoBehaviour {
         cameraHandler.Target = complex;
 
         mapButton.interactable = false;
+
+        topPanel.Find("Tutorial Message").gameObject.SetActive(false);
 
         game.NewGame(false);
     }
