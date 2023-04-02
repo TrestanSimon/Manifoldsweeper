@@ -73,11 +73,12 @@ public class Torus : Complex {
     public IEnumerator TorusToCylinder(bool reverse = false) {
         float time = 0f;
         float duration = 1f;
-        float progress;
+        float t;
 
         while (time < duration) {
-            progress = reverse ? 1f - time/duration : time/duration;
-            UpdateVertices(TorusInvolutesMap(progress));
+            t = reverse ? 1f - time/duration : time/duration;
+            t = t * t * (3f - 2f * t);
+            UpdateVertices(TorusInvolutesMap(t));
 
             time += Time.deltaTime;
             yield return null;
@@ -90,13 +91,13 @@ public class Torus : Complex {
 
     public IEnumerator CylinderToPlane(bool reverse = false) {
         float time = 0f;
+        float t;
         float duration = 1f;
-        float progress;
 
         while (time < duration) {
-            progress = time / duration;
-            UpdateVertices(CylinderInvoluteMap(
-                (reverse ? 1f - progress : progress), r));
+            t = reverse ? 1f - time / duration : time / duration;
+            t = t * t * (3f - 2f * t);
+            UpdateVertices(CylinderInvoluteMap(t, r));
 
             time += Time.deltaTime;
             yield return null;

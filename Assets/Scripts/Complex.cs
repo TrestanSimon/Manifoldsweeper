@@ -96,16 +96,20 @@ public abstract class Complex : MonoBehaviour {
         Vector3[][,] vertSteps, float duration
     ) {
         float time = 0f;
+        float t;
         Vector3[,] tempVerts = new Vector3[resU+1,resV+1];
 
         for (int i = 0; i < vertSteps.Length-1; i++) {
             // Lerp loop
             while (time < duration) {
+                t = time / duration;
+                t = t * t * (3f - 2f * t);
+
                 // Update verts
                 for (int u = 0; u < resU+1; u++) {
                     for (int v = 0; v < resV+1; v++) {
                         tempVerts[u,v] = Vector3.Lerp(
-                            vertSteps[i][u,v], vertSteps[i+1][u,v], time/duration
+                            vertSteps[i][u,v], vertSteps[i+1][u,v], t
                         );
                     }
                 }

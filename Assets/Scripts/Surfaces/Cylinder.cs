@@ -61,13 +61,13 @@ public class Cylinder : Complex {
 
     public IEnumerator CylinderToPlane(bool reverse = false) {
         float time = 0f;
-        float duration = 1f;
-        float progress;
+        float t;
+        float duration = 2f;
 
         while (time < duration) {
-            progress = time / duration;
-            UpdateVertices(CylinderInvoluteMap(
-                (reverse ? 1f - progress : progress), radius));
+            t = reverse ? 1f - time / duration : time / duration;
+            t = t * t * (3f - 2f * t);
+            UpdateVertices(CylinderInvoluteMap(t, radius));
 
             time += Time.deltaTime;
             yield return null;
