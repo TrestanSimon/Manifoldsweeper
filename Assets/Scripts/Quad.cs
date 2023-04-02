@@ -10,6 +10,23 @@ public class Quad {
     protected MeshRenderer[] _meshRenderers;
     protected Mesh[] _meshes;
 
+    // Winding for triangles and UV coordinates
+        // 1 --> 2
+        // |  /  |
+        // 0 <-- 3
+    public static int[] QuadTriangles {
+        get => new int[]{
+            0, 1, 2,
+            2, 3, 0
+        };
+    }
+    public static Vector2[] QuadUVCoords {
+        get => new Vector2[]{
+            Vector2.zero, Vector2.up,
+            Vector2.one, Vector2.right
+        };
+    }
+
     public int SideCount {
         set {
             if (value < 1 || value > 2)
@@ -37,19 +54,6 @@ public class Quad {
         _meshRenderers = new MeshRenderer[sideCount];
         _meshes = new Mesh[sideCount];
         _vertices = vertices;
-
-        // Winding for triangles and UV coordinates
-        // 1 --> 2
-        // |  /  |
-        // 0 <-- 3
-        int[] triangles = new int[]{
-            0, 1, 2,
-            2, 3, 0
-        };
-        Vector2[] uvCoords = new Vector2[]{
-            Vector2.zero, Vector2.up,
-            Vector2.one, Vector2.right
-        };
     
         for (int i = 0; i < sideCount; i++) {
             _gameObjects[i] = new GameObject();
@@ -59,8 +63,8 @@ public class Quad {
             _meshes[i] = mesh;
 
             mesh.vertices = _vertices;
-            mesh.triangles = triangles;
-            mesh.uv = uvCoords;
+            mesh.triangles = QuadTriangles;
+            mesh.uv = QuadUVCoords;
 
             if (i == 1) {
                 // Reverse winding
@@ -100,7 +104,7 @@ public class Quad {
     }
 
     // Sets material
-    public void SetMaterial(Material material) {
+    public virtual void SetMaterial(Material material) {
         for (int i = 0; i < _sideCount; i++)
             _gameObjects[i].GetComponent<MeshRenderer>().material = material;
     }

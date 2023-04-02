@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections;
 using UnityEngine;
 
@@ -115,6 +116,20 @@ public class Tile : Quad {
     ) {
         base.UpdateVertices(vert0, vert1, vert2, vert3);
         if (Flagged) UpdateFlags();
+    }
+
+    public override void SetMaterial(Material material) {
+        base.SetMaterial(material);
+        if (_sideCount > 1) {
+            if (type == Type.Number) {
+                _meshes[0].uv = QuadUVCoords;
+                _meshes[1].uv = QuadUVCoords.Reverse().ToArray();
+            }
+            else {
+                _meshes[0].uv = QuadUVCoords.Reverse().ToArray();
+                _meshes[1].uv = QuadUVCoords.Reverse().ToArray();
+            }
+        }
     }
 
     private void GenerateClouds() {
