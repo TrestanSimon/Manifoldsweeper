@@ -20,7 +20,7 @@ public class CameraHandler : MonoBehaviour {
 
         if (_map != _target.CurrentMap) {
             if (_target.CurrentMap == Complex.Map.Flat) Update2DCamera(true);
-            else Update3DCamera(true);
+            else if (_map == Complex.Map.Flat) Update3DCamera(true);
         }
 
         _map = _target.CurrentMap;

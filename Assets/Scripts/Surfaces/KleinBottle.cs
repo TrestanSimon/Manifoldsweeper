@@ -19,7 +19,7 @@ public class KleinBottle : Complex {
         this.resV = resV;
         currentMap = initMap;
         InitVertices(initMap);
-        InitQuads();
+        InitTiles();
     }
 
     protected override void InitVertices(Map map) {
@@ -29,7 +29,7 @@ public class KleinBottle : Complex {
         }
     }
 
-    public override Quad GetNeighbor(int u, int v) {
+    public override Tile GetNeighbor(int u, int v) {
         // Wraps around u and v
         int u1 = u >= 0 ? u % resU : u + resU;
         int v1 = v >= 0 ? v % resV : v + resV;
@@ -38,8 +38,8 @@ public class KleinBottle : Complex {
         if (u % (2*resU) >= resU || u % (-2*resU) < 0)    
             v1 = resV - (v1 + 1);
 
-        if (u1 >= 0 && u1 < resU && v1 >= 0 && v1 < resV) return quads[u1,v1];
-        else return new Quad();
+        if (u1 >= 0 && u1 < resU && v1 >= 0 && v1 < resV) return tiles[u1,v1];
+        else return new Tile();
     }
 
     public override IEnumerator ReMap(Map newMap) {

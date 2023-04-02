@@ -15,7 +15,7 @@ public class Plane : Complex {
         this.resV = resV;
         currentMap = initMap;
         InitVertices(initMap);
-        InitQuads();
+        InitTiles();
     }
     
     protected override void InitVertices(Map map) {
@@ -31,9 +31,9 @@ public class Plane : Complex {
         }
     }
 
-    public override Quad GetNeighbor(int u, int v) {
-        if (u >= 0 && u < resU && v >= 0 && v < resV) return quads[u,v];
-        else return new Quad(); // returns Quad of type Invalid
+    public override Tile GetNeighbor(int u, int v) {
+        if (u >= 0 && u < resU && v >= 0 && v < resV) return tiles[u,v];
+        else return new Tile(); // returns Quad of type Invalid
     }
 
     public override IEnumerator ReMap(Map newMap) {

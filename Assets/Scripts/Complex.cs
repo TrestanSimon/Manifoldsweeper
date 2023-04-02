@@ -26,7 +26,7 @@ public abstract class Complex : MonoBehaviour {
     protected int resU, resV;
     protected Map currentMap;
     protected Vector3[,] vertices;
-    protected Quad[,] quads;
+    protected Tile[,] tiles;
     protected int sideCount;
 
     public virtual int ResU {
@@ -50,9 +50,9 @@ public abstract class Complex : MonoBehaviour {
     public Map CurrentMap {
         get => currentMap;
     }
-    public Quad[,] Quads {
-        get => quads;
-        private set => quads = value;
+    public Tile[,] Tiles {
+        get => tiles;
+        private set => tiles = value;
     }
 
     public abstract void Setup(int resU, int resV, Map initMap);
@@ -62,17 +62,19 @@ public abstract class Complex : MonoBehaviour {
     // Unique to each surface
     protected abstract void InitVertices(Map map);
 
-    // Generates quads (u, v) given vertices
-    // Returns an [resU, resV] array with Quad elements
-    protected void InitQuads() {
-        quads = new Quad[resU, resV];
+    // Generates tiles (u, v) given vertices
+    // Returns an [resU, resV] array with tile elements
+    protected void InitTiles() {
+        tiles = new Tile[resU, resV];
 
         for (int v = 0; v < resV; v++) {
             for (int u = 0; u < resU; u++) {
-                quads[u,v] = new Quad(
+                tiles[u,v] = new Tile(
                     u, v, sideCount,
-                    vertices[u,v], vertices[u+1,v],
-                    vertices[u+1,v+1], vertices[u,v+1],
+                    new Vector3[]{
+                        vertices[u,v], vertices[u+1,v],
+                        vertices[u+1,v+1], vertices[u,v+1]
+                    },
                     this
                 );
             }
@@ -82,7 +84,7 @@ public abstract class Complex : MonoBehaviour {
     public void UpdateVertices(Vector3[,] newVerts) {
         for (int u = 0; u < resU; u++) {
             for (int v = 0; v < resV; v++) {
-                quads[u,v].UpdateVertices(
+                tiles[u,v].UpdateVertices(
                     newVerts[u,v], newVerts[u+1,v],
                     newVerts[u+1,v+1], newVerts[u,v+1]
                 );
@@ -119,18 +121,18 @@ public abstract class Complex : MonoBehaviour {
         vertices = vertSteps[vertSteps.Length-1];
     }
 
-    // Returns a Quad given a coordinate neighboring another Quad
+    // Returns a tile given a coordinate neighboring another tile
     // Depends on edge gluing
-    public abstract Quad GetNeighbor(int u, int v);
+    public abstract Tile GetNeighbor(int u, int v);
 
-    public List<Quad> GetNeighbors(Quad quad) {
-        List<Quad> neighbors = new List<Quad>();
-        Quad neighbor;
+    public List<Tile> GetNeighbors(Tile tile) {
+        List<Tile> neighbors = new List<Tile>();
+        Tile neighbor;
         for (int du = -1; du <= 1; du++) {
             for (int dv = -1; dv <= 1; dv++) {
                 if (!(du == 0 && dv == 0)) {
-                    neighbor = GetNeighbor(quad.U + du, quad.V + dv);
-                    if (neighbor.type != Quad.Type.Invalid)
+                    neighbor = GetNeighbor(tile.U + du, tile.V + dv);
+                    if (neighbor.type != Tile.Type.Invalid)
                         neighbors.Add(neighbor);
                 }
             }
@@ -142,9 +144,9 @@ public abstract class Complex : MonoBehaviour {
         if (currentMap != Map.Flat) return;
     }
 
-    // Identifies the Quad instance the cursor is over
-    // returns null if there is no Quad
-    public Quad MouseIdentify() {
+    // Identifies the tile instance the cursor is over
+    // returns null if there is no tile
+    public Tile MouseIdentify() {
         Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         if (Physics.Raycast(inputRay, out hit))
@@ -152,10 +154,10 @@ public abstract class Complex : MonoBehaviour {
         else return null;
     }
 
-    // Identifies the Quad instance associated with a GameObject
-    private Quad Identify(GameObject go) {
+    // Identifies the tile instance associated with a GameObject
+    private Tile Identify(GameObject go) {
         go.TryGetComponent<Tag>(out Tag tag);
-        return quads[tag.u, tag.v];
+        return tiles[tag.u, tag.v];
     }
 
     public static void DestroyGOs(GameObject[] gos) {

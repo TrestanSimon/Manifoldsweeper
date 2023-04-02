@@ -1,47 +1,15 @@
 using System;
 using System.Linq;
-using System.Collections;
 using UnityEngine;
 
 public class Quad {
-    public enum Type {
-        Invalid,
-        Empty,
-        Number,
-        Mine
-    }
-
     // Geometry-related fields
-    private int _u, _v, _sideCount;
-    private GameObject[] _gameObjects;
-    private Vector3[] _vertices;
-    private Mesh[] _meshes;
+    protected int _u, _v, _sideCount;
+    protected GameObject[] _gameObjects;
+    protected Vector3[] _vertices;
+    protected MeshRenderer[] _meshRenderers;
+    protected Mesh[] _meshes;
 
-    // Game-related fields
-    private Type _type;
-    private int _number; // Number of mines in neighborhood
-    private bool _revealed, _flagged, _exploded;
-    private GameObject[] _flags;
-    private GameObject _revealPS; // Particle system for tile reveal
-
-    public int U {
-        get => _u;
-        private set {
-            if (value < 0 || value > 99)
-                throw new ArgumentOutOfRangeException(nameof(value),
-                    "U index range is between 0 and 99.");
-            else _u = value;
-        }
-    }
-    public int V {
-        get => _v;
-        private set {
-            if (value < 0 || value > 99)
-                throw new ArgumentOutOfRangeException(nameof(value),
-                    "V index range is between 0 and 99.");
-            else _v = value;
-        }
-    }
     public int SideCount {
         set {
             if (value < 1 || value > 2)
@@ -50,77 +18,25 @@ public class Quad {
             _sideCount = value;
         }
     }
-    private float _Scale {
+    protected float _Scale {
         get => Vector3.Magnitude(_vertices[0] - _vertices[2]);
     }
-
-    public Type type {
-        get => _type;
-        set => _type = value;
-    }
-
-    public int Number {
-        get => _number;
-        set {
-            if (value < 0 || value > 8)
-                throw new ArgumentOutOfRangeException(nameof(value),
-                    "Tile number range is between 0 and 8.");
-            if (type != Quad.Type.Mine) {
-                if (value == 0) type = Quad.Type.Empty;
-                else type = Quad.Type.Number;
-            }
-            _number = value;
-        }
-    }
-    public bool Revealed {
-        get => _revealed;
-        set {
-            if (value && Flagged)
-                Flagged = false;
-            _revealed = value;
-        }
-    }
-    public bool Flagged {
-        get => _flagged;
-        set {
-            if (!_revealed) {
-                if (value && _flags == null)
-                    _flags = new GameObject[_sideCount];
-                else if (!value && _flags != null)
-                    Complex.DestroyGOs(_flags);
-                _flagged = value;
-            }
-        }
-    }
-    public bool Exploded {
-        get => _exploded;
-        set {
-            if (_type == Quad.Type.Mine)
-                _exploded = value;
-        }
-    }
-    public bool Visited { get; set; }
-    public int Depth { get; set; }
 
     // Constructor for Invalid Quads
     public Quad() {}
 
     // Normal constructor
     public Quad(
-        int u, int v, int sideCount,
-        Vector3 vert0, Vector3 vert1,
-        Vector3 vert2, Vector3 vert3,
-        Complex complex
+        Vector3[] vertices,
+        int sideCount = 2,
+        bool collision = true
     ) {
-        U = u; V = v;
         SideCount = sideCount;
 
         _gameObjects = new GameObject[sideCount];
+        _meshRenderers = new MeshRenderer[sideCount];
         _meshes = new Mesh[sideCount];
-        _vertices = new Vector3[]{
-            vert0, vert1,
-            vert2, vert3
-        };
+        _vertices = vertices;
 
         // Winding for triangles and UV coordinates
         // 1 --> 2
@@ -137,16 +53,8 @@ public class Quad {
     
         for (int i = 0; i < sideCount; i++) {
             _gameObjects[i] = new GameObject();
-            _gameObjects[i].name = $"Quad {i} ({u}, {v})";
-            
-            // Make quads child of Complex GameObject
-            _gameObjects[i].transform.parent = complex.transform;
 
-            // For identifying Quad instance from GameObject
-            Tag tag = _gameObjects[i].AddComponent<Tag>();
-            tag.u = U; tag.v = V;
-
-            _gameObjects[i].AddComponent<MeshRenderer>();
+            _meshRenderers[i] = _gameObjects[i].AddComponent<MeshRenderer>();
             Mesh mesh = _gameObjects[i].AddComponent<MeshFilter>().mesh;
             _meshes[i] = mesh;
 
@@ -164,13 +72,15 @@ public class Quad {
             mesh.RecalculateNormals();
             mesh.RecalculateTangents();
             
-            MeshCollider collider = _gameObjects[i].AddComponent<MeshCollider>();
-            collider.sharedMesh = mesh;
+            if (collision) {
+                MeshCollider collider = _gameObjects[i].AddComponent<MeshCollider>();
+                collider.sharedMesh = mesh;
+            }
         }
     }
 
     // Updates mesh(es) with provided vertices
-    public void UpdateVertices(
+    public virtual void UpdateVertices(
         Vector3 vert0, Vector3 vert1,
         Vector3 vert2, Vector3 vert3
     ) {
@@ -183,22 +93,9 @@ public class Quad {
             _meshes[i].RecalculateBounds();
             _meshes[i].RecalculateNormals();
             _meshes[i].RecalculateTangents();
-            MeshCollider collider = _gameObjects[i].GetComponent<MeshCollider>();
-            collider.sharedMesh = _meshes[i];
-        }
-        if (Flagged) UpdateFlags();
-    }
 
-    // Delay revealing based on flood depth
-    public IEnumerator DelayedReveal(Material material, GameObject breakPS = null) {
-        if (type == Type.Invalid) yield break;
-        yield return new WaitForSeconds(0.02f * Depth);
-
-        SetMaterial(material);
-
-        if (breakPS != null) {
-            _revealPS = Complex.CreateGO(breakPS, _vertices[0], Quaternion.identity, _Scale);
-            _revealPS.transform.parent = _gameObjects[0].transform;
+            _gameObjects[i].TryGetComponent<MeshCollider>(out MeshCollider collider);
+            if (collider is not null) collider.sharedMesh = _meshes[i];
         }
     }
 
@@ -206,53 +103,5 @@ public class Quad {
     public void SetMaterial(Material material) {
         for (int i = 0; i < _sideCount; i++)
             _gameObjects[i].GetComponent<MeshRenderer>().material = material;
-    }
-
-    // Places flag(s)
-    public int FlagToggle(GameObject flagPrefab,
-        Material materialFlag, Material materialUnknown
-    ) {
-        if (Flagged) return UnFlag(flagPrefab, materialUnknown);
-        else return Flag(flagPrefab, materialFlag);
-    }
-
-    public int Flag(GameObject flagPrefab, Material materialFlag) {
-        if (type == Type.Invalid || Revealed || Flagged) return 0;
-
-        Flagged = true;
-        
-        // Points to where flag will be planted
-        Vector3 stake = (_vertices[0] + _vertices[2]) / 2f;
-
-        // Create flag for each side
-        for (int i = 0; i < _sideCount; i++) {
-            Vector3 flagPos = stake + _meshes[i].normals[0] * _Scale/2f;
-            Quaternion flagRot = Quaternion.LookRotation(_meshes[i].normals[0])
-                * Quaternion.AngleAxis(90, Vector3.up);
-
-            _flags[i] = Complex.CreateGO(flagPrefab, flagPos, flagRot, _Scale);
-            _flags[i].transform.parent = _gameObjects[i].transform;
-            _flags[i].name = "Flag";
-        }
-        SetMaterial(materialFlag);
-        return 1;
-    }
-
-    public int UnFlag(GameObject flagPrefab, Material materialUnknown) {
-        if (type == Type.Invalid || Revealed || !Flagged) return 0;
-
-        Flagged = false;
-
-        SetMaterial(materialUnknown);
-        return -1;
-    }
-
-    private void UpdateFlags() {
-        Vector3 stake = (_vertices[0] + _vertices[2]) / 2f;
-        for (int i = 0; i < _sideCount; i++) {
-            _flags[i].transform.position = stake + _meshes[i].normals[0] * _Scale/2f;
-            _flags[i].transform.rotation = Quaternion.LookRotation(_meshes[i].normals[0])
-                * Quaternion.AngleAxis(90, Vector3.up);
-        }
     }
 }
