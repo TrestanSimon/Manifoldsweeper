@@ -121,7 +121,7 @@ public class Tile : Quad {
     public override void SetMaterial(Material material) {
         base.SetMaterial(material);
         if (_sideCount > 1) {
-            if (type == Type.Number) {
+            if (type == Type.Number && Revealed) {
                 _meshes[0].uv = QuadUVCoords;
                 _meshes[1].uv = QuadUVCoords.Reverse().ToArray();
             }
