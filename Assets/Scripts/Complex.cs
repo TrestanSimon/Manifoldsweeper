@@ -125,14 +125,18 @@ public abstract class Complex : MonoBehaviour {
     // Depends on edge gluing
     public abstract Tile GetNeighbor(int u, int v);
 
-    public List<Tile> GetNeighbors(Tile tile) {
+    // Returns list of all neighbors
+    // (1) (2) (3)
+    // (4)  X  (5)
+    // (6) (7) (8)
+    public List<Tile> GetNeighbors(Tile tile, bool filter = true) {
         List<Tile> neighbors = new List<Tile>();
         Tile neighbor;
-        for (int du = -1; du <= 1; du++) {
-            for (int dv = -1; dv <= 1; dv++) {
+        for (int du = 1; du >= -1; du--) {
+            for (int dv = 1; dv >= -1; dv--) {
                 if (!(du == 0 && dv == 0)) {
                     neighbor = GetNeighbor(tile.U + du, tile.V + dv);
-                    if (neighbor.type != Tile.Type.Invalid)
+                    if (neighbor.type != Tile.Type.Invalid || !filter)
                         neighbors.Add(neighbor);
                 }
             }

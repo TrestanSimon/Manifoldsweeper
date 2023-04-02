@@ -36,22 +36,22 @@ public class Game : MonoBehaviour {
 
     private void Awake() {
         // Load materials
-        _materialUknown = Resources.Load("Materials/OceanMats/TileCloud", typeof(Material)) as Material;
+        _materialUknown = Resources.Load("Materials/Ocean/TileCloud", typeof(Material)) as Material;
         _materialEmpty = new Material[]{
-            Resources.Load("Materials/OceanMats/TileOcean", typeof(Material)) as Material,
-            Resources.Load("Materials/OceanMats/TileOcean2", typeof(Material)) as Material,
+            Resources.Load("Materials/Ocean/TileOcean", typeof(Material)) as Material,
+            Resources.Load("Materials/Ocean/TileOcean2", typeof(Material)) as Material,
         };
-        _materialMine = Resources.Load("Materials/DesertMats/TileMine", typeof(Material)) as Material;
-        _materialExploded = Resources.Load("Materials/DesertMats/TileExploded", typeof(Material)) as Material;
+        _materialMine = Resources.Load("Materials/Island/TileMine", typeof(Material)) as Material;
+        _materialExploded = Resources.Load("Materials/Island/TileExploded", typeof(Material)) as Material;
         _materialFlag = Resources.Load("Materials/DesertMats/TileNo", typeof(Material)) as Material;
-        _materialNum1 = Resources.Load("Materials/DesertMats/Tile1", typeof(Material)) as Material;
-        _materialNum2 = Resources.Load("Materials/DesertMats/Tile2", typeof(Material)) as Material;
-        _materialNum3 = Resources.Load("Materials/DesertMats/Tile3", typeof(Material)) as Material;
-        _materialNum4 = Resources.Load("Materials/DesertMats/Tile4", typeof(Material)) as Material;
-        _materialNum5 = Resources.Load("Materials/DesertMats/Tile5", typeof(Material)) as Material;
-        _materialNum6 = Resources.Load("Materials/DesertMats/Tile6", typeof(Material)) as Material;
-        _materialNum7 = Resources.Load("Materials/DesertMats/Tile7", typeof(Material)) as Material;
-        _materialNum8 = Resources.Load("Materials/DesertMats/Tile8", typeof(Material)) as Material;
+        _materialNum1 = Resources.Load("Materials/Island/Tile1", typeof(Material)) as Material;
+        _materialNum2 = Resources.Load("Materials/Island/Tile2", typeof(Material)) as Material;
+        _materialNum3 = Resources.Load("Materials/Island/Tile3", typeof(Material)) as Material;
+        _materialNum4 = Resources.Load("Materials/Island/Tile4", typeof(Material)) as Material;
+        _materialNum5 = Resources.Load("Materials/Island/Tile5", typeof(Material)) as Material;
+        _materialNum6 = Resources.Load("Materials/Island/Tile6", typeof(Material)) as Material;
+        _materialNum7 = Resources.Load("Materials/Island/Tile7", typeof(Material)) as Material;
+        _materialNum8 = Resources.Load("Materials/Island/Tile8", typeof(Material)) as Material;
         // Load prefabs
         _flagPrefab = Resources.Load("Prefabs/Flag", typeof(GameObject)) as GameObject;
         _breakPS = Resources.Load("Prefabs/BreakPS", typeof(GameObject)) as GameObject;
@@ -247,11 +247,39 @@ public class Game : MonoBehaviour {
 
     private Material GetRevealedMaterial(Tile tile) {
         switch (tile.type) {
-            case Tile.Type.Empty: return _materialEmpty[0];
+            case Tile.Type.Empty: return GetEmptyMaterial(tile);
             case Tile.Type.Mine: return tile.Exploded ? _materialExploded : _materialMine;
             case Tile.Type.Number: return GetNumberMaterial(tile);
             default: return null;
         }
+    }
+
+    // (0) (1) (2)
+    // (3)  X  (4)
+    // (5) (6) (7)
+    private Material GetEmptyMaterial(Tile tile) {
+        List<Tile> neighbors = _complex.GetNeighbors(tile, false);
+        bool[] beach = new bool[8];
+        string foot = "";
+
+        for (int i = 0; i < 8; i++) {
+            if (neighbors[i].type != Tile.Type.Empty
+                && neighbors[i].type != Tile.Type.Invalid) {
+                beach[i] = true;
+            } else beach[i] = false;
+        }
+
+        if (beach[1]) beach[0] = beach[2] = true;
+        if (beach[4]) beach[2] = beach[7] = true;
+        if (beach[6]) beach[7] = beach[5] = true;
+        if (beach[3]) beach[5] = beach[0] = true;
+
+        for (int i = 0; i < 8; i++)
+            if (beach[i]) foot += $"{i}";
+
+        return Resources.Load(
+            $"Materials/Island/TileEmpty/TileEmpty" + foot,
+            typeof(Material)) as Material;
     }
 
     private Material GetNumberMaterial(Tile tile) {

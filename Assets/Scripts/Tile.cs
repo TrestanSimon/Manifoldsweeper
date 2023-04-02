@@ -105,7 +105,7 @@ public class Tile : Quad {
             Tag tag = _gameObjects[i].AddComponent<Tag>();
             tag.u = U; tag.v = V;
         }
-        GenerateClouds();
+        //GenerateClouds();
     }
 
     // Updates mesh(es) with provided vertices

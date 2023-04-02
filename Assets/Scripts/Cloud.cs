@@ -6,7 +6,7 @@ using UnityEngine;
 public class Cloud : Quad {
     private Material _MaterialCloud {
         get => Resources.Load(
-            "Materials/OceanMats/TileCloud 1", typeof(Material)) as Material;
+            "Materials/Ocean/TileCloud 1", typeof(Material)) as Material;
     }
     // Constructor for Invalid Tiles
     public Cloud() {}
