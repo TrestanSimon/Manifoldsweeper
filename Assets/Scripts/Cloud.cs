@@ -5,16 +5,21 @@ using UnityEngine;
 
 public class Cloud : Quad {
     private Material _MaterialCloud {
-        get => Resources.Load(
-            "Materials/Clouds/TileCloud 1", typeof(Material)) as Material;
+        get {
+            int rand = Random.Range(0, 2);
+            return Resources.Load(
+                $"Materials/Clouds/TileCloud{rand}", typeof(Material)) as Material;
+            
+        }
     }
     // Constructor for Invalid Tiles
     public Cloud() {}
 
     // Normal constructor
     public Cloud(
-        Vector3[] vertices
+        Vector3[] vertices, int u, int v
     ) : base(vertices, 2, false) {
+        _u = u; _v = v;
         SetMaterial(_MaterialCloud);
         for (int i = 0; i < _sideCount; i++) {
             // _meshRenderers[i].shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;

@@ -130,9 +130,9 @@ public abstract class Complex : MonoBehaviour {
     public abstract Tile GetNeighbor(int u, int v);
 
     // Returns list of all neighbors
-    // (1) (2) (3)
-    // (4)  X  (5)
-    // (6) (7) (8)
+    // (0) (1) (2)
+    // (3)  X  (4)
+    // (5) (6) (7)
     public List<Tile> GetNeighbors(Tile tile, bool filter = true) {
         List<Tile> neighbors = new List<Tile>();
         Tile neighbor;

@@ -135,6 +135,7 @@ public class Tile : Quad {
         }
     }
 
+    // Resets tile state for new game
     public void Reset(bool clearFlags) {
         type = Tile.Type.Empty;
         Revealed = false;
@@ -155,7 +156,7 @@ public class Tile : Quad {
                 _vertices[1] + altitude,
                 _vertices[2] + altitude,
                 _vertices[3] + altitude
-            }
+            }, U, V
         );
         _clouds[i].Parent(_gameObjects[i]);
     }
@@ -207,6 +208,7 @@ public class Tile : Quad {
         return 1;
     }
 
+    // Removes flag(s)
     public int UnFlag(GameObject flagPrefab, Material materialUnknown) {
         if (type == Type.Invalid || Revealed || !Flagged) return 0;
 

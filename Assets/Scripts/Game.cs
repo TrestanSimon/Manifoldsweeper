@@ -244,9 +244,6 @@ public class Game : MonoBehaviour {
         }
     }
 
-    // (0) (1) (2)
-    // (3)  X  (4)
-    // (5) (6) (7)
     private Material GetEmptyMaterial(Tile tile) {
         List<Tile> neighbors = _complex.GetNeighbors(tile, false);
         bool[] beach = new bool[8];
