@@ -95,6 +95,7 @@ public class Tile : Quad {
         Complex complex
     ) : base(vertices) {
         U = u; V = v;
+        _clouds = new Cloud[_sideCount];
 
         for (int i = 0; i < sideCount; i++) {
             _gameObjects[i].name = $"Quad {i} ({u}, {v})";
@@ -105,8 +106,9 @@ public class Tile : Quad {
             // For identifying tile instance from GameObject
             Tag tag = _gameObjects[i].AddComponent<Tag>();
             tag.u = U; tag.v = V;
+
+            GenerateCloud(i);
         }
-        //GenerateClouds();
     }
 
     // Updates mesh(es) with provided vertices
@@ -116,6 +118,7 @@ public class Tile : Quad {
     ) {
         base.UpdateVertices(vert0, vert1, vert2, vert3);
         if (Flagged) UpdateFlags();
+        // TODO: Update clouds
     }
 
     public override void SetMaterial(Material material) {
@@ -132,21 +135,29 @@ public class Tile : Quad {
         }
     }
 
-    private void GenerateClouds() {
-        _clouds ??= new Cloud[_sideCount];
-        Vector3 altitude;
+    public void Reset(bool clearFlags) {
+        type = Tile.Type.Empty;
+        Revealed = false;
+        Exploded = false;
+        Visited = false;
+        if (clearFlags) Flagged = false;
+        
+        // Reactivate clouds
+        foreach (Cloud cloud in _clouds)
+            cloud.Active(true);
+    }
 
-        for (int i = 0; i < _sideCount; i++) {
-            altitude = _meshes[i].normals[0] * _Scale/20f;
-            _clouds[i] = new Cloud(
-                new Vector3[] {
-                    _vertices[0] + altitude,
-                    _vertices[1] + altitude,
-                    _vertices[2] + altitude,
-                    _vertices[3] + altitude
-                }
-            );
-        }
+    private void GenerateCloud(int i) {
+        Vector3 altitude = _meshes[i].normals[0] * _Scale/10f;
+        _clouds[i] = new Cloud(
+            new Vector3[] {
+                _vertices[0] + altitude,
+                _vertices[1] + altitude,
+                _vertices[2] + altitude,
+                _vertices[3] + altitude
+            }
+        );
+        _clouds[i].Parent(_gameObjects[i]);
     }
 
     // Delayed reveal based on flood depth
@@ -155,6 +166,10 @@ public class Tile : Quad {
         yield return new WaitForSeconds(0.02f * Depth);
 
         SetMaterial(material);
+
+        // Deactivate clouds
+        foreach (Cloud cloud in _clouds)
+            cloud.Active(false);
 
         if (breakPS != null) {
             _revealPS = Complex.CreateGO(breakPS, _vertices[0], Quaternion.identity, _Scale);

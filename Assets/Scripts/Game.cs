@@ -11,7 +11,6 @@ public class Game : MonoBehaviour {
     private bool _gameOn, _gameLost, _gameWon;
 
     private Material _materialUknown;
-    private Material[] _materialEmpty;
     private Material _materialMine;
     private Material _materialExploded;
     private Material _materialFlag;
@@ -36,11 +35,7 @@ public class Game : MonoBehaviour {
 
     private void Awake() {
         // Load materials
-        _materialUknown = Resources.Load("Materials/Ocean/TileCloud", typeof(Material)) as Material;
-        _materialEmpty = new Material[]{
-            Resources.Load("Materials/Ocean/TileOcean", typeof(Material)) as Material,
-            Resources.Load("Materials/Ocean/TileOcean2", typeof(Material)) as Material,
-        };
+        _materialUknown = Resources.Load("Materials/Clouds/TileCloud", typeof(Material)) as Material;
         _materialMine = Resources.Load("Materials/Island/TileMine", typeof(Material)) as Material;
         _materialExploded = Resources.Load("Materials/Island/TileExploded", typeof(Material)) as Material;
         _materialFlag = Resources.Load("Materials/DesertMats/TileNo", typeof(Material)) as Material;
@@ -86,13 +81,8 @@ public class Game : MonoBehaviour {
         _timer = 0f;
         if (clearFlags) _flagCount = 0;
 
-        foreach (Tile tile in _complex.Tiles) {
-            tile.type = Tile.Type.Empty;
-            tile.Revealed = false;
-            tile.Exploded = false;
-            tile.Visited = false;
-            if (clearFlags) tile.Flagged = false;
-        }
+        foreach (Tile tile in _complex.Tiles)
+            tile.Reset(clearFlags);
 
         GenerateMines();
         GenerateNumbers();

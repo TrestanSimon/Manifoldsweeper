@@ -112,8 +112,8 @@ public class UIHandler : MonoBehaviour {
         UpdateActiveMaps();
         UpdateDifficulty();
 
-        manifoldDropdown.value = 2; // Default manifold is torus
-        mapDropdown.value = 1; // Default map is Map.Torus
+        manifoldDropdown.value = 0;
+        mapDropdown.value = 0;
     }
 
     private void Update() {
