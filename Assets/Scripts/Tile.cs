@@ -118,7 +118,7 @@ public class Tile : Quad {
     ) {
         base.UpdateVertices(vert0, vert1, vert2, vert3);
         if (Flagged) UpdateFlags();
-        // TODO: Update clouds
+        foreach (Cloud cloud in _clouds) UpdateClouds();
     }
 
     public override void SetMaterial(Material material) {
@@ -159,6 +159,18 @@ public class Tile : Quad {
             }, U, V
         );
         _clouds[i].Parent(_gameObjects[i]);
+    }
+
+    private void UpdateClouds() {
+        for (int i = 0; i < _clouds.Length; i++) {
+            Vector3 altitude = _meshes[i].normals[0] * _Scale/10f;
+            _clouds[i].UpdateVertices(
+                    _vertices[0] + altitude,
+                    _vertices[1] + altitude,
+                    _vertices[2] + altitude,
+                    _vertices[3] + altitude
+            );
+        }
     }
 
     // Delayed reveal based on flood depth
