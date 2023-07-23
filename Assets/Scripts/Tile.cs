@@ -195,7 +195,7 @@ public class Tile : Quad {
         Material materialFlag, Material materialUnknown
     ) {
         if (Flagged) return UnFlag(flagPrefab, materialUnknown);
-        else return Flag(flagPrefab, materialFlag);
+        else return Flag(flagPrefab, materialUnknown);
     }
 
     public int Flag(GameObject flagPrefab, Material materialFlag) {
