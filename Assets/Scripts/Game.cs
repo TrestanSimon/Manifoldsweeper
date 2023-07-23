@@ -89,7 +89,8 @@ public class Game : MonoBehaviour {
 
         // Set all quad materials according to type/state
         foreach (Tile tile in _complex.Tiles)
-            tile.SetMaterial(GetMaterial(tile));
+            if (!tile.Flagged)
+                tile.SetMaterial(GetMaterial(tile));
     }
 
     private void GenerateMines() {
