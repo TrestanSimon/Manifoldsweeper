@@ -32,7 +32,7 @@ public abstract class Complex : MonoBehaviour {
     public virtual int ResU {
         get => resU;
         protected set {
-            if (value < 1 || value > 99)
+            if (value < 2 || value > 99)
                 throw new ArgumentOutOfRangeException(nameof(value),
                     "U res. range is between 1 and 99.");
             resU = value;
@@ -41,7 +41,7 @@ public abstract class Complex : MonoBehaviour {
     public virtual int ResV {
         get => resV;
         protected set {
-            if (value < 1 || value > 99)
+            if (value < 2 || value > 99)
                 throw new ArgumentOutOfRangeException(nameof(value),
                     "V res. range is between 1 and 99.");
             resV = value;
@@ -150,6 +150,11 @@ public abstract class Complex : MonoBehaviour {
 
     public virtual void RepeatComplex() {
         if (currentMap != Map.Flat) return;
+    }
+
+    public void DumpRepeatComplex() {
+        foreach (Tile tile in tiles)
+            tile.DestroyChildren();
     }
 
     // Identifies the tile instance the cursor is over

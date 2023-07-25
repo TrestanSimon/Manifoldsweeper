@@ -118,6 +118,9 @@ public class Tile : GenericTile {
     // Delayed reveal based on flood depth
     public IEnumerator DelayedReveal(Material material, GameObject breakPS = null) {
         if (type == Type.Invalid) yield break;
+
+        _revealed = true;
+        // CheckWinCondition is ran before WaitForSeconds ends
         yield return new WaitForSeconds(0.02f * Depth);
 
         Reveal(material, breakPS);
@@ -126,6 +129,7 @@ public class Tile : GenericTile {
     }
 
     public override void Reveal(Material material, GameObject breakPS = null) {
+        _revealed = true;
         base.Reveal(material, breakPS);
         if (type == Type.Mine) _exploded = true;
     }
@@ -178,5 +182,16 @@ public class Tile : GenericTile {
         // if (Flagged) PlaceFlags(flagPrefab, materialFlag)
 
         _children.Add(child);
+    }
+
+    public void DestroyChildren() {
+        foreach (GenericTile child in _children)
+            child.DestroySelf();
+        _children.Clear();
+    }
+
+    public override void DestroySelf() {
+        DestroyChildren();
+        base.DestroySelf();
     }
 }

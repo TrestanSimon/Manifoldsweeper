@@ -22,6 +22,9 @@ public class Cylinder : Complex {
         currentMap = initMap;
         InitVertices(initMap);
         InitTiles();
+
+        if (initMap == Map.Flat) 
+            RepeatComplex();
     }
 
     protected override void InitVertices(Map map) {
@@ -46,15 +49,19 @@ public class Cylinder : Complex {
             yield return StartCoroutine(CylinderToPlane());
             RepeatComplex();
         } else if (newMap == Map.Cylinder) {
+            DumpRepeatComplex();
             yield return StartCoroutine(CylinderToPlane(true));
         }
         currentMap = newMap;
     }
 
     public override void RepeatComplex() {
+        Vector3 offset = 2f*(vertices[0,resV/2] + radius*Vector3.up);
+
         for (int v = 0; v < resV; v++) {
             for (int u = 0; u < resU; u++) {
-                tiles[u,v].CreateChild(2f*(vertices[0,resV/2] + radius*Vector3.up));
+                tiles[u,v].CreateChild(offset);
+                tiles[u,v].CreateChild(-1*offset);
             }
         }
     }

@@ -42,10 +42,10 @@ public class GenericTile : Quad {
     public virtual void SetMaterial(Material material, bool isRevealedNumber) {
         base.SetMaterial(material);
         if (isRevealedNumber) {
-            _meshes[0].uv = QuadUVCoords.Reverse().ToArray();
+            _meshes[0].uv = QuadUVCoords;
             _meshes[1].uv = QuadUVCoords.Reverse().ToArray();
         } else {
-            _meshes[0].uv = QuadUVCoords;
+            _meshes[0].uv = QuadUVCoords.Reverse().ToArray();
             _meshes[1].uv = QuadUVCoords.Reverse().ToArray();
         }
     }
@@ -112,8 +112,9 @@ public class GenericTile : Quad {
     }
 
     public virtual void RemoveFlags() {
-        foreach (GameObject flag in _flags)
-            Complex.Destroy(flag);
+        if (_flags is not null)
+            foreach (GameObject flag in _flags)
+                Complex.Destroy(flag);
     }
 
     public virtual void UpdateFlags() {
@@ -123,5 +124,15 @@ public class GenericTile : Quad {
             _flags[i].transform.rotation = Quaternion.LookRotation(_meshes[i].normals[0])
                 * Quaternion.AngleAxis(90, Vector3.up);
         }
+    }
+
+    public override void DestroySelf() {
+        RemoveFlags();
+        
+        if (_clouds is not null)
+            foreach (Quad cloud in _clouds)
+                cloud.DestroySelf();
+        
+        base.DestroySelf();
     }
 }

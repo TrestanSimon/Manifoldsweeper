@@ -117,4 +117,8 @@ public class Quad {
         for (int i = 0; i < _sideCount; i++)
             _gameObjects[i].GetComponent<MeshRenderer>().material = material;
     }
+
+    public virtual void DestroySelf() {
+        Complex.DestroyGOs(_gameObjects);
+    }
 }

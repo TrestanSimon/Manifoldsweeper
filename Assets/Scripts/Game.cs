@@ -209,8 +209,8 @@ public class Game : MonoBehaviour {
     private bool CheckWinCondition() {
         // Check if all non-mines have been revealed
         foreach (Tile tile in _complex.Tiles)
-            if (tile.type != Tile.Type.Mine
-                && !tile.Revealed) return false;
+            if (tile.type != Tile.Type.Mine && !tile.Revealed)
+                return false;
 
         Debug.Log("Game win");
         _gameWon = true;
