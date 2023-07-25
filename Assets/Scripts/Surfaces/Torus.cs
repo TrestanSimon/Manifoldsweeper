@@ -40,6 +40,7 @@ public class Torus : Complex {
         currentMap = initMap;
         InitVertices(initMap);
         InitTiles();
+
         if (initMap == Map.Flat) RepeatComplex();
     }
     
@@ -74,21 +75,18 @@ public class Torus : Complex {
     }
 
     public override void RepeatComplex() {
-        Vector3 offsetU = 2f*(vertices[resU/2,0] + r*Vector3.up);
-        Vector3 offsetV = 2f*(vertices[0,resV/2] + r*Vector3.up);
-
         for (int v = 0; v < resV; v++) {
             for (int u = 0; u < resU; u++) {
-                tiles[u,v].CreateChild(offsetU);
-                tiles[u,v].CreateChild(-1*offsetU);
-                tiles[u,v].CreateChild(offsetV);
-                tiles[u,v].CreateChild(-1*offsetV);
+                tiles[u,v].CreateChild(Offset[0]);
+                tiles[u,v].CreateChild(-1*Offset[0]);
+                tiles[u,v].CreateChild(Offset[1]);
+                tiles[u,v].CreateChild(-1*Offset[1]);
                 
-                tiles[u,v].CreateChild(offsetU + offsetV);
-                tiles[u,v].CreateChild(offsetU - offsetV);
+                tiles[u,v].CreateChild(Offset[0] + Offset[1]);
+                tiles[u,v].CreateChild(Offset[0] - Offset[1]);
                 
-                tiles[u,v].CreateChild(-1*offsetU + offsetV);
-                tiles[u,v].CreateChild(-1*offsetU - offsetV);
+                tiles[u,v].CreateChild(-1*Offset[0] + Offset[1]);
+                tiles[u,v].CreateChild(-1*Offset[0] - Offset[1]);
             }
         }
     }

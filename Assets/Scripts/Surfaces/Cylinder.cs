@@ -12,7 +12,6 @@ public class Cylinder : Complex {
         };
     }
 
-    
     private float radius;
 
     public override void Setup(int resU, int resV, Map initMap) {
@@ -57,12 +56,10 @@ public class Cylinder : Complex {
     }
 
     public override void RepeatComplex() {
-        Vector3 offset = 2f*(vertices[0,resV/2] + radius*Vector3.up);
-
         for (int v = 0; v < resV; v++) {
             for (int u = 0; u < resU; u++) {
-                tiles[u,v].CreateChild(offset);
-                tiles[u,v].CreateChild(-1*offset);
+                tiles[u,v].CreateChild(Offset[1]);
+                tiles[u,v].CreateChild(-1*Offset[1]);
             }
         }
     }

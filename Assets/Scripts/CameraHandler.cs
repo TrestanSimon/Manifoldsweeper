@@ -59,18 +59,10 @@ public class CameraHandler : MonoBehaviour {
 
         if (force) {
             StartCoroutine(LerpCameraTo(
-                new Vector3(0f, 15f, 0f), Quaternion.Euler(90f, 0f, 90f))
+                new Vector3(0f, 15f, 0f),
+                Quaternion.Euler(90f, 0f, 90f))
             );
             return;
-        }
-        Vector3[] frustumCorners = new Vector3[4];
-        Camera.main.CalculateFrustumCorners(
-            new Rect(0, 0, 1, 1), Camera.main.transform.position.y, Camera.MonoOrStereoscopicEye.Mono, frustumCorners);
-        
-        for (int i = 0; i < 4; i++)
-        {
-            var worldSpaceCorner = Camera.main.transform.TransformVector(frustumCorners[i]);
-            Debug.DrawRay(Camera.main.transform.position, worldSpaceCorner, Color.green);
         }
 
         if (Input.GetMouseButtonDown(2))
@@ -87,25 +79,26 @@ public class CameraHandler : MonoBehaviour {
     private void Move2DCamera() {
         Vector3[] frustumCorners = new Vector3[4];
         Camera.main.CalculateFrustumCorners(
-            new Rect(0, 0, 1, 1), 0f, Camera.MonoOrStereoscopicEye.Mono, frustumCorners);
-        _dmousePos = Input.mousePosition - _mousePos;
-        Camera.main.transform.position += _dmousePos.x/10f*Time.deltaTime * Vector3.forward;
-        Camera.main.transform.position += _dmousePos.y/10f*Time.deltaTime * Vector3.left;
+            new Rect(0, 0, 1, 1),
+            Camera.main.transform.position.y - _target.Corners[0].y,
+            Camera.MonoOrStereoscopicEye.Mono, frustumCorners
+        );
+
+        for (int i = 0; i < 4; i++)
+            frustumCorners[i] = Camera.main.transform.TransformVector(frustumCorners[i]) + Camera.main.transform.position;
+        // [BL, TL, TR, BR]
+
+        _dmousePos = (Input.mousePosition - _mousePos) / 10f*Time.deltaTime;
+
+        if (frustumCorners[0].x > _target.Corners[0].x)
+            Camera.main.transform.position -= _target.Offset[1];
+
+        Camera.main.transform.position += _dmousePos.x * Vector3.forward;
+        Camera.main.transform.position += _dmousePos.y * Vector3.left;
     }
 
     private void Zoom2DCamera() {
         Camera.main.transform.position += _scroll * Vector3.up;
-    }
-
-    private void DebugFrustum() {
-        Vector3[] frustumCorners = new Vector3[4];
-        Camera.main.CalculateFrustumCorners(
-            new Rect(0, 0, 1, 1), 0f, Camera.MonoOrStereoscopicEye.Mono, frustumCorners);
-        
-        for (int i = 0; i < 4; i++) {
-            var worldSpaceCorner = Camera.main.transform.TransformVector(frustumCorners[i]);
-            Debug.DrawRay(Camera.main.transform.position, worldSpaceCorner, Color.green);
-        }
     }
 
     public IEnumerator LerpCameraTo(Vector3 endPos, Quaternion endRot) {

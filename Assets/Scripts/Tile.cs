@@ -176,7 +176,7 @@ public class Tile : GenericTile {
 
     public void CreateChild(Vector3 offset, bool mirrorV = false) {
         GenericTile child = new GenericTile(
-            U, V, 2, OffsetVertices(offset), _gameObjects[0].transform);
+            U, V, 2, OffsetVertices(offset), _gameObjects[0].transform, _cloudSeed);
 
         child.SetMaterial(_CurrentMaterial, type == Type.Number && Revealed);
         child.ActivateClouds(!Revealed);
