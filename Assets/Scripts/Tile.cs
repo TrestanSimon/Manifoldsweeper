@@ -174,8 +174,9 @@ public class Tile : GenericTile {
             child.UpdateFlags();
     }
 
-    public void CreateChild(Vector3 offset) {
-        GenericTile child = new GenericTile(U, V, 2, OffsetVertices(offset), _gameObjects[0].transform);
+    public void CreateChild(Vector3 offset, bool mirrorV = false) {
+        GenericTile child = new GenericTile(
+            U, V, 2, OffsetVertices(offset), _gameObjects[0].transform);
 
         child.SetMaterial(_CurrentMaterial, type == Type.Number && Revealed);
         child.ActivateClouds(!Revealed);

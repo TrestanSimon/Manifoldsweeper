@@ -20,6 +20,7 @@ public class KleinBottle : Complex {
         currentMap = initMap;
         InitVertices(initMap);
         InitTiles();
+        if (initMap == Map.Flat) RepeatComplex();
     }
 
     protected override void InitVertices(Map map) {
@@ -47,11 +48,25 @@ public class KleinBottle : Complex {
         else if (newMap == Map.Flat) {
             yield return StartCoroutine(ComplexLerp(
                 new Vector3[][,]{vertices, PlaneMap()}, 2f));
+            RepeatComplex();
         } else if (newMap == Map.KleinBottle) {
+            DumpRepeatComplex();
             yield return StartCoroutine(ComplexLerp(
                 new Vector3[][,]{vertices, KleinMap()}, 2f));
         }
         currentMap = newMap;
+    }
+
+    // NEEDS TO BE FIXED
+    public override void RepeatComplex() {
+        Vector3 offset = 2f*vertices[0,resV/2];
+
+        for (int v = 0; v < resV; v++) {
+            for (int u = 0; u < resU; u++) {
+                tiles[u,v].CreateChild(offset);
+                tiles[u,v].CreateChild(-1*offset);
+            }
+        }
     }
 
     private Vector3[,] KleinMap() {
