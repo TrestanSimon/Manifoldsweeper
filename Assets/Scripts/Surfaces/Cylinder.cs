@@ -44,6 +44,7 @@ public class Cylinder : Complex {
         if (newMap == currentMap) yield return null;
         else if (newMap == Map.Flat) {
             yield return StartCoroutine(CylinderToPlane());
+            RepeatComplex();
         } else if (newMap == Map.Cylinder) {
             yield return StartCoroutine(CylinderToPlane(true));
         }
@@ -51,12 +52,11 @@ public class Cylinder : Complex {
     }
 
     public override void RepeatComplex() {
-        Instantiate(gameObject,
-            2f*(vertices[0,resV/2] + radius*Vector3.up),
-            Quaternion.identity);
-        Instantiate(gameObject,
-            -2f*(vertices[0,resV/2] + radius*Vector3.up),
-            Quaternion.identity);
+        for (int v = 0; v < resV; v++) {
+            for (int u = 0; u < resU; u++) {
+                tiles[u,v].CreateChild(2f*(vertices[0,resV/2] + radius*Vector3.up));
+            }
+        }
     }
 
     public IEnumerator CylinderToPlane(bool reverse = false) {

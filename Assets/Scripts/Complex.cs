@@ -70,7 +70,7 @@ public abstract class Complex : MonoBehaviour {
         for (int v = 0; v < resV; v++) {
             for (int u = 0; u < resU; u++) {
                 tiles[u,v] = new Tile(
-                    u, v, sideCount,
+                    u, v,
                     new Vector3[]{
                         vertices[u,v], vertices[u+1,v],
                         vertices[u+1,v+1], vertices[u,v+1]

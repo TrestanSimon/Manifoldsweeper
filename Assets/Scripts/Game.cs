@@ -13,7 +13,6 @@ public class Game : MonoBehaviour {
     private Material _materialUknown;
     private Material _materialMine;
     private Material _materialExploded;
-    private Material _materialFlag;
     private Material _materialNum1;
     private Material _materialNum2;
     private Material _materialNum3;
@@ -38,7 +37,6 @@ public class Game : MonoBehaviour {
         _materialUknown = Resources.Load("Materials/Clouds/TileCloud", typeof(Material)) as Material;
         _materialMine = Resources.Load("Materials/Island/TileMine", typeof(Material)) as Material;
         _materialExploded = Resources.Load("Materials/Island/TileExploded", typeof(Material)) as Material;
-        _materialFlag = Resources.Load("Materials/DesertMats/TileNo", typeof(Material)) as Material;
         _materialNum1 = Resources.Load("Materials/Island/Tile1", typeof(Material)) as Material;
         _materialNum2 = Resources.Load("Materials/Island/Tile2", typeof(Material)) as Material;
         _materialNum3 = Resources.Load("Materials/Island/Tile3", typeof(Material)) as Material;
@@ -133,8 +131,7 @@ public class Game : MonoBehaviour {
     private void AttemptFlagMouseOver() {
         _mouseOver = _complex.MouseIdentify();
         if (_mouseOver != null)
-            _flagCount += _mouseOver.FlagToggle(
-                _flagPrefab, _materialFlag, _materialUknown);
+            _flagCount += _mouseOver.FlagToggle(_flagPrefab);
     }
 
     private void AttemptRevealMouseOver() {
@@ -149,39 +146,38 @@ public class Game : MonoBehaviour {
 
         switch (_mouseOver.type) {
             case Tile.Type.Mine:
-                Explode(_mouseOver); break;
+                ExplodeTile(_mouseOver); break;
             case Tile.Type.Empty:
-                Flood(_mouseOver);
+                FloodTile(_mouseOver);
                 if (!CheckWinCondition()) _gameOn = true;
                 break;
             default:
-                RevealQuad(_mouseOver);
+                RevealTile(_mouseOver);
                 if (!CheckWinCondition()) _gameOn = true;
                 break;
         }
     }
 
-    private void Explode(Tile tile) {
+    private void ExplodeTile(Tile tile) {
         Debug.Log("Game over");
         _gameLost = true;
         _gameOn = false;
 
-        tile.Revealed = true;
-        tile.Exploded = true;
+        RevealTile(tile);
 
         foreach (Tile tile1 in _complex.Tiles) {
             if (tile1.type == Tile.Type.Mine)
-                RevealQuad(tile1);
+                RevealTile(tile1);
         }
     }
 
-    private void Flood(Tile tile) {
+    private void FloodTile(Tile tile) {
         Queue<Tile> queue = new Queue<Tile>();
 
         // Reveal starting quad
         tile.Visited = true;
         tile.Depth = 0;
-        RevealQuad(tile);
+        RevealTile(tile);
 
         queue.Enqueue(tile);
 
@@ -199,16 +195,15 @@ public class Game : MonoBehaviour {
                     }
 
                     neighbor.Depth = tile.Depth + 1;
-                    RevealQuad(neighbor);
+                    RevealTile(neighbor);
                 }
             }
         }
     }
 
-    private void RevealQuad(Tile tile) {
-        tile.Revealed = true;
+    private void RevealTile(Tile tile) {
         _coroutinePropagate.Add(StartCoroutine(
-            tile.DelayedReveal(GetMaterial(tile), _breakPS)));
+            tile.DelayedReveal(GetRevealedMaterial(tile), _breakPS)));
     }
 
     private bool CheckWinCondition() {
@@ -225,14 +220,14 @@ public class Game : MonoBehaviour {
         // Flag all mines
         foreach (Tile tile in _complex.Tiles)
             if (tile.type == Tile.Type.Mine)
-                _flagCount += tile.Flag(_flagPrefab, _materialFlag);
+                tile.PlaceFlags(_flagPrefab);
+                _flagCount = MineCount;
         
         return true;
     }
 
     private Material GetMaterial(Tile tile) {
         if (tile.Revealed) return GetRevealedMaterial(tile);
-        else if (tile.Flagged) return _materialFlag;
         else return _materialUknown;
     }
 

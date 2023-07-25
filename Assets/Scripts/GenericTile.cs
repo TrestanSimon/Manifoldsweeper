@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using UnityEngine;
 
 public class GenericTile : Quad {
@@ -14,8 +16,6 @@ public class GenericTile : Quad {
         Vector3[] vertices,
         Transform parent
     ) : base(vertices) {
-        _clouds = new Cloud[_sideCount];
-
         for (int i = 0; i < sideCount; i++) {
             _gameObjects[i].name = $"Quad {i} ({u}, {v})";
             
@@ -26,7 +26,7 @@ public class GenericTile : Quad {
             Tag tag = _gameObjects[i].AddComponent<Tag>();
             tag.u = u; tag.v = v;
 
-            GenerateCloud(i);
+            InitializeClouds(i);
         }
     }
 
@@ -39,11 +39,20 @@ public class GenericTile : Quad {
         foreach (Cloud cloud in _clouds) UpdateClouds();
     }
 
-    public override void SetMaterial(Material material) {
+    public virtual void SetMaterial(Material material, bool isRevealedNumber) {
         base.SetMaterial(material);
+        if (isRevealedNumber) {
+            _meshes[0].uv = QuadUVCoords.Reverse().ToArray();
+            _meshes[1].uv = QuadUVCoords.Reverse().ToArray();
+        } else {
+            _meshes[0].uv = QuadUVCoords;
+            _meshes[1].uv = QuadUVCoords.Reverse().ToArray();
+        }
     }
 
-    private void GenerateCloud(int i) {
+    private void InitializeClouds(int i) {
+        _clouds ??= new Cloud[_sideCount];
+
         Vector3 altitude = _meshes[i].normals[0] * _Scale/10f;
         _clouds[i] = new Cloud(
             new Vector3[] {
@@ -68,12 +77,15 @@ public class GenericTile : Quad {
         }
     }
 
-    public void Reveal(Material material, GameObject breakPS = null) {
+    public virtual void ActivateClouds(bool activated) {
+        foreach (Cloud cloud in _clouds)
+            cloud.Active(activated);
+    }
+
+    public virtual void Reveal(Material material, GameObject breakPS = null) {
         SetMaterial(material);
 
-        // Deactivate clouds
-        foreach (Cloud cloud in _clouds)
-            cloud.Active(false);
+        ActivateClouds(false);
 
         if (breakPS != null) {
             _revealPS = Complex.CreateGO(breakPS, _vertices[0], Quaternion.identity, _Scale);
@@ -81,7 +93,9 @@ public class GenericTile : Quad {
         }
     }
 
-    public void PlaceFlags(GameObject flagPrefab, Material materialFlag) {
+    public virtual void PlaceFlags(GameObject flagPrefab) {
+        _flags ??= new GameObject[_sideCount];
+
         // Points to where flag will be planted
         Vector3 stake = (_vertices[0] + _vertices[2]) / 2f;
 
@@ -95,7 +109,11 @@ public class GenericTile : Quad {
             _flags[i].transform.parent = _gameObjects[i].transform;
             _flags[i].name = "Flag";
         }
-        SetMaterial(materialFlag);
+    }
+
+    public virtual void RemoveFlags() {
+        foreach (GameObject flag in _flags)
+            Complex.Destroy(flag);
     }
 
     public virtual void UpdateFlags() {

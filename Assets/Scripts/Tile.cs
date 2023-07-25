@@ -56,38 +56,14 @@ public class Tile : GenericTile {
             _number = value;
         }
     }
-    public bool Revealed {
-        get => _revealed;
-        set {
-            if (value && Flagged)
-                Flagged = false;
-            _revealed = value;
-        }
-    }
-    public bool Flagged {
-        get => _flagged;
-        set {
-            if (!_revealed) {
-                if (value && _flags == null)
-                    _flags = new GameObject[_sideCount];
-                else if (!value && _flags != null)
-                    Complex.DestroyGOs(_flags);
-                _flagged = value;
-            }
-        }
-    }
-    public bool Exploded {
-        get => _exploded;
-        set {
-            if (_type == Type.Mine)
-                _exploded = value;
-        }
-    }
+    public bool Revealed { get => _revealed; }
+    public bool Flagged { get => _flagged; }
+    public bool Exploded { get => _exploded; }
     public bool Visited { get; set; }
     public int Depth { get; set; }
 
-    public List<GenericTile> Children {
-        get => _children;
+    private Material _CurrentMaterial {
+        get => _gameObjects[0].GetComponent<MeshRenderer>().material;
     }
 
     // Constructor for Invalid Tiles
@@ -95,11 +71,16 @@ public class Tile : GenericTile {
 
     // Normal constructor
     public Tile(
-        int u, int v, int sideCount,
+        int u, int v,
         Vector3[] vertices,
         Complex complex
-    ) : base(u, v, sideCount, vertices, complex.transform) {
+    ) : base(u, v, 2, vertices, complex.transform) {
         U = u; V = v;
+        _children = new List<GenericTile>();
+
+        _revealed = false;
+        _flagged = false;
+        _exploded = false;
     }
 
     // Updates mesh(es) with provided vertices
@@ -112,30 +93,26 @@ public class Tile : GenericTile {
     }
 
     public override void SetMaterial(Material material) {
-        base.SetMaterial(material);
-        if (_sideCount > 1) {
-            if (type == Type.Number && Revealed) {
-                _meshes[0].uv = QuadUVCoords;
-                _meshes[1].uv = QuadUVCoords.Reverse().ToArray();
-            }
-            else {
-                _meshes[0].uv = QuadUVCoords.Reverse().ToArray();
-                _meshes[1].uv = QuadUVCoords.Reverse().ToArray();
-            }
-        }
+        base.SetMaterial(material, type == Type.Number && Revealed);
+        foreach (GenericTile child in _children)
+            child.SetMaterial(material, type == Type.Number && Revealed);
     }
 
     // Resets tile state for new game
     public void Reset(bool clearFlags) {
         type = Tile.Type.Empty;
-        Revealed = false;
-        Exploded = false;
+        _revealed = false;
+        _exploded = false;
         Visited = false;
-        if (clearFlags) Flagged = false;
+        if (clearFlags) RemoveFlags();
         
-        // Reactivate clouds
-        foreach (Cloud cloud in _clouds)
-            cloud.Active(true);
+        ActivateClouds(true);
+    }
+
+    public override void ActivateClouds(bool activated) {
+        base.ActivateClouds(activated);
+        foreach (GenericTile child in _children)
+            child.ActivateClouds(activated);
     }
 
     // Delayed reveal based on flood depth
@@ -148,34 +125,43 @@ public class Tile : GenericTile {
             child.Reveal(material, breakPS);
     }
 
-    // Places flag(s)
-    public int FlagToggle(GameObject flagPrefab,
-        Material materialFlag, Material materialUnknown
-    ) {
-        if (Flagged) return UnFlag(flagPrefab, materialUnknown);
-        else return Flag(flagPrefab, materialUnknown);
+    public override void Reveal(Material material, GameObject breakPS = null) {
+        base.Reveal(material, breakPS);
+        if (type == Type.Mine) _exploded = true;
     }
 
-    public int Flag(GameObject flagPrefab, Material materialFlag) {
-        if (type == Type.Invalid || Revealed || Flagged) return 0;
+    // Places flag(s)
+    public int FlagToggle(GameObject flagPrefab) {
+        if (type == Type.Invalid || Revealed) return 0;
 
-        Flagged = true;
+        if (Flagged) {
+            RemoveFlags();
+            return -1;
+        } else {
+            PlaceFlags(flagPrefab);
+            return 1;
+        }
+    }
+
+    public override void PlaceFlags(GameObject flagPrefab) {
+        if (type == Type.Invalid || Revealed || Flagged) return;
+
+        _flagged = true;
         
-        PlaceFlags(flagPrefab, materialFlag);
+        base.PlaceFlags(flagPrefab);
         foreach (GenericTile child in _children)
-            child.PlaceFlags(flagPrefab, materialFlag);
-
-        return 1;
+            child.PlaceFlags(flagPrefab);
     }
 
     // Removes flag(s)
-    public int UnFlag(GameObject flagPrefab, Material materialUnknown) {
-        if (type == Type.Invalid || Revealed || !Flagged) return 0;
+    public override void RemoveFlags() {
+        if (type == Type.Invalid || Revealed || !Flagged) return;
 
-        Flagged = false;
+        _flagged = false;
 
-        SetMaterial(materialUnknown);
-        return -1;
+        base.RemoveFlags();
+        foreach (GenericTile child in _children)
+            child.RemoveFlags();
     }
 
     public override void UpdateFlags() {
@@ -184,9 +170,13 @@ public class Tile : GenericTile {
             child.UpdateFlags();
     }
 
-    public void CreateChild() {
-        GenericTile child = new GenericTile(U, V, 2, _vertices, null);
-        // UPDATE CHILD
-        Children.Add(child);
+    public void CreateChild(Vector3 offset) {
+        GenericTile child = new GenericTile(U, V, 2, OffsetVertices(offset), _gameObjects[0].transform);
+
+        child.SetMaterial(_CurrentMaterial, type == Type.Number && Revealed);
+        child.ActivateClouds(!Revealed);
+        // if (Flagged) PlaceFlags(flagPrefab, materialFlag)
+
+        _children.Add(child);
     }
 }

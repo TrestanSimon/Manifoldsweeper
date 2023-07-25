@@ -103,6 +103,15 @@ public class Quad {
         }
     }
 
+    protected Vector3[] OffsetVertices(Vector3 offset) {
+        return new Vector3[]{
+            _vertices[0] + offset,
+            _vertices[1] + offset,
+            _vertices[2] + offset,
+            _vertices[3] + offset
+        };
+    }
+
     // Sets material
     public virtual void SetMaterial(Material material) {
         for (int i = 0; i < _sideCount; i++)
