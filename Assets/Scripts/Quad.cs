@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Quad {
     // Geometry-related fields
-    protected int _u, _v, _sideCount;
+    protected int _sideCount;
     protected GameObject[] _gameObjects;
     protected Vector3[] _vertices;
     protected MeshRenderer[] _meshRenderers;

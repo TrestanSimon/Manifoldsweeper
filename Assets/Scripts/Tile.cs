@@ -1,9 +1,10 @@
 using System;
 using System.Linq;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class Tile : Quad {
+public class Tile : GenericTile {
     public enum Type {
         Invalid,
         Empty,
@@ -11,12 +12,12 @@ public class Tile : Quad {
         Mine
     }
 
+    private int _u, _v;
     private Type _type;
     private int _number; // Number of mines in neighborhood
     private bool _revealed, _flagged, _exploded;
-    private GameObject[] _flags;
-    private Cloud[] _clouds;
-    private GameObject _revealPS; // Particle system for tile reveal
+
+    private List<GenericTile> _children;
 
     public int U {
         get => _u;
@@ -85,6 +86,10 @@ public class Tile : Quad {
     public bool Visited { get; set; }
     public int Depth { get; set; }
 
+    public List<GenericTile> Children {
+        get => _children;
+    }
+
     // Constructor for Invalid Tiles
     public Tile() {}
 
@@ -93,22 +98,8 @@ public class Tile : Quad {
         int u, int v, int sideCount,
         Vector3[] vertices,
         Complex complex
-    ) : base(vertices) {
+    ) : base(u, v, sideCount, vertices, complex.transform) {
         U = u; V = v;
-        _clouds = new Cloud[_sideCount];
-
-        for (int i = 0; i < sideCount; i++) {
-            _gameObjects[i].name = $"Quad {i} ({u}, {v})";
-            
-            // Make tiles child of Complex GameObject
-            _gameObjects[i].transform.parent = complex.transform;
-
-            // For identifying tile instance from GameObject
-            Tag tag = _gameObjects[i].AddComponent<Tag>();
-            tag.u = U; tag.v = V;
-
-            GenerateCloud(i);
-        }
     }
 
     // Updates mesh(es) with provided vertices
@@ -118,7 +109,6 @@ public class Tile : Quad {
     ) {
         base.UpdateVertices(vert0, vert1, vert2, vert3);
         if (Flagged) UpdateFlags();
-        foreach (Cloud cloud in _clouds) UpdateClouds();
     }
 
     public override void SetMaterial(Material material) {
@@ -148,46 +138,14 @@ public class Tile : Quad {
             cloud.Active(true);
     }
 
-    private void GenerateCloud(int i) {
-        Vector3 altitude = _meshes[i].normals[0] * _Scale/10f;
-        _clouds[i] = new Cloud(
-            new Vector3[] {
-                _vertices[0] + altitude,
-                _vertices[1] + altitude,
-                _vertices[2] + altitude,
-                _vertices[3] + altitude
-            }, U, V
-        );
-        _clouds[i].Parent(_gameObjects[i]);
-    }
-
-    private void UpdateClouds() {
-        for (int i = 0; i < _clouds.Length; i++) {
-            Vector3 altitude = _meshes[i].normals[0] * _Scale/10f;
-            _clouds[i].UpdateVertices(
-                    _vertices[0] + altitude,
-                    _vertices[1] + altitude,
-                    _vertices[2] + altitude,
-                    _vertices[3] + altitude
-            );
-        }
-    }
-
     // Delayed reveal based on flood depth
     public IEnumerator DelayedReveal(Material material, GameObject breakPS = null) {
         if (type == Type.Invalid) yield break;
         yield return new WaitForSeconds(0.02f * Depth);
 
-        SetMaterial(material);
-
-        // Deactivate clouds
-        foreach (Cloud cloud in _clouds)
-            cloud.Active(false);
-
-        if (breakPS != null) {
-            _revealPS = Complex.CreateGO(breakPS, _vertices[0], Quaternion.identity, _Scale);
-            _revealPS.transform.parent = _gameObjects[0].transform;
-        }
+        Reveal(material, breakPS);
+        foreach (GenericTile child in _children)
+            child.Reveal(material, breakPS);
     }
 
     // Places flag(s)
@@ -203,20 +161,10 @@ public class Tile : Quad {
 
         Flagged = true;
         
-        // Points to where flag will be planted
-        Vector3 stake = (_vertices[0] + _vertices[2]) / 2f;
+        PlaceFlags(flagPrefab, materialFlag);
+        foreach (GenericTile child in _children)
+            child.PlaceFlags(flagPrefab, materialFlag);
 
-        // Create flag for each side
-        for (int i = 0; i < _sideCount; i++) {
-            Vector3 flagPos = stake + _meshes[i].normals[0] * _Scale/2f;
-            Quaternion flagRot = Quaternion.LookRotation(_meshes[i].normals[0])
-                * Quaternion.AngleAxis(90, Vector3.up);
-
-            _flags[i] = Complex.CreateGO(flagPrefab, flagPos, flagRot, _Scale);
-            _flags[i].transform.parent = _gameObjects[i].transform;
-            _flags[i].name = "Flag";
-        }
-        SetMaterial(materialFlag);
         return 1;
     }
 
@@ -230,12 +178,15 @@ public class Tile : Quad {
         return -1;
     }
 
-    private void UpdateFlags() {
-        Vector3 stake = (_vertices[0] + _vertices[2]) / 2f;
-        for (int i = 0; i < _sideCount; i++) {
-            _flags[i].transform.position = stake + _meshes[i].normals[0] * _Scale/2f;
-            _flags[i].transform.rotation = Quaternion.LookRotation(_meshes[i].normals[0])
-                * Quaternion.AngleAxis(90, Vector3.up);
-        }
+    public override void UpdateFlags() {
+        base.UpdateFlags();
+        foreach (GenericTile child in _children)
+            child.UpdateFlags();
+    }
+
+    public void CreateChild() {
+        GenericTile child = new GenericTile(U, V, 2, _vertices, null);
+        // UPDATE CHILD
+        Children.Add(child);
     }
 }

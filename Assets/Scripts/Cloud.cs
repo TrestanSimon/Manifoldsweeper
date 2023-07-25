@@ -17,9 +17,8 @@ public class Cloud : Quad {
 
     // Normal constructor
     public Cloud(
-        Vector3[] vertices, int u, int v
+        Vector3[] vertices
     ) : base(vertices, 2, false) {
-        _u = u; _v = v;
         SetMaterial(_MaterialCloud);
         for (int i = 0; i < _sideCount; i++) {
             // _meshRenderers[i].shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
