@@ -16,6 +16,18 @@ public class MobiusStrip : Complex {
     
     public float R, tau;
 
+    public override Vector3[] Corners {
+        get {
+            _corners ??= new Vector3[]{
+                vertices[0,ResV] + Offset[1],
+                vertices[ResU,ResV] - Offset[1],
+                vertices[ResU,0] - Offset[1],
+                vertices[0,0] + Offset[1],
+            };
+            return _corners;
+        }
+    }
+
     public override void Setup(int resU, int resV, Map initMap) {
         sideCount = 2;
         this.resU = resU;

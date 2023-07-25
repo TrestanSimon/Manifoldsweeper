@@ -8,6 +8,18 @@ public class Plane : Complex {
             {"Flat", Map.Flat}
         };
     }
+
+    public override Vector3[] Corners {
+        get {
+            _corners ??= new Vector3[]{
+                vertices[0,ResV],
+                vertices[ResU,ResV],
+                vertices[ResU,0],
+                vertices[0,0],
+            };
+            return _corners;
+        }
+    }
     
     public override void Setup(int resU, int resV, Map initMap) {
         sideCount = 2;

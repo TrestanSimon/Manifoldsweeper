@@ -31,6 +31,18 @@ public class Torus : Complex {
         }
     }
 
+    public override Vector3[] Corners {
+        get {
+            _corners ??= new Vector3[]{
+                vertices[0,ResV] + Offset[0] + Offset[1],
+                vertices[ResU,ResV] - Offset[0] - Offset[1],
+                vertices[ResU,0] - Offset[0] - Offset[1],
+                vertices[0,0] + Offset[0] + Offset[1],
+            };
+            return _corners;
+        }
+    }
+
     public override void Setup(int ResU, int ResV, Map initMap) {
         sideCount = 2;
         this.ResU = ResU;

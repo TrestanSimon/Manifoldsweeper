@@ -28,7 +28,8 @@ public abstract class Complex : MonoBehaviour {
     protected Vector3[,] vertices;
     protected Tile[,] tiles;
     protected int sideCount;
-    private Vector3[] _offset, _corners;
+    private Vector3[] _offset;
+    protected Vector3[] _corners;
 
     public virtual int ResU {
         get => resU;
@@ -60,17 +61,7 @@ public abstract class Complex : MonoBehaviour {
             return _offset;
         }
     }
-    public Vector3[] Corners {
-        get {
-            _corners ??= new Vector3[]{
-                vertices[0,ResV] + Offset[1],
-                vertices[ResU,ResV] - Offset[1],
-                vertices[ResU,0] - Offset[1],
-                vertices[0,0] + Offset[1],
-            };
-            return _corners;
-        }
-    }
+    public abstract Vector3[] Corners { get; }
     public Tile[,] Tiles {
         get => tiles;
         private set => tiles = value;
@@ -100,8 +91,6 @@ public abstract class Complex : MonoBehaviour {
                 );
             }
         }
-
-
     }
 
     public void UpdateVertices(Vector3[,] newVerts) {
