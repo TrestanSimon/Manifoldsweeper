@@ -123,17 +123,38 @@ public class CameraHandler : MonoBehaviour {
         }
     }
 
-    public IEnumerator Enter2DCamera() {
+    public IEnumerator TransitionTo2DCamera() {
         _isTransitioning = true;
+
+        float complexHeight = Mathf.Abs(_target.InteriorCorners[0].x)
+            + Mathf.Abs(_target.InteriorCorners[1].x);
+        float complexWidth = Mathf.Abs(_target.InteriorCorners[0].z)
+            + Mathf.Abs(_target.InteriorCorners[2].z);
+        float complexAspect = complexWidth / complexHeight;
+
+        float leg, fov;
+        if (complexAspect < Camera.main.aspect) {
+            leg = _target.InteriorCorners[0].x;
+            fov = Camera.main.fieldOfView;
+        } else {
+            leg = _target.InteriorCorners[3].z;
+            fov = Camera.VerticalToHorizontalFieldOfView(
+                Camera.main.fieldOfView, Camera.main.aspect
+            );
+        }
+
+        float theta = (fov / 2f) * (Mathf.PI / 180f);
+        float height = leg / Mathf.Tan(theta);
+
         yield return StartCoroutine(LerpCameraTo(
-            new Vector3(0f, 15f, 0f),
+            new Vector3(0f, height, 0f),
             Quaternion.Euler(90f, 0f, 90f))
         );
         _isTransitioning = false;
         _is3DCamera = false;
     }
 
-    public IEnumerator Enter3DCamera() {
+    public IEnumerator TransitionTo3DCamera() {
         _isTransitioning = true;
         yield return StartCoroutine(LerpCameraTo(
             new Vector3(10f, 4f, -10f)
@@ -144,9 +165,9 @@ public class CameraHandler : MonoBehaviour {
 
     public IEnumerator NewMap(Complex.Map newMap) {
         if (newMap == Complex.Map.Flat)
-            yield return StartCoroutine(Enter2DCamera());
+            yield return StartCoroutine(TransitionTo2DCamera());
         else if (newMap != Complex.Map.Flat)
-            yield return StartCoroutine(Enter3DCamera());
+            yield return StartCoroutine(TransitionTo3DCamera());
     }
 
     public IEnumerator NewTarget(Complex newTarget) {

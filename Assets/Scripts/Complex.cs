@@ -29,6 +29,7 @@ public abstract class Complex : MonoBehaviour {
     protected Tile[,] tiles;
     protected int sideCount;
     private Vector3[] _offset;
+    private Vector3[] _interiorCorners;
     protected Vector3[] _corners;
 
     public virtual int ResU {
@@ -61,6 +62,17 @@ public abstract class Complex : MonoBehaviour {
                 2f*(vertices[0,resV/2])
             };
             return _offset;
+        }
+    }
+    public Vector3[] InteriorCorners {
+        get {
+            _corners ??= new Vector3[]{
+                vertices[0,ResV],
+                vertices[ResU,ResV],
+                vertices[ResU,0],
+                vertices[0,0],
+            };
+            return _corners;
         }
     }
     public abstract Vector3[] Corners { get; }
@@ -171,6 +183,20 @@ public abstract class Complex : MonoBehaviour {
         foreach (Tile tile in tiles)
             tile.DestroyChildren();
         yield break;
+    }
+
+    private void Placeholdering() {
+        float time = 0f;
+        float duration = 2f;
+        float t = 0f;
+
+        while (time < duration) {
+            t = time / duration;
+            t = t*t*(3f - 2f * t);
+
+            time += Time.deltaTime;
+            // yield return null;
+        }
     }
 
     // Identifies the tile instance the cursor is over

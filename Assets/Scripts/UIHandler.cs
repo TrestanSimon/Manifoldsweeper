@@ -228,7 +228,7 @@ public class UIHandler : MonoBehaviour {
         if (complex.CurrentMap == Complex.Map.Flat) {
             // 2D --> 3D
             yield return StartCoroutine(complex.DumpRepeatComplex());
-            yield return StartCoroutine(cameraHandler.Enter3DCamera());
+            yield return StartCoroutine(cameraHandler.TransitionTo3DCamera());
             yield return StartCoroutine(complex.ReMap(SelectedMap));
         } else {
             // 3D --> 2D or 3D
@@ -236,7 +236,7 @@ public class UIHandler : MonoBehaviour {
 
             if (SelectedMap == Complex.Map.Flat) {
                 // 3D --> 2D
-                yield return StartCoroutine(cameraHandler.Enter2DCamera());
+                yield return StartCoroutine(cameraHandler.TransitionTo2DCamera());
                 yield return StartCoroutine(complex.RepeatComplex());
             }
         }
