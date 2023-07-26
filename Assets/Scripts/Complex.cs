@@ -32,6 +32,8 @@ public abstract class Complex : MonoBehaviour {
     private Vector3[] _interiorCorners;
     protected Vector3[] _corners;
 
+    private int _copyDepth = 0;
+
     public virtual int ResU {
         get => resU;
         protected set {
@@ -66,13 +68,13 @@ public abstract class Complex : MonoBehaviour {
     }
     public Vector3[] InteriorCorners {
         get {
-            _corners ??= new Vector3[]{
+            _interiorCorners ??= new Vector3[]{
                 vertices[0,ResV],
                 vertices[ResU,ResV],
                 vertices[ResU,0],
                 vertices[0,0],
             };
-            return _corners;
+            return _interiorCorners;
         }
     }
     public abstract Vector3[] Corners { get; }
@@ -80,7 +82,10 @@ public abstract class Complex : MonoBehaviour {
         get => tiles;
         private set => tiles = value;
     }
-    public int RepeatDepth { get; set; }
+    public int CopyDepth {
+        get => _copyDepth;
+        protected set => _copyDepth = value;
+    }
 
     public abstract void Setup(int resU, int resV, Map initMap);
 

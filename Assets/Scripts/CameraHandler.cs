@@ -59,6 +59,35 @@ public class CameraHandler : MonoBehaviour {
     }
 
     private void Move2DCamera() {
+        CalculateFrustum();
+
+        _dmousePos = (Input.mousePosition - _mousePos) / 10f*Time.deltaTime;
+
+        if (_frustumCorners[0].x > _target.Corners[0].x)
+            Camera.main.transform.position -= _target.Offset[1];
+        if (_frustumCorners[1].x < _target.Corners[1].x)
+            Camera.main.transform.position += _target.Offset[1];
+
+        Camera.main.transform.position += _dmousePos.x * Vector3.forward;
+        Camera.main.transform.position += _dmousePos.y * Vector3.left;
+    }
+
+    private void Zoom2DCamera() {
+        CalculateFrustum();
+
+        Camera.main.transform.position += _scroll * Vector3.up;
+
+        float fov = Camera.main.fieldOfView;
+        float theta = (fov / 2f) * (Mathf.PI / 180f);
+
+        float leg = Camera.main.transform.position.y * Mathf.Tan(theta);        
+        int depth = (int)((leg + _target.InteriorCorners[0].x) / _target.Offset[1].x);
+        Debug.Log($"{depth}, {_target.CopyDepth}");
+        if (depth > _target.CopyDepth)
+            StartCoroutine(_target.RepeatComplex());
+    }
+
+    private void CalculateFrustum() {
         _frustumCorners = new Vector3[4];
         Camera.main.CalculateFrustumCorners(
             new Rect(0, 0, 1, 1),
@@ -69,18 +98,6 @@ public class CameraHandler : MonoBehaviour {
         for (int i = 0; i < 4; i++)
             _frustumCorners[i] = Camera.main.transform.TransformVector(_frustumCorners[i]) + Camera.main.transform.position;
         // [BL, TL, TR, BR]
-
-        _dmousePos = (Input.mousePosition - _mousePos) / 10f*Time.deltaTime;
-
-        if (_frustumCorners[0].x > _target.Corners[0].x)
-            Camera.main.transform.position -= _target.Offset[1];
-
-        Camera.main.transform.position += _dmousePos.x * Vector3.forward;
-        Camera.main.transform.position += _dmousePos.y * Vector3.left;
-    }
-
-    private void Zoom2DCamera() {
-        Camera.main.transform.position += _scroll * Vector3.up;
     }
 
     private IEnumerator LerpCameraTo(Vector3 endPos, Quaternion endRot) {

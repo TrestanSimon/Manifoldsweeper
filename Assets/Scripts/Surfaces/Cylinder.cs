@@ -63,10 +63,12 @@ public class Cylinder : Complex {
     }
 
     public override IEnumerator RepeatComplex() {
+        CopyDepth++;
+        Debug.Log($"Repeating at depth {CopyDepth}");
         for (int v = 0; v < resV; v++) {
             for (int u = 0; u < resU; u++) {
-                tiles[u,v].CreateChild(Offset[1]);
-                tiles[u,v].CreateChild(-1*Offset[1]);
+                tiles[u,v].CreateChild(Offset[1]*CopyDepth);
+                tiles[u,v].CreateChild(-1*Offset[1]*CopyDepth);
             }
         }
         yield break;

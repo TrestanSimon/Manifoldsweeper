@@ -114,7 +114,6 @@ public class Tile : GenericTile {
 
     public override void ActivateClouds(bool activated) {
         base.ActivateClouds(activated);
-        Debug.Log("Made it");
         foreach (CloneTile child in _children)
             child.ActivateClouds(activated);
     }
