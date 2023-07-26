@@ -45,7 +45,7 @@ public class Quad {
     // Normal constructor
     public Quad(
         Vector3[] vertices,
-        int sideCount = 2,
+        int sideCount,
         bool collision = true
     ) {
         SideCount = sideCount;
@@ -66,7 +66,7 @@ public class Quad {
             mesh.triangles = QuadTriangles;
             mesh.uv = QuadUVCoords;
 
-            if (i == 1) {
+            if (i == 0) {
                 // Reverse winding
                 mesh.triangles = mesh.triangles.Reverse().ToArray();
                 mesh.uv = mesh.uv.Reverse().ToArray();

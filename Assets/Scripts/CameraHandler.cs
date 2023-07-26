@@ -51,9 +51,8 @@ public class CameraHandler : MonoBehaviour {
         if (Input.GetMouseButtonDown(2))
             _mousePos = Input.mousePosition;
 
-        if ((Input.GetMouseButton(2) && _mousePos != null)) {
+        if ((Input.GetMouseButton(2) && _mousePos != null))
             Move2DCamera();
-        }
 
         if (_scroll != 0f)
             Zoom2DCamera();

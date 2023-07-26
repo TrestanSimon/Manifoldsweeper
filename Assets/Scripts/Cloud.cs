@@ -9,11 +9,12 @@ public class Cloud : Quad {
 
     // Normal constructor
     public Cloud(
-        Vector3[] vertices, int? cloudSeed
-    ) : base(vertices, 2, false) {
+        Vector3[] vertices, int sideCount, int? cloudSeed
+    ) : base(vertices, sideCount, false) {
         SetMaterial(Resources.Load(
                 $"Materials/Clouds/TileCloud{cloudSeed}", typeof(Material)) as Material);
         for (int i = 0; i < _sideCount; i++) {
+            _gameObjects[i].name = $"Cloud {i}";
             // _meshRenderers[i].shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
     }

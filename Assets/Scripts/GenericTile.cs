@@ -17,22 +17,20 @@ public class GenericTile : Quad {
         Vector3[] vertices,
         Transform parent,
         int? cloudSeed = null
-    ) : base(vertices) {
+    ) : base(vertices, sideCount) {
         cloudSeed ??= UnityEngine.Random.Range(0, 2);
         _cloudSeed = cloudSeed;
+        _clouds = new Cloud[_sideCount];
 
-        for (int i = 0; i < sideCount; i++) {
-            _gameObjects[i].name = $"Quad {i} ({u}, {v})";
-            
+        for (int i = 0; i < sideCount; i++) {            
             // Make tiles child of Complex GameObject
             _gameObjects[i].transform.parent = parent;
 
             // For identifying tile instance from GameObject
             Tag tag = _gameObjects[i].AddComponent<Tag>();
             tag.u = u; tag.v = v;
-
-            InitializeClouds(i);
         }
+        InitializeClouds();
     }
 
     // Updates mesh(es) with provided vertices
@@ -47,27 +45,29 @@ public class GenericTile : Quad {
     public virtual void SetMaterial(Material material, bool isRevealedNumber) {
         base.SetMaterial(material);
         if (isRevealedNumber) {
-            _meshes[0].uv = QuadUVCoords;
-            _meshes[1].uv = QuadUVCoords.Reverse().ToArray();
+            _meshes[0].uv = QuadUVCoords.Reverse().ToArray();
+            if (_sideCount > 1)
+                _meshes[1].uv = QuadUVCoords;
         } else {
             _meshes[0].uv = QuadUVCoords.Reverse().ToArray();
-            _meshes[1].uv = QuadUVCoords.Reverse().ToArray();
+            if (_sideCount > 1)
+                _meshes[1].uv = QuadUVCoords.Reverse().ToArray();
         }
     }
 
-    private void InitializeClouds(int i, bool random = false) {
-        _clouds ??= new Cloud[_sideCount];
-
-        Vector3 altitude = _meshes[i].normals[0] * _Scale/10f;
-        _clouds[i] = new Cloud(
-            new Vector3[] {
-                _vertices[0] + altitude,
-                _vertices[1] + altitude,
-                _vertices[2] + altitude,
-                _vertices[3] + altitude
-            }, _cloudSeed
-        );
-        _clouds[i].Parent(_gameObjects[i]);
+    protected virtual void InitializeClouds(bool random = false) {
+        for (int i = 0; i < _sideCount; i++) {
+            Vector3 altitude = _meshes[i].normals[0] * _Scale/10f;
+            _clouds[i] = new Cloud(
+                new Vector3[] {
+                    _vertices[0] + altitude,
+                    _vertices[1] + altitude,
+                    _vertices[2] + altitude,
+                    _vertices[3] + altitude
+                }, 2, _cloudSeed
+            );
+            _clouds[i].Parent(_gameObjects[i]);
+        }
     }
 
     private void UpdateClouds() {
