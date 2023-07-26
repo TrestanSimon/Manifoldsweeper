@@ -6,36 +6,28 @@ public class CameraHandler : MonoBehaviour {
     private Vector3 _mousePos;
     private Vector3 _dmousePos;
     private float _scroll;
+    private Vector3[] _frustumCorners;
 
     private Complex _target;
-    private Complex.Map _map;
+    private Complex.Map _Map {
+        get => _target.CurrentMap;
+    }
 
-    public Complex Target {
-        private get => _target;
-        set => _target = value;
+    private bool _isTransitioning = false;
+    private bool _is3DCamera = true;
+    public bool Is3DCamera {
+        get => _is3DCamera;
     }
 
     private void Update() {
-        if (_target == null) return;
-
-        if (_map != _target.CurrentMap) {
-            if (_target.CurrentMap == Complex.Map.Flat) Update2DCamera(true);
-            else if (_map == Complex.Map.Flat) Update3DCamera(true);
-        }
-
-        _map = _target.CurrentMap;
-        if (_map == Complex.Map.Flat) Update2DCamera();
-        else Update3DCamera();
+        if (_target is null || _isTransitioning) return;
+        if (_is3DCamera) Update3DCamera();
+        else Update2DCamera();
     }
 
     // Default camera
-    public void Update3DCamera(bool force = false) {
+    private void Update3DCamera() {
         _scroll = Input.mouseScrollDelta.y * _sensitivity * -1f;
-
-        if (force)
-            StartCoroutine(LerpCameraTo(
-                new Vector3(10f, 4f, -10f)
-            ));
 
         if (Input.GetMouseButtonDown(2))
             _mousePos = Input.mousePosition;
@@ -53,22 +45,13 @@ public class CameraHandler : MonoBehaviour {
     }
 
     // A top-down camera
-    // if force is true, camera resets position
-    public void Update2DCamera(bool force = false) {
+    private void Update2DCamera() {
         _scroll = Input.mouseScrollDelta.y * _sensitivity * -1f;
-
-        if (force) {
-            StartCoroutine(LerpCameraTo(
-                new Vector3(0f, 15f, 0f),
-                Quaternion.Euler(90f, 0f, 90f))
-            );
-            return;
-        }
 
         if (Input.GetMouseButtonDown(2))
             _mousePos = Input.mousePosition;
 
-        if ((Input.GetMouseButton(2) && _mousePos != null) || force) {
+        if ((Input.GetMouseButton(2) && _mousePos != null)) {
             Move2DCamera();
         }
 
@@ -77,20 +60,20 @@ public class CameraHandler : MonoBehaviour {
     }
 
     private void Move2DCamera() {
-        Vector3[] frustumCorners = new Vector3[4];
+        _frustumCorners = new Vector3[4];
         Camera.main.CalculateFrustumCorners(
             new Rect(0, 0, 1, 1),
             Camera.main.transform.position.y - _target.Corners[0].y,
-            Camera.MonoOrStereoscopicEye.Mono, frustumCorners
+            Camera.MonoOrStereoscopicEye.Mono, _frustumCorners
         );
 
         for (int i = 0; i < 4; i++)
-            frustumCorners[i] = Camera.main.transform.TransformVector(frustumCorners[i]) + Camera.main.transform.position;
+            _frustumCorners[i] = Camera.main.transform.TransformVector(_frustumCorners[i]) + Camera.main.transform.position;
         // [BL, TL, TR, BR]
 
         _dmousePos = (Input.mousePosition - _mousePos) / 10f*Time.deltaTime;
 
-        if (frustumCorners[0].x > _target.Corners[0].x)
+        if (_frustumCorners[0].x > _target.Corners[0].x)
             Camera.main.transform.position -= _target.Offset[1];
 
         Camera.main.transform.position += _dmousePos.x * Vector3.forward;
@@ -101,7 +84,7 @@ public class CameraHandler : MonoBehaviour {
         Camera.main.transform.position += _scroll * Vector3.up;
     }
 
-    public IEnumerator LerpCameraTo(Vector3 endPos, Quaternion endRot) {
+    private IEnumerator LerpCameraTo(Vector3 endPos, Quaternion endRot) {
         float time = 0f;
         float duration = 2f;
         float t = 0f;
@@ -119,7 +102,7 @@ public class CameraHandler : MonoBehaviour {
             yield return null;
         }
     }
-    public IEnumerator LerpCameraTo(Vector3 endPos) {
+    private IEnumerator LerpCameraTo(Vector3 endPos) {
         float time = 0f;
         float duration = 2f;
         float t = 0f;
@@ -138,5 +121,38 @@ public class CameraHandler : MonoBehaviour {
             time += Time.deltaTime;
             yield return null;
         }
+    }
+
+    public IEnumerator Enter2DCamera() {
+        _isTransitioning = true;
+        yield return StartCoroutine(LerpCameraTo(
+            new Vector3(0f, 15f, 0f),
+            Quaternion.Euler(90f, 0f, 90f))
+        );
+        _isTransitioning = false;
+        _is3DCamera = false;
+    }
+
+    public IEnumerator Enter3DCamera() {
+        _isTransitioning = true;
+        yield return StartCoroutine(LerpCameraTo(
+            new Vector3(10f, 4f, -10f)
+        ));
+        _isTransitioning = false;
+        _is3DCamera = true;
+    }
+
+    public IEnumerator NewMap(Complex.Map newMap) {
+        if (newMap == Complex.Map.Flat)
+            yield return StartCoroutine(Enter2DCamera());
+        else if (newMap != Complex.Map.Flat)
+            yield return StartCoroutine(Enter3DCamera());
+    }
+
+    public IEnumerator NewTarget(Complex newTarget) {
+        _target = newTarget;
+        yield return StartCoroutine(NewMap(_Map));
+        if (_Map == Complex.Map.Flat)
+            StartCoroutine(_target.RepeatComplex());
     }
 }

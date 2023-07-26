@@ -162,7 +162,7 @@ public class UIHandler : MonoBehaviour {
 
         complex.Setup(_resU, _resV, SelectedMap);
         game.Setup(complex, _resU, _resV, mineCount);
-        cameraHandler.Target = complex;
+        StartCoroutine(cameraHandler.NewTarget(complex));
 
         mapButton.interactable = false;
 
@@ -224,7 +224,23 @@ public class UIHandler : MonoBehaviour {
     private IEnumerator ReMapCoroutine() {
         mapDropdown.interactable = false;
         mapButton.interactable = false;
-        yield return StartCoroutine(complex.ReMap(SelectedMap));
+
+        if (complex.CurrentMap == Complex.Map.Flat) {
+            // 2D --> 3D
+            yield return StartCoroutine(complex.DumpRepeatComplex());
+            yield return StartCoroutine(cameraHandler.Enter3DCamera());
+            yield return StartCoroutine(complex.ReMap(SelectedMap));
+        } else {
+            // 3D --> 2D or 3D
+            yield return StartCoroutine(complex.ReMap(SelectedMap));
+
+            if (SelectedMap == Complex.Map.Flat) {
+                // 3D --> 2D
+                yield return StartCoroutine(cameraHandler.Enter2DCamera());
+                yield return StartCoroutine(complex.RepeatComplex());
+            }
+        }
+
         mapDropdown.interactable = true;
     }
 

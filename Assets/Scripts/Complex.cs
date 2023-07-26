@@ -54,6 +54,8 @@ public abstract class Complex : MonoBehaviour {
     }
     public Vector3[] Offset {
         get {
+            if (currentMap != Complex.Map.Flat)
+                return null;
             _offset ??= new Vector3[]{
                 2f*(vertices[resU/2,0]),
                 2f*(vertices[0,resV/2])
@@ -66,6 +68,7 @@ public abstract class Complex : MonoBehaviour {
         get => tiles;
         private set => tiles = value;
     }
+    public int RepeatDepth { get; set; }
 
     public abstract void Setup(int resU, int resV, Map initMap);
 
@@ -160,13 +163,14 @@ public abstract class Complex : MonoBehaviour {
         return neighbors;
     }
 
-    public virtual void RepeatComplex() {
-        if (currentMap != Map.Flat) return;
+    public virtual IEnumerator RepeatComplex() {
+        if (currentMap != Map.Flat) yield break;
     }
 
-    public void DumpRepeatComplex() {
+    public IEnumerator DumpRepeatComplex() {
         foreach (Tile tile in tiles)
             tile.DestroyChildren();
+        yield break;
     }
 
     // Identifies the tile instance the cursor is over

@@ -52,8 +52,6 @@ public class Torus : Complex {
         currentMap = initMap;
         InitVertices(initMap);
         InitTiles();
-
-        if (initMap == Map.Flat) RepeatComplex();
     }
     
     protected override void InitVertices(Map map) {
@@ -77,16 +75,14 @@ public class Torus : Complex {
         else if (newMap == Map.Flat) {
             yield return StartCoroutine(TorusToCylinder());
             yield return StartCoroutine(CylinderToPlane());
-            RepeatComplex();
         } else if (newMap == Map.Torus) {
-            DumpRepeatComplex();
             yield return StartCoroutine(CylinderToPlane(true));
             yield return StartCoroutine(TorusToCylinder(true));
         }
         currentMap = newMap;
     }
 
-    public override void RepeatComplex() {
+    public override IEnumerator RepeatComplex() {
         for (int v = 0; v < resV; v++) {
             for (int u = 0; u < resU; u++) {
                 tiles[u,v].CreateChild(Offset[0]);
@@ -101,6 +97,7 @@ public class Torus : Complex {
                 tiles[u,v].CreateChild(-1*Offset[0] - Offset[1]);
             }
         }
+        yield break;
     }
 
     public IEnumerator TorusToCylinder(bool reverse = false) {

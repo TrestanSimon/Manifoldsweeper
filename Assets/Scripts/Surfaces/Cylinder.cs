@@ -34,9 +34,6 @@ public class Cylinder : Complex {
         currentMap = initMap;
         InitVertices(initMap);
         InitTiles();
-
-        if (initMap == Map.Flat) 
-            RepeatComplex();
     }
 
     protected override void InitVertices(Map map) {
@@ -59,21 +56,20 @@ public class Cylinder : Complex {
         if (newMap == currentMap) yield return null;
         else if (newMap == Map.Flat) {
             yield return StartCoroutine(CylinderToPlane());
-            RepeatComplex();
         } else if (newMap == Map.Cylinder) {
-            DumpRepeatComplex();
             yield return StartCoroutine(CylinderToPlane(true));
         }
         currentMap = newMap;
     }
 
-    public override void RepeatComplex() {
+    public override IEnumerator RepeatComplex() {
         for (int v = 0; v < resV; v++) {
             for (int u = 0; u < resU; u++) {
                 tiles[u,v].CreateChild(Offset[1]);
                 tiles[u,v].CreateChild(-1*Offset[1]);
             }
         }
+        yield break;
     }
 
     public IEnumerator CylinderToPlane(bool reverse = false) {
