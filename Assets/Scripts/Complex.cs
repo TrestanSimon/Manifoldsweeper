@@ -32,7 +32,8 @@ public abstract class Complex : MonoBehaviour {
     private Vector3[] _interiorCorners;
     protected Vector3[] _corners;
 
-    private int _copyDepth = 0;
+    private int _copyDepthU = 0;
+    private int _copyDepthV = 0;
 
     public virtual int ResU {
         get => resU;
@@ -60,8 +61,8 @@ public abstract class Complex : MonoBehaviour {
             if (currentMap != Complex.Map.Flat)
                 return null;
             _offset ??= new Vector3[]{
-                2f*(vertices[resU/2,0]),
-                2f*(vertices[0,resV/2])
+                vertices[resU/2,0] + vertices[resU/2+resU%2,0],
+                vertices[0,resV/2] + vertices[0,resV/2+resV%2]
             };
             return _offset;
         }
@@ -77,14 +78,18 @@ public abstract class Complex : MonoBehaviour {
             return _interiorCorners;
         }
     }
-    public abstract Vector3[] Corners { get; }
+    public Vector3[] Corners { get => _corners; }
     public Tile[,] Tiles {
         get => tiles;
         private set => tiles = value;
     }
-    public int CopyDepth {
-        get => _copyDepth;
-        protected set => _copyDepth = value;
+    public int CopyDepthU {
+        get => _copyDepthU;
+        protected set => _copyDepthU = value;
+    }
+    public int CopyDepthV {
+        get => _copyDepthV;
+        protected set => _copyDepthV = value;
     }
 
     public abstract void Setup(int resU, int resV, Map initMap);
@@ -123,6 +128,8 @@ public abstract class Complex : MonoBehaviour {
             }
         }
     }
+
+    public abstract void CalculateCorners(int depthU, int depthV);
 
     public IEnumerator ComplexLerp(
         Vector3[][,] vertSteps, float duration
@@ -180,13 +187,13 @@ public abstract class Complex : MonoBehaviour {
         return neighbors;
     }
 
-    public virtual IEnumerator RepeatComplex() {
-        if (currentMap != Map.Flat) yield break;
-    }
+    public abstract IEnumerator RepeatU();
+
+    public abstract IEnumerator RepeatV();
 
     public IEnumerator DumpRepeatComplex() {
         foreach (Tile tile in tiles)
-            tile.DestroyChildren();
+            tile.DestroyClones();
         yield break;
     }
 

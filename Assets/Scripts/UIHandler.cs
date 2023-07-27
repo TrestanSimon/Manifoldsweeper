@@ -237,7 +237,8 @@ public class UIHandler : MonoBehaviour {
             if (SelectedMap == Complex.Map.Flat) {
                 // 3D --> 2D
                 yield return StartCoroutine(cameraHandler.TransitionTo2DCamera());
-                yield return StartCoroutine(complex.RepeatComplex());
+                yield return StartCoroutine(complex.RepeatU());
+                yield return StartCoroutine(complex.RepeatV());
             }
         }
 

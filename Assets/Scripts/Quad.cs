@@ -10,6 +10,10 @@ public class Quad {
     protected MeshRenderer[] _meshRenderers;
     protected Mesh[] _meshes;
 
+    public Vector3[] Vertices {
+        get => _vertices;
+    }
+
     // Winding for triangles and UV coordinates
         // 1 --> 2
         // |  /  |

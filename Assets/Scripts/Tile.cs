@@ -17,7 +17,7 @@ public class Tile : GenericTile {
     private int _number; // Number of mines in neighborhood
     private bool _revealed, _flagged, _exploded;
 
-    private List<CloneTile> _children;
+    private List<CloneTile> _clones;
 
     public int U {
         get => _u;
@@ -76,7 +76,7 @@ public class Tile : GenericTile {
         Complex complex
     ) : base(u, v, 2, vertices, complex.transform) {
         U = u; V = v;
-        _children = new List<CloneTile>();
+        _clones = new List<CloneTile>();
 
         _revealed = false;
         _flagged = false;
@@ -97,8 +97,8 @@ public class Tile : GenericTile {
 
     public override void SetMaterial(Material material) {
         base.SetMaterial(material, type == Type.Number && Revealed);
-        foreach (CloneTile child in _children)
-            child.SetMaterial(material, type == Type.Number && Revealed);
+        foreach (CloneTile clone in _clones)
+            clone.SetMaterial(material, type == Type.Number && Revealed);
     }
 
     // Resets tile state for new game
@@ -114,8 +114,8 @@ public class Tile : GenericTile {
 
     public override void ActivateClouds(bool activated) {
         base.ActivateClouds(activated);
-        foreach (CloneTile child in _children)
-            child.ActivateClouds(activated);
+        foreach (CloneTile clone in _clones)
+            clone.ActivateClouds(activated);
     }
 
     // Delayed reveal based on flood depth
@@ -127,8 +127,8 @@ public class Tile : GenericTile {
         yield return new WaitForSeconds(0.02f * Depth);
 
         Reveal(material, breakPS);
-        foreach (CloneTile child in _children)
-            child.Reveal(material, breakPS);
+        foreach (CloneTile clone in _clones)
+            clone.Reveal(material, breakPS);
     }
 
     public override void Reveal(Material material, GameObject breakPS = null) {
@@ -156,8 +156,8 @@ public class Tile : GenericTile {
         _flagged = true;
         
         base.PlaceFlags(flagPrefab);
-        foreach (CloneTile child in _children)
-            child.PlaceFlags(flagPrefab);
+        foreach (CloneTile clone in _clones)
+            clone.PlaceFlags(flagPrefab);
     }
 
     // Removes flag(s)
@@ -167,35 +167,35 @@ public class Tile : GenericTile {
         _flagged = false;
 
         base.RemoveFlags();
-        foreach (CloneTile child in _children)
-            child.RemoveFlags();
+        foreach (CloneTile clone in _clones)
+            clone.RemoveFlags();
     }
 
     public override void UpdateFlags() {
         base.UpdateFlags();
-        foreach (CloneTile child in _children)
-            child.UpdateFlags();
+        foreach (CloneTile clone in _clones)
+            clone.UpdateFlags();
     }
 
-    public void CreateChild(Vector3 offset, bool mirrorV = false) {
-        CloneTile child = new CloneTile(
-            U, V, OffsetVertices(offset), _gameObjects[0].transform, _cloudSeed);
+    public void CreateClone(Vector3 offset, bool reversed = false) {
+        CloneTile clone = new CloneTile(
+            U, V, OffsetVertices(offset), _gameObjects[0].transform, _cloudSeed, reversed);
 
-        child.SetMaterial(_CurrentMaterial, type == Type.Number && Revealed);
-        child.ActivateClouds(!Revealed);
+        clone.SetMaterial(_CurrentMaterial, type == Type.Number && Revealed);
+        clone.ActivateClouds(!Revealed);
         // if (Flagged) PlaceFlags(flagPrefab, materialFlag)
 
-        _children.Add(child);
+        _clones.Add(clone);
     }
 
-    public void DestroyChildren() {
-        foreach (CloneTile child in _children)
-            child.DestroySelf();
-        _children.Clear();
+    public void DestroyClones() {
+        foreach (CloneTile clone in _clones)
+            clone.DestroySelf();
+        _clones.Clear();
     }
 
     public override void DestroySelf() {
-        DestroyChildren();
+        DestroyClones();
         base.DestroySelf();
     }
 }

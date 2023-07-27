@@ -12,18 +12,6 @@ public class KleinBottle : Complex {
             {"Bottle", Map.KleinBottle}
         };
     }
-
-    public override Vector3[] Corners {
-        get {
-            _corners ??= new Vector3[]{
-                vertices[0,ResV] + Offset[0] + Offset[1],
-                vertices[ResU,ResV] - Offset[0] - Offset[1],
-                vertices[ResU,0] - Offset[0] - Offset[1],
-                vertices[0,0] + Offset[0] + Offset[1],
-            };
-            return _corners;
-        }
-    }
     
     public override void Setup(int resU, int resV, Map initMap) {
         sideCount = 2;
@@ -66,15 +54,77 @@ public class KleinBottle : Complex {
         currentMap = newMap;
     }
 
-    // NEEDS TO BE FIXED
-    public override IEnumerator RepeatComplex() {
+    public override IEnumerator RepeatU() {
+        CopyDepthU++;
+        bool isReversed;
+        Vector3 flipper = Vector3.zero;
+        Vector3 offsetV;
+        int indexExtraV = CopyDepthV > 1 ? 1 : 0;
+
         for (int v = 0; v < resV; v++) {
+            flipper = (tiles[0,ResV-v-1].Vertices[0].z - tiles[0,v].Vertices[0].z) * Vector3.forward;
             for (int u = 0; u < resU; u++) {
-                tiles[u,v].CreateChild(Offset[1]);
-                tiles[u,v].CreateChild(-1*Offset[1]);
+                for (int indexV = -CopyDepthV; indexV <= CopyDepthV; indexV++) {
+                    offsetV = Offset[1] * indexV;                    
+                    isReversed = Mathf.Abs(indexV) % 2 == 1;
+
+                    if (isReversed) {
+                        tiles[u,v].CreateClone(Offset[0] * CopyDepthU + offsetV + flipper, true);
+                        tiles[u,v].CreateClone(Offset[0] * -CopyDepthU + offsetV + flipper, true);
+                    } else {
+                        tiles[u,v].CreateClone(Offset[0] * CopyDepthU + offsetV, false);
+                        tiles[u,v].CreateClone(Offset[0] * -CopyDepthU + offsetV, false);
+                    }
+                }
             }
         }
-        yield break;
+
+        CalculateCorners(CopyDepthU, CopyDepthV);
+        yield return null;
+    }
+
+    public override IEnumerator RepeatV() {
+        CopyDepthV++;
+        if (CopyDepthV == 1) CopyDepthV++;
+        bool isReversed = CopyDepthV % 2 == 1;
+        Vector3 flipper = Vector3.zero;
+        Vector3 offsetU;
+
+        for (int v = 0; v < resV; v++) {
+            flipper = (tiles[0,ResV-v-1].Vertices[0].z - tiles[0,v].Vertices[0].z) * Vector3.forward;
+            for (int u = 0; u < resU; u++) {
+                // Fill left-right depending on CopyDepthU
+                for (int indexU = -CopyDepthU; indexU <= CopyDepthU; indexU++) {
+                    offsetU = Offset[0] * indexU;
+
+                    if (CopyDepthV == 2) {
+                        tiles[u,v].CreateClone(Offset[1] + offsetU + flipper, true);
+                        tiles[u,v].CreateClone(-1 * Offset[1] + offsetU + flipper, true);
+                    }
+
+                    if (isReversed) {
+                        tiles[u,v].CreateClone(Offset[1] * CopyDepthV + offsetU + flipper, true);
+                        tiles[u,v].CreateClone(Offset[1] * -CopyDepthV + offsetU + flipper, true);
+                    } else {
+                        tiles[u,v].CreateClone(Offset[1] * CopyDepthV + offsetU, false);
+                        tiles[u,v].CreateClone(Offset[1] * -CopyDepthV + offsetU, false);
+                    }
+                }
+            }
+        }
+
+        CalculateCorners(CopyDepthU, CopyDepthV);
+        yield return null;
+    }
+
+    public override void CalculateCorners(int depthU, int depthV) {
+        Vector3 offset = Offset[0] * depthU + Offset[1] * depthV;
+        _corners = new Vector3[]{
+            vertices[0,ResV] + offset,
+            vertices[ResU,ResV] - offset,
+            vertices[ResU,0] - offset,
+            vertices[0,0] + offset,
+        };
     }
 
     private Vector3[,] KleinMap() {

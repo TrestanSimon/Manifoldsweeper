@@ -31,18 +31,6 @@ public class Torus : Complex {
         }
     }
 
-    public override Vector3[] Corners {
-        get {
-            _corners ??= new Vector3[]{
-                vertices[0,ResV] + Offset[0] + Offset[1],
-                vertices[ResU,ResV] - Offset[0] - Offset[1],
-                vertices[ResU,0] - Offset[0] - Offset[1],
-                vertices[0,0] + Offset[0] + Offset[1],
-            };
-            return _corners;
-        }
-    }
-
     public override void Setup(int ResU, int ResV, Map initMap) {
         sideCount = 2;
         this.ResU = ResU;
@@ -82,22 +70,50 @@ public class Torus : Complex {
         currentMap = newMap;
     }
 
-    public override IEnumerator RepeatComplex() {
+    public override IEnumerator RepeatU() {
+        CopyDepthU++;
         for (int v = 0; v < resV; v++) {
             for (int u = 0; u < resU; u++) {
-                tiles[u,v].CreateChild(Offset[0]);
-                tiles[u,v].CreateChild(-1*Offset[0]);
-                tiles[u,v].CreateChild(Offset[1]);
-                tiles[u,v].CreateChild(-1*Offset[1]);
-                
-                tiles[u,v].CreateChild(Offset[0] + Offset[1]);
-                tiles[u,v].CreateChild(Offset[0] - Offset[1]);
-                
-                tiles[u,v].CreateChild(-1*Offset[0] + Offset[1]);
-                tiles[u,v].CreateChild(-1*Offset[0] - Offset[1]);
+                Vector3 extraOffset = new Vector3();
+                for (int index = -CopyDepthV; index <= CopyDepthV; index++) {
+                    extraOffset = Offset[1] * index;
+
+                    tiles[u,v].CreateClone(Offset[0] * CopyDepthU + extraOffset);
+                    tiles[u,v].CreateClone(-1*Offset[0] * CopyDepthU + extraOffset);
+                }
             }
         }
-        yield break;
+
+        CalculateCorners(CopyDepthU, CopyDepthV);
+        yield return null;
+    }
+
+    public override IEnumerator RepeatV() {
+        CopyDepthV++;
+        for (int v = 0; v < resV; v++) {
+            for (int u = 0; u < resU; u++) {
+                Vector3 extraOffset = new Vector3();
+                for (int index = -CopyDepthU; index <= CopyDepthU; index++) {
+                    extraOffset = Offset[0] * index;
+
+                    tiles[u,v].CreateClone(Offset[1] * CopyDepthV + extraOffset);
+                    tiles[u,v].CreateClone(-1*Offset[1] * CopyDepthV + extraOffset);
+                }
+            }
+        }
+
+        CalculateCorners(CopyDepthU, CopyDepthV);
+        yield return null;
+    }
+
+    public override void CalculateCorners(int depthU, int depthV) {
+        Vector3 offset = Offset[0] * depthU + Offset[1] * depthV;
+        _corners = new Vector3[]{
+            vertices[0,ResV] + offset,
+            vertices[ResU,ResV] - offset,
+            vertices[ResU,0] - offset,
+            vertices[0,0] + offset,
+        };
     }
 
     public IEnumerator TorusToCylinder(bool reverse = false) {

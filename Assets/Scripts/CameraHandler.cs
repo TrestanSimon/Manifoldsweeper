@@ -13,6 +13,9 @@ public class CameraHandler : MonoBehaviour {
         get => _target.CurrentMap;
     }
 
+    private int _depthU = 1;
+    private int _depthV = 1;
+
     private bool _isTransitioning = false;
     private bool _is3DCamera = true;
     public bool Is3DCamera {
@@ -63,13 +66,37 @@ public class CameraHandler : MonoBehaviour {
 
         _dmousePos = (Input.mousePosition - _mousePos) / 10f*Time.deltaTime;
 
-        if (_frustumCorners[0].x > _target.Corners[0].x)
-            Camera.main.transform.position -= _target.Offset[1];
-        if (_frustumCorners[1].x < _target.Corners[1].x)
-            Camera.main.transform.position += _target.Offset[1];
-
         Camera.main.transform.position += _dmousePos.x * Vector3.forward;
         Camera.main.transform.position += _dmousePos.y * Vector3.left;
+
+        if (_target is Plane) {
+            // Restrictive movement
+        } else {
+            // Up-down movement type
+            if (_target is MobiusStrip or KleinBottle) {
+                // Offset doubled to account for glide reflection of copied complexes
+                if (Camera.main.transform.position.x > _target.InteriorCorners[0].x)
+                    Camera.main.transform.position -= _target.Offset[1] * 2f;
+                if (Camera.main.transform.position.x < _target.InteriorCorners[1].x)
+                    Camera.main.transform.position += _target.Offset[1] * 2f;
+            } else {
+                if (Camera.main.transform.position.x > _target.InteriorCorners[0].x)
+                    Camera.main.transform.position -= _target.Offset[1];
+                if (Camera.main.transform.position.x < _target.InteriorCorners[1].x)
+                    Camera.main.transform.position += _target.Offset[1];
+            }
+
+            // Left-right movement
+            if (_target is Torus or KleinBottle) {
+                // Left-right non restrictive movement
+                if (Camera.main.transform.position.z > _target.InteriorCorners[2].z)
+                    Camera.main.transform.position -= _target.Offset[0];
+                if (Camera.main.transform.position.z < _target.InteriorCorners[1].z)
+                    Camera.main.transform.position += _target.Offset[0];
+            } else {
+                // Left-right restrictive movement
+            }
+        }
     }
 
     private void Zoom2DCamera() {
@@ -77,14 +104,32 @@ public class CameraHandler : MonoBehaviour {
 
         Camera.main.transform.position += _scroll * Vector3.up;
 
-        float fov = Camera.main.fieldOfView;
-        float theta = (fov / 2f) * (Mathf.PI / 180f);
+        float fovU = Camera.VerticalToHorizontalFieldOfView(
+            Camera.main.fieldOfView, Camera.main.aspect);
+        float thetaU = (fovU / 2f) * (Mathf.PI / 180f);
 
-        float leg = Camera.main.transform.position.y * Mathf.Tan(theta);        
-        int depth = (int)((leg + _target.InteriorCorners[0].x) / _target.Offset[1].x);
-        Debug.Log($"{depth}, {_target.CopyDepth}");
-        if (depth > _target.CopyDepth)
-            StartCoroutine(_target.RepeatComplex());
+        float legU = Camera.main.transform.position.y * Mathf.Tan(thetaU);        
+        _depthU = (int)(
+            (legU + Mathf.Abs(Camera.main.transform.position.z) - _target.InteriorCorners[2].z)
+            / _target.Offset[0].z + 1
+        );
+
+        float fovV = Camera.main.fieldOfView;
+        float thetaV = (fovV / 2f) * (Mathf.PI / 180f);
+
+        float legV = Camera.main.transform.position.y * Mathf.Tan(thetaV);        
+        _depthV = (int)(
+            (legV + Mathf.Abs(Camera.main.transform.position.x) - _target.InteriorCorners[1].x)
+            / _target.Offset[1].x
+        );
+
+        Debug.Log($"{_depthU}, {_depthV}");
+        
+        _target.CalculateCorners(_depthU, _depthV);
+        if (_depthU > _target.CopyDepthU)
+            StartCoroutine(_target.RepeatU());
+        if (_depthV > _target.CopyDepthV)
+            StartCoroutine(_target.RepeatV());
     }
 
     private void CalculateFrustum() {
@@ -189,7 +234,9 @@ public class CameraHandler : MonoBehaviour {
     public IEnumerator NewTarget(Complex newTarget) {
         _target = newTarget;
         yield return StartCoroutine(NewMap(_Map));
-        if (_Map == Complex.Map.Flat)
-            StartCoroutine(_target.RepeatComplex());
+        if (_Map == Complex.Map.Flat) {
+            StartCoroutine(_target.RepeatU());
+            StartCoroutine(_target.RepeatV());
+        }
     }
 }

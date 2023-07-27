@@ -13,18 +13,6 @@ public class Cylinder : Complex {
     }
 
     private float radius;
-    
-    public override Vector3[] Corners {
-        get {
-            _corners ??= new Vector3[]{
-                vertices[0,ResV] + Offset[1],
-                vertices[ResU,ResV] - Offset[1],
-                vertices[ResU,0] - Offset[1],
-                vertices[0,0] + Offset[1],
-            };
-            return _corners;
-        }
-    }
 
     public override void Setup(int resU, int resV, Map initMap) {
         sideCount = 2;
@@ -62,16 +50,30 @@ public class Cylinder : Complex {
         currentMap = newMap;
     }
 
-    public override IEnumerator RepeatComplex() {
-        CopyDepth++;
-        Debug.Log($"Repeating at depth {CopyDepth}");
+    public override IEnumerator RepeatU() {
+        yield return null;
+    }
+
+    public override IEnumerator RepeatV() {
+        CopyDepthV++;
         for (int v = 0; v < resV; v++) {
             for (int u = 0; u < resU; u++) {
-                tiles[u,v].CreateChild(Offset[1]*CopyDepth);
-                tiles[u,v].CreateChild(-1*Offset[1]*CopyDepth);
+                tiles[u,v].CreateClone(Offset[1] * CopyDepthV);
+                tiles[u,v].CreateClone(-1*Offset[1] * CopyDepthV);
             }
         }
-        yield break;
+
+        CalculateCorners(CopyDepthU, CopyDepthV);
+        yield return null;
+    }
+
+    public override void CalculateCorners(int depthU, int depthV) {
+        _corners = new Vector3[]{
+            vertices[0,ResV] + Offset[1] * depthU,
+            vertices[ResU,ResV] - Offset[1] * depthU,
+            vertices[ResU,0] - Offset[1] * depthU,
+            vertices[0,0] + Offset[1] * depthU,
+        };
     }
 
     public IEnumerator CylinderToPlane(bool reverse = false) {
