@@ -7,21 +7,19 @@ public class CameraHandler : MonoBehaviour {
     private Vector3 _dmousePos;
     private float _scroll;
     private Vector3[] _frustumCorners;
+    private float _aspect;
 
     private Complex _target;
     private Complex.Map _Map {
         get => _target.CurrentMap;
     }
 
+    // Number of clones
     private int _depthU = 1;
     private int _depthV = 1;
-    private float _aspect;
 
     private bool _isTransitioning = false;
     private bool _is3DCamera = true;
-    public bool Is3DCamera {
-        get => _is3DCamera;
-    }
 
     private void Awake() {
         _aspect = Camera.main.aspect;
@@ -33,7 +31,7 @@ public class CameraHandler : MonoBehaviour {
         else Update2DCamera();
     }
 
-    // Default camera
+    // Default camera for viewing surfaces in 3D
     private void Update3DCamera() {
         _scroll = Input.mouseScrollDelta.y * _sensitivity * -1f;
 
@@ -52,7 +50,7 @@ public class CameraHandler : MonoBehaviour {
             Camera.main.transform.position -= _scroll * Camera.main.transform.forward.normalized;
     }
 
-    // A top-down camera
+    // Top-down camera for viewing flattened surfaces
     private void Update2DCamera() {
         _scroll = Input.mouseScrollDelta.y * _sensitivity * -1f;
 
@@ -111,6 +109,8 @@ public class CameraHandler : MonoBehaviour {
         StartCoroutine(FillScreen());
     }
 
+    // (For 2D functionality only)
+    // Repeats flattened surface until screen is completely covered
     private IEnumerator FillScreen() {
         CalculateFrustum();
 
@@ -144,17 +144,24 @@ public class CameraHandler : MonoBehaviour {
         yield return null;
     }
 
+    // (For 2D functionality only)
+    // Calculates where the frustum corners intersect the flattened surface
+    // Sends values to _frustumCorners as a Vector3[4] with clockwise orientation
+    // starting at the bottom left corner, i.e., 
+    // {bottom left, top left, top right, bottom right}
+    // which matches _target.Corners and _target.InteriorCorners
     private void CalculateFrustum() {
         _frustumCorners = new Vector3[4];
+
         Camera.main.CalculateFrustumCorners(
             new Rect(0, 0, 1, 1),
-            Camera.main.transform.position.y - _target.Corners[0].y,
+            Camera.main.transform.position.y - _target.InteriorCorners[0].y,
             Camera.MonoOrStereoscopicEye.Mono, _frustumCorners
         );
 
         for (int i = 0; i < 4; i++)
-            _frustumCorners[i] = Camera.main.transform.TransformVector(_frustumCorners[i]) + Camera.main.transform.position;
-        // [BL, TL, TR, BR]
+            _frustumCorners[i] = Camera.main.transform.TransformVector(_frustumCorners[i])
+                + Camera.main.transform.position;
     }
 
     private IEnumerator LerpCameraTo(Vector3 endPos, Quaternion endRot) {
