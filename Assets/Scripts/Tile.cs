@@ -138,26 +138,26 @@ public class Tile : GenericTile {
     }
 
     // Places flag(s)
-    public int FlagToggle(GameObject flagPrefab) {
+    public int FlagToggle(GameObject flagPrefab, Material flagMaterial) {
         if (type == Type.Invalid || Revealed) return 0;
 
         if (Flagged) {
             RemoveFlags();
             return -1;
         } else {
-            PlaceFlags(flagPrefab);
+            PlaceFlags(flagPrefab, flagMaterial);
             return 1;
         }
     }
 
-    public override void PlaceFlags(GameObject flagPrefab) {
+    public override void PlaceFlags(GameObject flagPrefab, Material flagMaterial, bool scaled = true) {
         if (type == Type.Invalid || Revealed || Flagged) return;
 
         _flagged = true;
         
-        base.PlaceFlags(flagPrefab);
+        base.PlaceFlags(flagPrefab, flagMaterial);
         foreach (CloneTile clone in _clones)
-            clone.PlaceFlags(flagPrefab);
+            clone.PlaceFlags(flagPrefab, flagMaterial);
     }
 
     // Removes flag(s)
@@ -183,7 +183,7 @@ public class Tile : GenericTile {
 
         clone.SetMaterial(_CurrentMaterial, type == Type.Number && Revealed);
         clone.ActivateClouds(!Revealed);
-        // if (Flagged) PlaceFlags(flagPrefab, materialFlag)
+        if (Flagged) clone.PlaceFlags(_flags[0], _clouds[0].CurrentMaterial, false);
 
         _clones.Add(clone);
     }

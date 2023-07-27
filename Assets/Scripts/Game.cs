@@ -21,6 +21,7 @@ public class Game : MonoBehaviour {
     private Material _materialNum6;
     private Material _materialNum7;
     private Material _materialNum8;
+    private Material _flagMaterial;
     private GameObject _flagPrefab, _breakPS;
 
     private List<Coroutine> _coroutinePropagate = new List<Coroutine>();
@@ -45,6 +46,7 @@ public class Game : MonoBehaviour {
         _materialNum6 = Resources.Load("Materials/Island/Tile6", typeof(Material)) as Material;
         _materialNum7 = Resources.Load("Materials/Island/Tile7", typeof(Material)) as Material;
         _materialNum8 = Resources.Load("Materials/Island/Tile8", typeof(Material)) as Material;
+        _flagMaterial = Resources.Load("Materials/TileFlag", typeof(Material)) as Material;
         // Load prefabs
         _flagPrefab = Resources.Load("Prefabs/Flag", typeof(GameObject)) as GameObject;
         _breakPS = Resources.Load("Prefabs/BreakPS", typeof(GameObject)) as GameObject;
@@ -131,7 +133,7 @@ public class Game : MonoBehaviour {
     private void AttemptFlagMouseOver() {
         _mouseOver = _complex.MouseIdentify();
         if (_mouseOver != null)
-            _flagCount += _mouseOver.FlagToggle(_flagPrefab);
+            _flagCount += _mouseOver.FlagToggle(_flagPrefab, _flagMaterial);
     }
 
     private void AttemptRevealMouseOver() {
@@ -220,7 +222,7 @@ public class Game : MonoBehaviour {
         // Flag all mines
         foreach (Tile tile in _complex.Tiles)
             if (tile.type == Tile.Type.Mine)
-                tile.PlaceFlags(_flagPrefab);
+                tile.PlaceFlags(_flagPrefab, _flagMaterial);
                 _flagCount = MineCount;
         
         return true;

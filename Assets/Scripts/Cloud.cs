@@ -4,6 +4,8 @@ using System.Linq;
 using UnityEngine;
 
 public class Cloud : Quad {
+    private Material _cloudMaterial;
+
     // Constructor for Invalid Tiles
     public Cloud() {}
 
@@ -15,7 +17,6 @@ public class Cloud : Quad {
                 $"Materials/Clouds/TileCloud{cloudSeed}", typeof(Material)) as Material);
         for (int i = 0; i < _sideCount; i++) {
             _gameObjects[i].name = $"Cloud {i}";
-            // _meshRenderers[i].shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
     }
 
@@ -27,5 +28,14 @@ public class Cloud : Quad {
     public void Active(bool active) {
         foreach (GameObject cloud in _gameObjects)
             cloud.SetActive(active);
+    }
+
+    public void Flag(Material flagMaterial) {
+        _cloudMaterial ??= _meshRenderers[0].material;
+        SetMaterial(flagMaterial);
+    }
+
+    public void UnFlag() {
+        SetMaterial(_cloudMaterial);
     }
 }

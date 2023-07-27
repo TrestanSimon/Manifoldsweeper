@@ -98,8 +98,9 @@ public class GenericTile : Quad {
         }
     }
 
-    public virtual void PlaceFlags(GameObject flagPrefab) {
+    public virtual void PlaceFlags(GameObject flagPrefab, Material flagMaterial, bool scaled = true) {
         _flags ??= new GameObject[_sideCount];
+        float scale = scaled ? _Scale : 1f;
 
         // Points to where flag will be planted
         Vector3 stake = (_vertices[0] + _vertices[2]) / 2f;
@@ -110,16 +111,21 @@ public class GenericTile : Quad {
             Quaternion flagRot = Quaternion.LookRotation(_meshes[i].normals[0])
                 * Quaternion.AngleAxis(90, Vector3.up);
 
-            _flags[i] = Complex.CreateGO(flagPrefab, flagPos, flagRot, _Scale);
+            _flags[i] = Complex.CreateGO(flagPrefab, flagPos, flagRot, scale);
             _flags[i].transform.parent = _gameObjects[i].transform;
             _flags[i].name = "Flag";
         }
+        foreach (Cloud cloud in _clouds)
+            cloud.Flag(flagMaterial);
     }
 
     public virtual void RemoveFlags() {
-        if (_flags is not null)
+        if (_flags is not null) {
+            foreach (Cloud cloud in _clouds)
+                cloud.UnFlag();
             foreach (GameObject flag in _flags)
                 Complex.Destroy(flag);
+        }
     }
 
     public virtual void UpdateFlags() {

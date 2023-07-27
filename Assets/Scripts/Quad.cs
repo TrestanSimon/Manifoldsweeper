@@ -42,6 +42,9 @@ public class Quad {
     protected float _Scale {
         get => Vector3.Magnitude(_vertices[0] - _vertices[2]);
     }
+    public Material CurrentMaterial {
+        get => _meshRenderers[0].material;
+    }
 
     // Constructor for Invalid Quads
     public Quad() {}
