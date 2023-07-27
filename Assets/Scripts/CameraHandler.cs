@@ -15,11 +15,16 @@ public class CameraHandler : MonoBehaviour {
 
     private int _depthU = 1;
     private int _depthV = 1;
+    private float _aspect;
 
     private bool _isTransitioning = false;
     private bool _is3DCamera = true;
     public bool Is3DCamera {
         get => _is3DCamera;
+    }
+
+    private void Awake() {
+        _aspect = Camera.main.aspect;
     }
 
     private void Update() {
@@ -57,8 +62,10 @@ public class CameraHandler : MonoBehaviour {
         if ((Input.GetMouseButton(2) && _mousePos != null))
             Move2DCamera();
 
-        if (_scroll != 0f)
+        if (_scroll != 0f || _aspect != Camera.main.aspect)
             Zoom2DCamera();
+        
+        _aspect = Camera.main.aspect;
     }
 
     private void Move2DCamera() {
@@ -100,9 +107,12 @@ public class CameraHandler : MonoBehaviour {
     }
 
     private void Zoom2DCamera() {
-        CalculateFrustum();
-
         Camera.main.transform.position += _scroll * Vector3.up;
+        StartCoroutine(FillScreen());
+    }
+
+    private IEnumerator FillScreen() {
+        CalculateFrustum();
 
         float fovU = Camera.VerticalToHorizontalFieldOfView(
             Camera.main.fieldOfView, Camera.main.aspect);
@@ -126,10 +136,12 @@ public class CameraHandler : MonoBehaviour {
         Debug.Log($"{_depthU}, {_depthV}");
         
         _target.CalculateCorners(_depthU, _depthV);
-        if (_depthU > _target.CopyDepthU)
+        while (_depthU > _target.CopyDepthU)
             StartCoroutine(_target.RepeatU());
-        if (_depthV > _target.CopyDepthV)
+        while (_depthV > _target.CopyDepthV)
             StartCoroutine(_target.RepeatV());
+        
+        yield return null;
     }
 
     private void CalculateFrustum() {
@@ -237,6 +249,7 @@ public class CameraHandler : MonoBehaviour {
         if (_Map == Complex.Map.Flat) {
             StartCoroutine(_target.RepeatU());
             StartCoroutine(_target.RepeatV());
+            StartCoroutine(FillScreen());
         }
     }
 }

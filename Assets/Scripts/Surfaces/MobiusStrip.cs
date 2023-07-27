@@ -22,7 +22,7 @@ public class MobiusStrip : Complex {
         this.resV = resV;
         R = resU / 72f;
         tau = 16f / (float)resV;
-        currentMap = initMap;
+        CurrentMap = initMap;
         InitVertices(initMap);
         InitTiles();
     }
@@ -49,7 +49,7 @@ public class MobiusStrip : Complex {
     }
 
     public override IEnumerator ReMap(Map newMap) {
-        if (newMap == currentMap) yield return null;
+        if (newMap == CurrentMap) yield return null;
         else if (newMap == Map.Flat) {
             yield return StartCoroutine(ComplexLerp(
                 new Vector3[][,]{vertices, PlaneMap()}, 2f));
@@ -60,10 +60,11 @@ public class MobiusStrip : Complex {
             yield return StartCoroutine(ComplexLerp(
                 new Vector3[][,]{vertices, SudaneseMap()}, 2f));
         }
-        currentMap = newMap;
+        CurrentMap = newMap;
     }
 
     public override IEnumerator RepeatU() {
+        CopyDepthU++;
         yield return null;
     }
 

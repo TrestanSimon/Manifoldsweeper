@@ -24,7 +24,7 @@ public abstract class Complex : MonoBehaviour {
     }
 
     protected int resU, resV;
-    protected Map currentMap;
+    private Map _currentMap;
     protected Vector3[,] vertices;
     protected Tile[,] tiles;
     protected int sideCount;
@@ -54,11 +54,18 @@ public abstract class Complex : MonoBehaviour {
         }
     }
     public Map CurrentMap {
-        get => currentMap;
+        get => _currentMap;
+        set {
+            if (value != Map.Flat) {
+                CopyDepthU = 0;
+                CopyDepthV = 0;
+            }
+            _currentMap = value;
+        }
     }
     public Vector3[] Offset {
         get {
-            if (currentMap != Complex.Map.Flat)
+            if (CurrentMap != Complex.Map.Flat)
                 return null;
             _offset ??= new Vector3[]{
                 vertices[resU/2,0] + vertices[resU/2+resU%2,0],

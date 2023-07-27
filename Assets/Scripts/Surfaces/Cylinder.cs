@@ -19,7 +19,7 @@ public class Cylinder : Complex {
         this.resU = resU;
         this.resV = resV;
         radius = resU / 16f;
-        currentMap = initMap;
+        CurrentMap = initMap;
         InitVertices(initMap);
         InitTiles();
     }
@@ -41,16 +41,17 @@ public class Cylinder : Complex {
     }
 
     public override IEnumerator ReMap(Map newMap) {
-        if (newMap == currentMap) yield return null;
+        if (newMap == CurrentMap) yield return null;
         else if (newMap == Map.Flat) {
             yield return StartCoroutine(CylinderToPlane());
         } else if (newMap == Map.Cylinder) {
             yield return StartCoroutine(CylinderToPlane(true));
         }
-        currentMap = newMap;
+        CurrentMap = newMap;
     }
 
     public override IEnumerator RepeatU() {
+        CopyDepthU++;
         yield return null;
     }
 

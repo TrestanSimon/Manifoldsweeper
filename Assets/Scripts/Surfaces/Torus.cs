@@ -37,7 +37,7 @@ public class Torus : Complex {
         this.ResV = ResV;
         r = this.ResU / 16f;
         R = this.ResV / 16f;
-        currentMap = initMap;
+        CurrentMap = initMap;
         InitVertices(initMap);
         InitTiles();
     }
@@ -59,7 +59,7 @@ public class Torus : Complex {
     }
 
     public override IEnumerator ReMap(Map newMap) {
-        if (newMap == currentMap) yield return null;
+        if (newMap == CurrentMap) yield return null;
         else if (newMap == Map.Flat) {
             yield return StartCoroutine(TorusToCylinder());
             yield return StartCoroutine(CylinderToPlane());
@@ -67,7 +67,7 @@ public class Torus : Complex {
             yield return StartCoroutine(CylinderToPlane(true));
             yield return StartCoroutine(TorusToCylinder(true));
         }
-        currentMap = newMap;
+        CurrentMap = newMap;
     }
 
     public override IEnumerator RepeatU() {

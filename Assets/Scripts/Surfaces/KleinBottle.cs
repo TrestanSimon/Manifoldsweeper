@@ -17,7 +17,7 @@ public class KleinBottle : Complex {
         sideCount = 2;
         this.resU = resU;
         this.resV = resV;
-        currentMap = initMap;
+        CurrentMap = initMap;
         InitVertices(initMap);
         InitTiles();
     }
@@ -43,7 +43,7 @@ public class KleinBottle : Complex {
     }
 
     public override IEnumerator ReMap(Map newMap) {
-        if (newMap == currentMap) yield return null;
+        if (newMap == CurrentMap) yield return null;
         else if (newMap == Map.Flat) {
             yield return StartCoroutine(ComplexLerp(
                 new Vector3[][,]{vertices, PlaneMap()}, 2f));
@@ -51,7 +51,7 @@ public class KleinBottle : Complex {
             yield return StartCoroutine(ComplexLerp(
                 new Vector3[][,]{vertices, KleinMap()}, 2f));
         }
-        currentMap = newMap;
+        CurrentMap = newMap;
     }
 
     public override IEnumerator RepeatU() {

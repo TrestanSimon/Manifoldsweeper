@@ -13,7 +13,7 @@ public class Plane : Complex {
         sideCount = 2;
         this.resU = resU;
         this.resV = resV;
-        currentMap = initMap;
+        CurrentMap = initMap;
         InitVertices(initMap);
         InitTiles();
     }
