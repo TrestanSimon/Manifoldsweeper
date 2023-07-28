@@ -11,10 +11,9 @@ public class Cloud : Quad {
 
     // Normal constructor
     public Cloud(
-        Vector3[] vertices, int sideCount, int? cloudSeed
+        Vector3[] vertices, int sideCount, Material material
     ) : base(vertices, sideCount, false) {
-        SetMaterial(Resources.Load(
-                $"Materials/Clouds/TileCloud{cloudSeed}", typeof(Material)) as Material);
+        SetMaterial(material);
         for (int i = 0; i < _sideCount; i++) {
             _gameObjects[i].name = $"Cloud {i}";
         }

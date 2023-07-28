@@ -22,6 +22,7 @@ public class Game : MonoBehaviour {
     private Material _materialNum7;
     private Material _materialNum8;
     private Material _flagMaterial;
+    private Dictionary<string, Material> _emptyMaterials;
     private GameObject _flagPrefab, _breakPS;
 
     private List<Coroutine> _coroutinePropagate = new List<Coroutine>();
@@ -36,17 +37,20 @@ public class Game : MonoBehaviour {
     private void Awake() {
         // Load materials
         _materialUknown = Resources.Load("Materials/Clouds/TileCloud", typeof(Material)) as Material;
-        _materialMine = Resources.Load("Materials/Island/TileMine", typeof(Material)) as Material;
-        _materialExploded = Resources.Load("Materials/Island/TileExploded", typeof(Material)) as Material;
-        _materialNum1 = Resources.Load("Materials/Island/Tile1", typeof(Material)) as Material;
-        _materialNum2 = Resources.Load("Materials/Island/Tile2", typeof(Material)) as Material;
-        _materialNum3 = Resources.Load("Materials/Island/Tile3", typeof(Material)) as Material;
-        _materialNum4 = Resources.Load("Materials/Island/Tile4", typeof(Material)) as Material;
-        _materialNum5 = Resources.Load("Materials/Island/Tile5", typeof(Material)) as Material;
-        _materialNum6 = Resources.Load("Materials/Island/Tile6", typeof(Material)) as Material;
-        _materialNum7 = Resources.Load("Materials/Island/Tile7", typeof(Material)) as Material;
-        _materialNum8 = Resources.Load("Materials/Island/Tile8", typeof(Material)) as Material;
+        _materialMine = Resources.Load("Materials/NonEmptyTiles/TileMine", typeof(Material)) as Material;
+        _materialExploded = Resources.Load("Materials/NonEmptyTiles/TileExploded", typeof(Material)) as Material;
+        _materialNum1 = Resources.Load("Materials/NonEmptyTiles/Tile1", typeof(Material)) as Material;
+        _materialNum2 = Resources.Load("Materials/NonEmptyTiles/Tile2", typeof(Material)) as Material;
+        _materialNum3 = Resources.Load("Materials/NonEmptyTiles/Tile3", typeof(Material)) as Material;
+        _materialNum4 = Resources.Load("Materials/NonEmptyTiles/Tile4", typeof(Material)) as Material;
+        _materialNum5 = Resources.Load("Materials/NonEmptyTiles/Tile5", typeof(Material)) as Material;
+        _materialNum6 = Resources.Load("Materials/NonEmptyTiles/Tile6", typeof(Material)) as Material;
+        _materialNum7 = Resources.Load("Materials/NonEmptyTiles/Tile7", typeof(Material)) as Material;
+        _materialNum8 = Resources.Load("Materials/NonEmptyTiles/Tile8", typeof(Material)) as Material;
         _flagMaterial = Resources.Load("Materials/TileFlag", typeof(Material)) as Material;
+        _emptyMaterials = new Dictionary<string, Material>();
+        // Cloud materials loaded/cached by Complex
+        
         // Load prefabs
         _flagPrefab = Resources.Load("Prefabs/Flag", typeof(GameObject)) as GameObject;
         _breakPS = Resources.Load("Prefabs/BreakPS", typeof(GameObject)) as GameObject;
@@ -245,7 +249,7 @@ public class Game : MonoBehaviour {
     private Material GetEmptyMaterial(Tile tile) {
         List<Tile> neighbors = _complex.GetNeighbors(tile, false);
         bool[] beach = new bool[8];
-        string foot = "";
+        string name = "";
 
         for (int i = 0; i < 8; i++) {
             if (neighbors[i].type != Tile.Type.Empty
@@ -260,11 +264,15 @@ public class Game : MonoBehaviour {
         if (beach[3]) beach[5] = beach[0] = true;
 
         for (int i = 0; i < 8; i++)
-            if (beach[i]) foot += $"{i}";
+            if (beach[i]) name += $"{i}";
 
-        return Resources.Load(
-            $"Materials/Island/TileEmpty/TileEmpty" + foot,
-            typeof(Material)) as Material;
+        // Only loads/caches materials when needed
+        if (!_emptyMaterials.ContainsKey(name))
+            _emptyMaterials.Add(name, Resources.Load(
+                $"Materials/EmptyTiles/TileEmpty" + name,
+                typeof(Material)) as Material);
+
+        return _emptyMaterials[name];
     }
 
     private Material GetNumberMaterial(Tile tile) {

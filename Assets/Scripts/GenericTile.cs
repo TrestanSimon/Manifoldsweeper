@@ -5,7 +5,7 @@ using UnityEngine;
 public class GenericTile : Quad {
     protected GameObject[] _flags;
     protected Cloud[] _clouds;
-    protected int? _cloudSeed;
+    protected Material _cloudMaterial;
     protected GameObject _revealPS; // Particle system for tile reveal
 
     // Constructor for Invalid Tiles
@@ -16,11 +16,10 @@ public class GenericTile : Quad {
         int u, int v, int sideCount,
         Vector3[] vertices,
         Transform parent,
-        int? cloudSeed = null
+        Material cloudMaterial
     ) : base(vertices, sideCount) {
-        cloudSeed ??= UnityEngine.Random.Range(0, 2);
-        _cloudSeed = cloudSeed;
         _clouds = new Cloud[_sideCount];
+        _cloudMaterial = cloudMaterial;
 
         for (int i = 0; i < sideCount; i++) {            
             // Make tiles child of Complex GameObject
@@ -55,7 +54,7 @@ public class GenericTile : Quad {
         }
     }
 
-    protected virtual void InitializeClouds(bool random = false) {
+    protected virtual void InitializeClouds() {
         for (int i = 0; i < _sideCount; i++) {
             Vector3 altitude = _meshes[i].normals[0] * _Scale/10f;
             _clouds[i] = new Cloud(
@@ -64,7 +63,7 @@ public class GenericTile : Quad {
                     _vertices[1] + altitude,
                     _vertices[2] + altitude,
                     _vertices[3] + altitude
-                }, 2, _cloudSeed
+                }, 2, _cloudMaterial
             );
             _clouds[i].Parent(_gameObjects[i]);
         }

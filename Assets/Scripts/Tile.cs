@@ -73,8 +73,9 @@ public class Tile : GenericTile {
     public Tile(
         int u, int v,
         Vector3[] vertices,
-        Complex complex
-    ) : base(u, v, 2, vertices, complex.transform) {
+        Complex complex,
+        Material cloudMaterial
+    ) : base(u, v, 2, vertices, complex.transform, cloudMaterial) {
         U = u; V = v;
         _clones = new List<CloneTile>();
 
@@ -179,7 +180,7 @@ public class Tile : GenericTile {
 
     public void CreateClone(Vector3 offset, bool reversed = false) {
         CloneTile clone = new CloneTile(
-            U, V, OffsetVertices(offset), _gameObjects[0].transform, _cloudSeed, reversed);
+            U, V, OffsetVertices(offset), _gameObjects[0].transform, _cloudMaterial, reversed);
 
         clone.SetMaterial(_CurrentMaterial, type == Type.Number && Revealed);
         clone.ActivateClouds(!Revealed);
