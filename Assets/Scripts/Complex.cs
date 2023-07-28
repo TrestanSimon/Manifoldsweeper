@@ -35,8 +35,6 @@ public abstract class Complex : MonoBehaviour {
     private int _copyDepthU = 0;
     private int _copyDepthV = 0;
 
-    private List<Material> _cloudMaterials;
-
     public virtual int ResU {
         get => resU;
         protected set {
@@ -101,15 +99,6 @@ public abstract class Complex : MonoBehaviour {
         protected set => _copyDepthV = value;
     }
 
-    private void Awake() {
-        _cloudMaterials = new List<Material>();
-        // Load/cache cloud materials
-        for (int i = 0; i <= 2; i++)
-            _cloudMaterials.Add(Resources.Load(
-                $"Materials/Clouds/TileCloud{i}", typeof(Material)) as Material
-            );
-    }
-
     public abstract void Setup(int resU, int resV, Map initMap);
 
     // Generates vertices (p, q) according to mapping
@@ -130,9 +119,7 @@ public abstract class Complex : MonoBehaviour {
                         vertices[u,v], vertices[u+1,v],
                         vertices[u+1,v+1], vertices[u,v+1]
                     },
-                    this, _cloudMaterials[
-                        UnityEngine.Random.Range(0, _cloudMaterials.Count)
-                    ]
+                    this
                 );
             }
         }

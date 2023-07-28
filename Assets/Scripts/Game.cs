@@ -10,7 +10,7 @@ public class Game : MonoBehaviour {
 
     private bool _gameOn, _gameLost, _gameWon;
 
-    private Material _materialUknown;
+    private Material[] _materialUknown;
     private Material _materialMine;
     private Material _materialExploded;
     private Material _materialNum1;
@@ -36,7 +36,9 @@ public class Game : MonoBehaviour {
 
     private void Awake() {
         // Load materials
-        _materialUknown = Resources.Load("Materials/Clouds/TileCloud", typeof(Material)) as Material;
+        _materialUknown = new Material[4];
+        for (int i = 0; i <= _materialUknown.Length-1; i++)
+            _materialUknown[i] = (Resources.Load($"Materials/Clouds/TileCloud{i}", typeof(Material)) as Material);
         _materialMine = Resources.Load("Materials/NonEmptyTiles/TileMine", typeof(Material)) as Material;
         _materialExploded = Resources.Load("Materials/NonEmptyTiles/TileExploded", typeof(Material)) as Material;
         _materialNum1 = Resources.Load("Materials/NonEmptyTiles/Tile1", typeof(Material)) as Material;
@@ -49,7 +51,6 @@ public class Game : MonoBehaviour {
         _materialNum8 = Resources.Load("Materials/NonEmptyTiles/Tile8", typeof(Material)) as Material;
         _flagMaterial = Resources.Load("Materials/TileFlag", typeof(Material)) as Material;
         _emptyMaterials = new Dictionary<string, Material>();
-        // Cloud materials loaded/cached by Complex
         
         // Load prefabs
         _flagPrefab = Resources.Load("Prefabs/Flag", typeof(GameObject)) as GameObject;
@@ -234,7 +235,7 @@ public class Game : MonoBehaviour {
 
     private Material GetMaterial(Tile tile) {
         if (tile.Revealed) return GetRevealedMaterial(tile);
-        else return _materialUknown;
+        else return _materialUknown[UnityEngine.Random.Range(0, _materialUknown.Length)];
     }
 
     private Material GetRevealedMaterial(Tile tile) {

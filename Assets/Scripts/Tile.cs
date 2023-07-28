@@ -73,9 +73,8 @@ public class Tile : GenericTile {
     public Tile(
         int u, int v,
         Vector3[] vertices,
-        Complex complex,
-        Material cloudMaterial
-    ) : base(u, v, 2, vertices, complex.transform, cloudMaterial) {
+        Complex complex
+    ) : base(u, v, 2, vertices, complex.transform) {
         U = u; V = v;
         _clones = new List<CloneTile>();
 
@@ -109,14 +108,6 @@ public class Tile : GenericTile {
         _exploded = false;
         Visited = false;
         if (clearFlags) RemoveFlags();
-        
-        ActivateClouds(true);
-    }
-
-    public override void ActivateClouds(bool activated) {
-        base.ActivateClouds(activated);
-        foreach (CloneTile clone in _clones)
-            clone.ActivateClouds(activated);
     }
 
     // Delayed reveal based on flood depth
@@ -184,11 +175,10 @@ public class Tile : GenericTile {
 
     public void CreateClone(Vector3 offset, bool reversed = false) {
         CloneTile clone = new CloneTile(
-            U, V, OffsetVertices(offset), _gameObjects[0].transform, _cloudMaterial, reversed);
+            U, V, OffsetVertices(offset), _gameObjects[0].transform, reversed);
 
         clone.SetMaterial(_CurrentMaterial, type == Type.Number && Revealed);
-        clone.ActivateClouds(!Revealed);
-        if (Flagged) clone.PlaceFlags(_flags[0], _clouds[0].CurrentMaterial, false);
+        if (Flagged) clone.PlaceFlags(_flags[0], CurrentMaterial, false);
 
         _clones.Add(clone);
     }

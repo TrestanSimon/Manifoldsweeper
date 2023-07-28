@@ -11,26 +11,10 @@ public class CloneTile : GenericTile {
         int u, int v,
         Vector3[] vertices,
         Transform parent,
-        Material cloudMaterial,
         bool reversed = false
-    ) : base(u, v, 1, vertices, parent, cloudMaterial) {
+    ) : base(u, v, 1, vertices, parent) {
         _gameObjects[0].name = $"Clone ({u}, {v})";
         _reversed = reversed;
-    }
-
-    protected override void InitializeClouds() {
-        for (int i = 0; i < _sideCount; i++) {
-            Vector3 altitude = _meshes[i].normals[0] * _Scale/10f;
-            _clouds[i] = new Cloud(
-                new Vector3[] {
-                    _vertices[0] + altitude,
-                    _vertices[1] + altitude,
-                    _vertices[2] + altitude,
-                    _vertices[3] + altitude
-                }, 1, _cloudMaterial
-            );
-            _clouds[i].Parent(_gameObjects[i]);
-        }
     }
 
     public override void SetMaterial(Material material, bool isRevealedNumber) {

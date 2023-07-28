@@ -6,8 +6,6 @@ using UnityEngine;
 
 public class GenericTile : Quad {
     protected GameObject[] _flags;
-    protected Cloud[] _clouds;
-    protected Material _cloudMaterial;
     protected GameObject _revealPS; // Particle system for tile reveal
 
     // Constructor for Invalid Tiles
@@ -17,12 +15,8 @@ public class GenericTile : Quad {
     public GenericTile(
         int u, int v, int sideCount,
         Vector3[] vertices,
-        Transform parent,
-        Material cloudMaterial
+        Transform parent
     ) : base(vertices, sideCount) {
-        _clouds = new Cloud[_sideCount];
-        _cloudMaterial = cloudMaterial;
-
         for (int i = 0; i < sideCount; i++) {            
             // Make tiles child of Complex GameObject
             _gameObjects[i].transform.parent = parent;
@@ -31,7 +25,6 @@ public class GenericTile : Quad {
             Tag tag = _gameObjects[i].AddComponent<Tag>();
             tag.u = u; tag.v = v;
         }
-        InitializeClouds();
     }
 
     // Updates mesh(es) with provided vertices
@@ -40,7 +33,6 @@ public class GenericTile : Quad {
         Vector3 vert2, Vector3 vert3
     ) {
         base.UpdateVertices(vert0, vert1, vert2, vert3);
-        foreach (Cloud cloud in _clouds) UpdateClouds();
     }
 
     public virtual void SetMaterial(Material material, bool isRevealedNumber) {
@@ -49,49 +41,11 @@ public class GenericTile : Quad {
             _meshes[0].uv = QuadUVCoords.Reverse().ToArray();
             if (_sideCount > 1)
                 _meshes[1].uv = QuadUVCoords;
-        } else {
-            _meshes[0].uv = QuadUVCoords.Reverse().ToArray();
-            if (_sideCount > 1)
-                _meshes[1].uv = QuadUVCoords.Reverse().ToArray();
         }
-    }
-
-    protected virtual void InitializeClouds() {
-        for (int i = 0; i < _sideCount; i++) {
-            Vector3 altitude = _meshes[i].normals[0] * _Scale/10f;
-            _clouds[i] = new Cloud(
-                new Vector3[] {
-                    _vertices[0] + altitude,
-                    _vertices[1] + altitude,
-                    _vertices[2] + altitude,
-                    _vertices[3] + altitude
-                }, 2, _cloudMaterial
-            );
-            _clouds[i].Parent(_gameObjects[i]);
-        }
-    }
-
-    private void UpdateClouds() {
-        for (int i = 0; i < _clouds.Length; i++) {
-            Vector3 altitude = _meshes[i].normals[0] * _Scale/10f;
-            _clouds[i].UpdateVertices(
-                    _vertices[0] + altitude,
-                    _vertices[1] + altitude,
-                    _vertices[2] + altitude,
-                    _vertices[3] + altitude
-            );
-        }
-    }
-
-    public virtual void ActivateClouds(bool activated) {
-        foreach (Cloud cloud in _clouds)
-            cloud.Active(activated);
     }
 
     public virtual IEnumerator Reveal(Material material, GameObject breakPS = null) {
         SetMaterial(material);
-
-        ActivateClouds(false);
 
         if (breakPS != null) {
             _revealPS = Complex.CreateGO(breakPS, _vertices[0], Quaternion.identity, _Scale);
@@ -118,14 +72,10 @@ public class GenericTile : Quad {
             _flags[i].transform.parent = _gameObjects[i].transform;
             _flags[i].name = "Flag";
         }
-        foreach (Cloud cloud in _clouds)
-            cloud.Flag(flagMaterial);
     }
 
     public virtual void RemoveFlags() {
         if (_flags is not null) {
-            foreach (Cloud cloud in _clouds)
-                cloud.UnFlag();
             foreach (GameObject flag in _flags)
                 Complex.Destroy(flag);
         }
@@ -141,12 +91,7 @@ public class GenericTile : Quad {
     }
 
     public override void DestroySelf() {
-        RemoveFlags();
-        
-        if (_clouds is not null)
-            foreach (Quad cloud in _clouds)
-                cloud.DestroySelf();
-        
+        RemoveFlags();        
         base.DestroySelf();
     }
 }
