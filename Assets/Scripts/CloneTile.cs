@@ -17,15 +17,12 @@ public class CloneTile : GenericTile {
         _reversed = reversed;
     }
 
-    public override void SetMaterial(Material material, bool isRevealedNumber) {
+    public override void SetMaterial(Material material, bool isRevealed, bool isNumber) {
         base.SetMaterial(material);
-        if (isRevealedNumber) {
+        if (isRevealed && isNumber) {
             _meshes[0].uv = QuadUVCoords.Reverse().ToArray();
         } else {
-            if (!_reversed)
-                _meshes[0].uv = QuadUVCoords.Reverse().ToArray();
-            else
-                _meshes[0].uv = QuadUVCoords;
+            _meshes[0].uv = QuadUVCoords.Reverse().ToArray();
         }
     }
 }

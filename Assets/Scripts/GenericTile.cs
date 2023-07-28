@@ -35,12 +35,20 @@ public class GenericTile : Quad {
         base.UpdateVertices(vert0, vert1, vert2, vert3);
     }
 
-    public virtual void SetMaterial(Material material, bool isRevealedNumber) {
+    public virtual void SetMaterial(Material material, bool isRevealed, bool isNumber) {
         base.SetMaterial(material);
-        if (isRevealedNumber) {
+        // This is a mess...
+        if (isRevealed && isNumber) {
             _meshes[0].uv = QuadUVCoords.Reverse().ToArray();
             if (_sideCount > 1)
                 _meshes[1].uv = QuadUVCoords;
+        } else if (!isRevealed) {
+            if (_sideCount > 1)
+                _meshes[1].uv = QuadUVCoords;
+        } else {
+            _meshes[0].uv = QuadUVCoords.Reverse().ToArray();
+            if (_sideCount > 1)
+                _meshes[1].uv = QuadUVCoords.Reverse().ToArray();
         }
     }
 
@@ -71,6 +79,8 @@ public class GenericTile : Quad {
             _flags[i] = Complex.CreateGO(flagPrefab, flagPos, flagRot, scale);
             _flags[i].transform.parent = _gameObjects[i].transform;
             _flags[i].name = "Flag";
+
+            SetMaterial(flagMaterial);
         }
     }
 
@@ -82,9 +92,8 @@ public class GenericTile : Quad {
     }
 
     public virtual void UpdateFlags() {
-        Vector3 stake = (_vertices[0] + _vertices[2]) / 2f;
         for (int i = 0; i < _sideCount; i++) {
-            _flags[i].transform.position = stake + _meshes[i].normals[0] * _Scale/2f;
+            _flags[i].transform.position = (_vertices[0] + _vertices[2]) / 2f + _meshes[i].normals[0] * _Scale/2f;
             _flags[i].transform.rotation = Quaternion.LookRotation(_meshes[i].normals[0])
                 * Quaternion.AngleAxis(90, Vector3.up);
         }

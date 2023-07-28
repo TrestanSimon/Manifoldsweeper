@@ -19,6 +19,8 @@ public class Tile : GenericTile {
 
     private List<CloneTile> _clones;
 
+    private Material _cloudMaterialCache;
+
     public int U {
         get => _u;
         private set {
@@ -96,9 +98,9 @@ public class Tile : GenericTile {
     }
 
     public override void SetMaterial(Material material) {
-        base.SetMaterial(material, type == Type.Number && Revealed);
+        base.SetMaterial(material, Revealed, type == Type.Number);
         foreach (CloneTile clone in _clones)
-            clone.SetMaterial(material, type == Type.Number && Revealed);
+            clone.SetMaterial(material, Revealed, type == Type.Number);
     }
 
     // Resets tile state for new game
@@ -150,6 +152,8 @@ public class Tile : GenericTile {
         if (type == Type.Invalid || Revealed || Flagged) return;
 
         _flagged = true;
+
+        _cloudMaterialCache ??= CurrentMaterial;
         
         base.PlaceFlags(flagPrefab, flagMaterial);
         foreach (CloneTile clone in _clones)
@@ -162,9 +166,13 @@ public class Tile : GenericTile {
 
         _flagged = false;
 
+        SetMaterial(_cloudMaterialCache);
+
         base.RemoveFlags();
-        foreach (CloneTile clone in _clones)
+        foreach (CloneTile clone in _clones) {
+            clone.SetMaterial(_cloudMaterialCache);
             clone.RemoveFlags();
+        }
     }
 
     public override void UpdateFlags() {
@@ -177,7 +185,7 @@ public class Tile : GenericTile {
         CloneTile clone = new CloneTile(
             U, V, OffsetVertices(offset), _gameObjects[0].transform, reversed);
 
-        clone.SetMaterial(_CurrentMaterial, type == Type.Number && Revealed);
+        clone.SetMaterial(_CurrentMaterial, Revealed, type == Type.Number);
         if (Flagged) clone.PlaceFlags(_flags[0], CurrentMaterial, false);
 
         _clones.Add(clone);

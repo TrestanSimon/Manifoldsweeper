@@ -35,7 +35,7 @@ SpriteAtlas:
       m_ForceMaximumCompressionQuality_BC6H_BC7: 0
     packingSettings:
       serializedVersion: 2
-      padding: 4
+      padding: 2
       blockOffset: 1
       allowAlphaSplitting: 0
       enableRotation: 1
@@ -52,10 +52,10 @@ SpriteAtlas:
   m_PackedSprites:
   - {fileID: 21300000, guid: dd9a0e109d5c82a4cab9847bdef9acf9, type: 3}
   - {fileID: 21300000, guid: 68964c20d26ac4b46a3f88431493c886, type: 3}
-  - {fileID: 21300000, guid: 62d9aa402d0e34546be4348e6ccd54b2, type: 3}
   - {fileID: 21300000, guid: b4397660cef19874aa19893103d7355f, type: 3}
   - {fileID: 21300000, guid: bf53f6d08581a18498a569bb0fcbabce, type: 3}
   - {fileID: 21300000, guid: 1be7dad02d3bbba469b94e3bbfd4c0ba, type: 3}
+  - {fileID: 21300000, guid: 92b3da11eb9eac143aad8a6d037fb695, type: 3}
   - {fileID: 21300000, guid: cc5d6541a355c824f9c30edd27447ad1, type: 3}
   - {fileID: 21300000, guid: 8be75d9141cf63d49853028275b5e288, type: 3}
   - {fileID: 21300000, guid: 12868ca10891fca4d9217ca85c3cdbff, type: 3}
@@ -65,7 +65,6 @@ SpriteAtlas:
   - {fileID: 21300000, guid: e47152c3b49dbc949a795cda28e26798, type: 3}
   - {fileID: 21300000, guid: 473b19d36a0d01349bce6f875499babf, type: 3}
   - {fileID: 21300000, guid: 6119cb8410ed772429f508d94cfd54e6, type: 3}
-  - {fileID: 21300000, guid: d4429ca48fbe22d47b6a9eaed89d5447, type: 3}
   - {fileID: 21300000, guid: 992391b4d44f0664d878f81be1b7ba49, type: 3}
   - {fileID: 21300000, guid: 7bc4c3d402e211b4ebef105e6c834fe8, type: 3}
   - {fileID: 21300000, guid: 10b085f446206764fa216ecf73d38e64, type: 3}
@@ -76,7 +75,6 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 125fde161d3509a449b876aeba03c6ea, type: 3}
   - {fileID: 21300000, guid: 33ae1f56956cd3e43894b380f691031b, type: 3}
   - {fileID: 21300000, guid: 339ed086ecf511c43a1152965564101b, type: 3}
-  - {fileID: 21300000, guid: 584108963b227db4994e8ef11815e8e5, type: 3}
   - {fileID: 21300000, guid: 6b46add6a822e394182e29c9812260d4, type: 3}
   - {fileID: 21300000, guid: 8b87d5479ae53be46906af9f9df7f8d6, type: 3}
   - {fileID: 21300000, guid: 8550c257de9247248876ac5702a21857, type: 3}
@@ -120,10 +118,10 @@ SpriteAtlas:
   m_PackedSpriteNamesToIndex:
   - TileEmpty01234567
   - Tile1
-  - TileCloud0
   - TileEmpty023567
   - TileSmudgeBig
   - TileEmpty07
+  - TileFlag
   - TileEmpty247
   - TileEmpty01257
   - Tile6
@@ -133,7 +131,6 @@ SpriteAtlas:
   - TileEmpty012357
   - TileEmpty0124567
   - TileEmpty2567
-  - TileCloud2
   - Tile4
   - TileMine
   - TileExploded
@@ -144,7 +141,6 @@ SpriteAtlas:
   - Tile5
   - TileEmpty02357
   - TileEmpty0567
-  - TileCloud1
   - TileEmpty2
   - TileEmpty27
   - TileEmpty03567

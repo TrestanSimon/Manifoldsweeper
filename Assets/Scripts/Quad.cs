@@ -40,7 +40,7 @@ public class Quad {
         }
     }
     protected float _Scale {
-        get => Vector3.Magnitude(_vertices[0] - _vertices[2]);
+        get => Vector3.Magnitude(_vertices[0] - _vertices[2]) * 0.8f;
     }
     public Material CurrentMaterial {
         get => _meshRenderers[0].material;
