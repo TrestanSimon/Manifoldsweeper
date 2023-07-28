@@ -5,7 +5,7 @@ using UnityEngine;
 
 using static Unity.Mathematics.math;
 
-public class MobiusStrip : Complex {
+public class Mobius : Complex {
     public new static Dictionary<string, Map> MapDict {
         get => new Dictionary<string, Map>(){
             {"Flat", Map.Flat},

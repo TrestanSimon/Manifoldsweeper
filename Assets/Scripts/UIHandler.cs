@@ -38,8 +38,8 @@ public class UIHandler : MonoBehaviour {
                 case 0: return Plane.MapDict;
                 case 1: return Cylinder.MapDict;
                 case 2: return Torus.MapDict;
-                case 3: return MobiusStrip.MapDict;
-                case 4: return KleinBottle.MapDict;
+                case 3: return Mobius.MapDict;
+                case 4: return Klein.MapDict;
                 default: throw new System.Exception();
             }
         }
@@ -102,7 +102,7 @@ public class UIHandler : MonoBehaviour {
         // Klein bottle
         manifoldDifficulties[4,0] = (8, 8, 12);
         manifoldDifficulties[4,1] = (16, 16, 42);
-        manifoldDifficulties[4,2] = (16, 32, 98);
+        manifoldDifficulties[4,2] = (32, 16, 98);
 
         mineCount = 0;
     }
@@ -154,8 +154,8 @@ public class UIHandler : MonoBehaviour {
             case 0: complex = board.AddComponent<Plane>(); break;
             case 1: complex = board.AddComponent<Cylinder>(); break;
             case 2: complex = board.AddComponent<Torus>(); break;
-            case 3: complex = board.AddComponent<MobiusStrip>(); break;
-            case 4: complex = board.AddComponent<KleinBottle>(); break;
+            case 3: complex = board.AddComponent<Mobius>(); break;
+            case 4: complex = board.AddComponent<Klein>(); break;
             default: break;
         }
         game = board.AddComponent<Game>();

@@ -78,7 +78,7 @@ public class CameraHandler : MonoBehaviour {
             // Restrictive movement
         } else {
             // Up-down movement type
-            if (_target is MobiusStrip or KleinBottle) {
+            if (_target is Mobius or Klein) {
                 // Offset doubled to account for glide reflection of copied complexes
                 if (Camera.main.transform.position.x > _target.InteriorCorners[0].x)
                     Camera.main.transform.position -= _target.Offset[1] * 2f;
@@ -92,7 +92,7 @@ public class CameraHandler : MonoBehaviour {
             }
 
             // Left-right movement
-            if (_target is Torus or KleinBottle) {
+            if (_target is Torus or Klein) {
                 // Left-right non restrictive movement
                 if (Camera.main.transform.position.z > _target.InteriorCorners[2].z)
                     Camera.main.transform.position -= _target.Offset[0];
