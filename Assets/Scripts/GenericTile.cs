@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class GenericTile : Quad {
@@ -86,7 +88,7 @@ public class GenericTile : Quad {
             cloud.Active(activated);
     }
 
-    public virtual void Reveal(Material material, GameObject breakPS = null) {
+    public virtual IEnumerator Reveal(Material material, GameObject breakPS = null) {
         SetMaterial(material);
 
         ActivateClouds(false);
@@ -95,6 +97,8 @@ public class GenericTile : Quad {
             _revealPS = Complex.CreateGO(breakPS, _vertices[0], Quaternion.identity, _Scale);
             _revealPS.transform.parent = _gameObjects[0].transform;
         }
+
+        yield return null;
     }
 
     public virtual void PlaceFlags(GameObject flagPrefab, Material flagMaterial, bool scaled = true) {

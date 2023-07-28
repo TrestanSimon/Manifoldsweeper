@@ -123,19 +123,23 @@ public class Tile : GenericTile {
     public IEnumerator DelayedReveal(Material material, GameObject breakPS = null) {
         if (type == Type.Invalid) yield break;
 
+        // breakPS = null;
+
         _revealed = true;
         // CheckWinCondition is ran before WaitForSeconds ends
-        yield return new WaitForSeconds(0.02f * Depth);
+        yield return new WaitForSeconds(0.05f * Depth);
 
-        Reveal(material, breakPS);
-        foreach (CloneTile clone in _clones)
-            clone.Reveal(material, breakPS);
+        yield return Reveal(material, breakPS);
     }
 
-    public override void Reveal(Material material, GameObject breakPS = null) {
-        _revealed = true;
-        base.Reveal(material, breakPS);
+    public override IEnumerator Reveal(Material material, GameObject breakPS = null) {
         if (type == Type.Mine) _exploded = true;
+
+        yield return base.Reveal(material, breakPS);
+        foreach (CloneTile clone in _clones)
+            yield return clone.Reveal(material, breakPS);
+
+        yield return null;
     }
 
     // Places flag(s)
