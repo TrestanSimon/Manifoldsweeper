@@ -60,7 +60,10 @@ public class Tile : GenericTile {
     }
     public bool Revealed { get => _revealed; }
     public bool Flagged { get => _flagged; }
-    public bool Exploded { get => _exploded; }
+    public bool Exploded {
+        get => _exploded;
+        set => _exploded = value;
+    }
     public bool Visited { get; set; }
     public int Depth { get; set; }
 
@@ -118,8 +121,6 @@ public class Tile : GenericTile {
     // Delayed reveal based on flood depth
     public IEnumerator DelayedReveal(Material material, GameObject breakPS = null) {
         if (type == Type.Invalid) yield break;
-
-        // breakPS = null;
 
         _revealed = true;
         // CheckWinCondition is ran before WaitForSeconds ends

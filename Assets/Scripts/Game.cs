@@ -23,7 +23,7 @@ public class Game : MonoBehaviour {
     private Material _materialNum8;
     private Material _flagMaterial;
     private Dictionary<string, Material> _emptyMaterials;
-    private GameObject _flagPrefab, _breakPS;
+    private GameObject _flagPrefab, _breakPS, _breakPSVol;
 
     private List<Coroutine> _coroutinePropagate = new List<Coroutine>();
 
@@ -53,6 +53,7 @@ public class Game : MonoBehaviour {
         // Load prefabs
         _flagPrefab = Resources.Load("Prefabs/Flag", typeof(GameObject)) as GameObject;
         _breakPS = Resources.Load("Prefabs/BreakPS", typeof(GameObject)) as GameObject;
+        _breakPSVol = Resources.Load("Prefabs/BreakPSVol", typeof(GameObject)) as GameObject;
     }
 
     // Checks for user inputs every frame
@@ -168,6 +169,8 @@ public class Game : MonoBehaviour {
         _gameLost = true;
         _gameOn = false;
 
+        tile.Exploded = true;
+
         RevealTile(tile);
 
         foreach (Tile tile1 in _complex.Tiles) {
@@ -207,8 +210,15 @@ public class Game : MonoBehaviour {
     }
 
     private void RevealTile(Tile tile) {
-        _coroutinePropagate.Add(StartCoroutine(
-            tile.DelayedReveal(GetRevealedMaterial(tile), _breakPS)));
+        if (tile.Exploded)
+            _coroutinePropagate.Add(StartCoroutine(
+                tile.DelayedReveal(GetRevealedMaterial(tile), _breakPSVol)));
+        else if (_complex.CurrentMap != Complex.Map.Flat)
+            _coroutinePropagate.Add(StartCoroutine(
+                tile.DelayedReveal(GetRevealedMaterial(tile), _breakPS)));
+        else
+            _coroutinePropagate.Add(StartCoroutine(
+                tile.DelayedReveal(GetRevealedMaterial(tile), null)));
     }
 
     private bool CheckWinCondition() {
