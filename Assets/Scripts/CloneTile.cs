@@ -19,8 +19,8 @@ public class CloneTile : GenericTile {
 
     public override void SetMaterial(Material material, bool isRevealed, bool isNumber) {
         base.SetMaterial(material);
-        if (isRevealed && isNumber) {
-            _meshes[0].uv = QuadUVCoords.Reverse().ToArray();
+        if (_reversed && isRevealed && !isNumber) {
+            _meshes[0].uv = QuadUVCoords;
         } else {
             _meshes[0].uv = QuadUVCoords.Reverse().ToArray();
         }

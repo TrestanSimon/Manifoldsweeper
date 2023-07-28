@@ -102,6 +102,8 @@ public class CameraHandler : MonoBehaviour {
                 // Left-right restrictive movement
             }
         }
+
+        StartCoroutine(FillScreen());
     }
 
     private void Zoom2DCamera() {
