@@ -196,8 +196,8 @@ public class Tile : GenericTile {
     }
 
     public void DestroyClones() {
-        foreach (CloneTile clone in _clones)
-            clone.DestroySelf();
+        for (int i = 0; i < _clones.Count; i++)
+            _clones[i].DestroySelf();
         _clones.Clear();
     }
 
