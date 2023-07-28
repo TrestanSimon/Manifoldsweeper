@@ -12,7 +12,7 @@ public abstract class Complex : MonoBehaviour {
         Cylinder, Annulus,
         Torus,
         MobiusStrip, MobiusSudanese,
-        KleinBottle
+        KleinBottle, Figure8
     }
 
     // Dictionary for IDing acceptable mappings
