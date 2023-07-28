@@ -86,6 +86,9 @@ public class Tile : GenericTile {
 
         for (int i = 0; i < _sideCount; i++)
             _gameObjects[i].name = $"Tile {i} ({u}, {v})";
+        
+        _meshRenderers[0].shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.TwoSided;
+        _meshRenderers[1].shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.TwoSided;
     }
 
     // Updates mesh(es) with provided vertices

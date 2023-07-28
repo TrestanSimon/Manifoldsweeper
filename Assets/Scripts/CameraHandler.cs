@@ -108,6 +108,9 @@ public class CameraHandler : MonoBehaviour {
 
     private void Zoom2DCamera() {
         Camera.main.transform.position += _scroll * Vector3.up;
+        if (Camera.main.transform.position.y < 1)
+            Camera.main.transform.position = Camera.main.transform.position
+                - (Camera.main.transform.position.y - 1) * Vector3.up;
         StartCoroutine(FillScreen());
     }
 
