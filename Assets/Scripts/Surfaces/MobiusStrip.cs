@@ -22,7 +22,7 @@ public class MobiusStrip : Complex {
         this.resV = resV;
         R = resU / 72f;
         tau = 16f / (float)resV;
-        currentMap = initMap;
+        CurrentMap = initMap;
         InitVertices(initMap);
         InitTiles();
     }
@@ -49,7 +49,7 @@ public class MobiusStrip : Complex {
     }
 
     public override IEnumerator ReMap(Map newMap) {
-        if (newMap == currentMap) yield return null;
+        if (newMap == CurrentMap) yield return null;
         else if (newMap == Map.Flat) {
             yield return StartCoroutine(ComplexLerp(
                 new Vector3[][,]{vertices, PlaneMap()}, 2f));
@@ -60,7 +60,47 @@ public class MobiusStrip : Complex {
             yield return StartCoroutine(ComplexLerp(
                 new Vector3[][,]{vertices, SudaneseMap()}, 2f));
         }
-        currentMap = newMap;
+        CurrentMap = newMap;
+    }
+
+    public override IEnumerator RepeatU() {
+        CopyDepthU++;
+        yield return null;
+    }
+
+    public override IEnumerator RepeatV() {
+        CopyDepthV++;
+        bool isReversed = CopyDepthV % 2 == 0;
+        Vector3 flipper = Vector3.zero;
+        for (int v = 0; v < resV; v++) {
+            flipper = (tiles[0,ResV-v-1].Vertices[0].z - tiles[0,v].Vertices[0].z) * Vector3.forward;
+            for (int u = 0; u < resU; u++) {
+                if (CopyDepthV == 1) {
+                    tiles[u,v].CreateClone(Offset[1] + flipper, true);
+                    tiles[u,v].CreateClone(-1 * Offset[1] + flipper, true);
+                }
+
+                if (isReversed) {
+                    tiles[u,v].CreateClone(Offset[1] * (1 + CopyDepthV) + flipper, true);
+                    tiles[u,v].CreateClone(Offset[1] * -(1 + CopyDepthV) + flipper, true);
+                } else {
+                    tiles[u,v].CreateClone(Offset[1] * (1 + CopyDepthV), false);
+                    tiles[u,v].CreateClone(Offset[1] * (-1 - CopyDepthV), false);
+                }
+            }
+        }
+
+        CalculateCorners(CopyDepthU, CopyDepthV);
+        yield return null;
+    }
+
+    public override void CalculateCorners(int depthU, int depthV) {
+        _corners = new Vector3[]{
+            vertices[0,ResV] + Offset[1] * depthU,
+            vertices[ResU,ResV] - Offset[1] * depthU,
+            vertices[ResU,0] - Offset[1] * depthU,
+            vertices[0,0] + Offset[1] * depthU,
+        };
     }
 
     private Vector3[,] StripMap() {

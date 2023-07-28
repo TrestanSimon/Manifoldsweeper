@@ -1,9 +1,10 @@
 using System;
 using System.Linq;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class Tile : Quad {
+public class Tile : GenericTile {
     public enum Type {
         Invalid,
         Empty,
@@ -11,12 +12,14 @@ public class Tile : Quad {
         Mine
     }
 
+    private int _u, _v;
     private Type _type;
     private int _number; // Number of mines in neighborhood
     private bool _revealed, _flagged, _exploded;
-    private GameObject[] _flags;
-    private Cloud[] _clouds;
-    private GameObject _revealPS; // Particle system for tile reveal
+
+    private List<CloneTile> _clones;
+
+    private Material _cloudMaterialCache;
 
     public int U {
         get => _u;
@@ -55,60 +58,40 @@ public class Tile : Quad {
             _number = value;
         }
     }
-    public bool Revealed {
-        get => _revealed;
-        set {
-            if (value && Flagged)
-                Flagged = false;
-            _revealed = value;
-        }
-    }
-    public bool Flagged {
-        get => _flagged;
-        set {
-            if (!_revealed) {
-                if (value && _flags == null)
-                    _flags = new GameObject[_sideCount];
-                else if (!value && _flags != null)
-                    Complex.DestroyGOs(_flags);
-                _flagged = value;
-            }
-        }
-    }
+    public bool Revealed { get => _revealed; }
+    public bool Flagged { get => _flagged; }
     public bool Exploded {
         get => _exploded;
-        set {
-            if (_type == Type.Mine)
-                _exploded = value;
-        }
+        set => _exploded = value;
     }
     public bool Visited { get; set; }
     public int Depth { get; set; }
+
+    private Material _CurrentMaterial {
+        get => _gameObjects[0].GetComponent<MeshRenderer>().material;
+    }
 
     // Constructor for Invalid Tiles
     public Tile() {}
 
     // Normal constructor
     public Tile(
-        int u, int v, int sideCount,
+        int u, int v,
         Vector3[] vertices,
         Complex complex
-    ) : base(vertices) {
+    ) : base(u, v, 2, vertices, complex.transform) {
         U = u; V = v;
-        _clouds = new Cloud[_sideCount];
+        _clones = new List<CloneTile>();
 
-        for (int i = 0; i < sideCount; i++) {
-            _gameObjects[i].name = $"Quad {i} ({u}, {v})";
-            
-            // Make tiles child of Complex GameObject
-            _gameObjects[i].transform.parent = complex.transform;
+        _revealed = false;
+        _flagged = false;
+        _exploded = false;
 
-            // For identifying tile instance from GameObject
-            Tag tag = _gameObjects[i].AddComponent<Tag>();
-            tag.u = U; tag.v = V;
-
-            GenerateCloud(i);
-        }
+        for (int i = 0; i < _sideCount; i++)
+            _gameObjects[i].name = $"Tile {i} ({u}, {v})";
+        
+        _meshRenderers[0].shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.TwoSided;
+        _meshRenderers[1].shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.TwoSided;
     }
 
     // Updates mesh(es) with provided vertices
@@ -118,124 +101,108 @@ public class Tile : Quad {
     ) {
         base.UpdateVertices(vert0, vert1, vert2, vert3);
         if (Flagged) UpdateFlags();
-        foreach (Cloud cloud in _clouds) UpdateClouds();
     }
 
     public override void SetMaterial(Material material) {
-        base.SetMaterial(material);
-        if (_sideCount > 1) {
-            if (type == Type.Number && Revealed) {
-                _meshes[0].uv = QuadUVCoords;
-                _meshes[1].uv = QuadUVCoords.Reverse().ToArray();
-            }
-            else {
-                _meshes[0].uv = QuadUVCoords.Reverse().ToArray();
-                _meshes[1].uv = QuadUVCoords.Reverse().ToArray();
-            }
-        }
+        base.SetMaterial(material, Revealed, type == Type.Number);
+        foreach (CloneTile clone in _clones)
+            clone.SetMaterial(material, Revealed, type == Type.Number);
     }
 
     // Resets tile state for new game
     public void Reset(bool clearFlags) {
         type = Tile.Type.Empty;
-        Revealed = false;
-        Exploded = false;
+        _revealed = false;
+        _exploded = false;
         Visited = false;
-        if (clearFlags) Flagged = false;
-        
-        // Reactivate clouds
-        foreach (Cloud cloud in _clouds)
-            cloud.Active(true);
-    }
-
-    private void GenerateCloud(int i) {
-        Vector3 altitude = _meshes[i].normals[0] * _Scale/10f;
-        _clouds[i] = new Cloud(
-            new Vector3[] {
-                _vertices[0] + altitude,
-                _vertices[1] + altitude,
-                _vertices[2] + altitude,
-                _vertices[3] + altitude
-            }, U, V
-        );
-        _clouds[i].Parent(_gameObjects[i]);
-    }
-
-    private void UpdateClouds() {
-        for (int i = 0; i < _clouds.Length; i++) {
-            Vector3 altitude = _meshes[i].normals[0] * _Scale/10f;
-            _clouds[i].UpdateVertices(
-                    _vertices[0] + altitude,
-                    _vertices[1] + altitude,
-                    _vertices[2] + altitude,
-                    _vertices[3] + altitude
-            );
-        }
+        if (clearFlags) RemoveFlags();
     }
 
     // Delayed reveal based on flood depth
     public IEnumerator DelayedReveal(Material material, GameObject breakPS = null) {
         if (type == Type.Invalid) yield break;
-        yield return new WaitForSeconds(0.02f * Depth);
 
-        SetMaterial(material);
+        _revealed = true;
+        // CheckWinCondition is ran before WaitForSeconds ends
+        yield return new WaitForSeconds(0.05f * Depth);
 
-        // Deactivate clouds
-        foreach (Cloud cloud in _clouds)
-            cloud.Active(false);
+        yield return Reveal(material, breakPS);
+    }
 
-        if (breakPS != null) {
-            _revealPS = Complex.CreateGO(breakPS, _vertices[0], Quaternion.identity, _Scale);
-            _revealPS.transform.parent = _gameObjects[0].transform;
-        }
+    public override IEnumerator Reveal(Material material, GameObject breakPS = null) {
+        if (type == Type.Mine) _exploded = true;
+
+        yield return base.Reveal(material, breakPS);
+        foreach (CloneTile clone in _clones)
+            yield return clone.Reveal(material, breakPS);
+
+        yield return null;
     }
 
     // Places flag(s)
-    public int FlagToggle(GameObject flagPrefab,
-        Material materialFlag, Material materialUnknown
-    ) {
-        if (Flagged) return UnFlag(flagPrefab, materialUnknown);
-        else return Flag(flagPrefab, materialUnknown);
+    public int FlagToggle(GameObject flagPrefab, Material flagMaterial) {
+        if (type == Type.Invalid || Revealed) return 0;
+
+        if (Flagged) {
+            RemoveFlags();
+            return -1;
+        } else {
+            PlaceFlags(flagPrefab, flagMaterial);
+            return 1;
+        }
     }
 
-    public int Flag(GameObject flagPrefab, Material materialFlag) {
-        if (type == Type.Invalid || Revealed || Flagged) return 0;
+    public override void PlaceFlags(GameObject flagPrefab, Material flagMaterial, bool scaled = true) {
+        if (type == Type.Invalid || Revealed || Flagged) return;
 
-        Flagged = true;
+        _flagged = true;
+
+        _cloudMaterialCache ??= CurrentMaterial;
         
-        // Points to where flag will be planted
-        Vector3 stake = (_vertices[0] + _vertices[2]) / 2f;
-
-        // Create flag for each side
-        for (int i = 0; i < _sideCount; i++) {
-            Vector3 flagPos = stake + _meshes[i].normals[0] * _Scale/2f;
-            Quaternion flagRot = Quaternion.LookRotation(_meshes[i].normals[0])
-                * Quaternion.AngleAxis(90, Vector3.up);
-
-            _flags[i] = Complex.CreateGO(flagPrefab, flagPos, flagRot, _Scale);
-            _flags[i].transform.parent = _gameObjects[i].transform;
-            _flags[i].name = "Flag";
-        }
-        SetMaterial(materialFlag);
-        return 1;
+        base.PlaceFlags(flagPrefab, flagMaterial);
+        foreach (CloneTile clone in _clones)
+            clone.PlaceFlags(flagPrefab, flagMaterial);
     }
 
     // Removes flag(s)
-    public int UnFlag(GameObject flagPrefab, Material materialUnknown) {
-        if (type == Type.Invalid || Revealed || !Flagged) return 0;
+    public override void RemoveFlags() {
+        if (type == Type.Invalid || Revealed || !Flagged) return;
 
-        Flagged = false;
+        _flagged = false;
 
-        SetMaterial(materialUnknown);
-        return -1;
+        SetMaterial(_cloudMaterialCache);
+
+        base.RemoveFlags();
+        foreach (CloneTile clone in _clones) {
+            clone.SetMaterial(_cloudMaterialCache);
+            clone.RemoveFlags();
+        }
     }
 
-    private void UpdateFlags() {
-        Vector3 stake = (_vertices[0] + _vertices[2]) / 2f;
-        for (int i = 0; i < _sideCount; i++) {
-            _flags[i].transform.position = stake + _meshes[i].normals[0] * _Scale/2f;
-            _flags[i].transform.rotation = Quaternion.LookRotation(_meshes[i].normals[0])
-                * Quaternion.AngleAxis(90, Vector3.up);
-        }
+    public override void UpdateFlags() {
+        base.UpdateFlags();
+        foreach (CloneTile clone in _clones)
+            clone.UpdateFlags();
+    }
+
+    public void CreateClone(Vector3 offset, bool reversed = false) {
+        CloneTile clone = new CloneTile(
+            U, V, OffsetVertices(offset), _gameObjects[0].transform, reversed);
+
+        clone.SetMaterial(_CurrentMaterial, Revealed, type == Type.Number);
+        if (Flagged) clone.PlaceFlags(_flags[0], CurrentMaterial, false);
+
+        _clones.Add(clone);
+    }
+
+    public void DestroyClones() {
+        foreach (CloneTile clone in _clones)
+            clone.DestroySelf();
+        _clones.Clear();
+    }
+
+    public override void DestroySelf() {
+        DestroyClones();
+        base.DestroySelf();
     }
 }

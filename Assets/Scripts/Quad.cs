@@ -4,11 +4,15 @@ using UnityEngine;
 
 public class Quad {
     // Geometry-related fields
-    protected int _u, _v, _sideCount;
+    protected int _sideCount;
     protected GameObject[] _gameObjects;
     protected Vector3[] _vertices;
     protected MeshRenderer[] _meshRenderers;
     protected Mesh[] _meshes;
+
+    public Vector3[] Vertices {
+        get => _vertices;
+    }
 
     // Winding for triangles and UV coordinates
         // 1 --> 2
@@ -36,7 +40,10 @@ public class Quad {
         }
     }
     protected float _Scale {
-        get => Vector3.Magnitude(_vertices[0] - _vertices[2]);
+        get => Vector3.Magnitude(_vertices[0] - _vertices[2]) * 0.8f;
+    }
+    public Material CurrentMaterial {
+        get => _meshRenderers[0].material;
     }
 
     // Constructor for Invalid Quads
@@ -45,7 +52,7 @@ public class Quad {
     // Normal constructor
     public Quad(
         Vector3[] vertices,
-        int sideCount = 2,
+        int sideCount,
         bool collision = true
     ) {
         SideCount = sideCount;
@@ -66,7 +73,7 @@ public class Quad {
             mesh.triangles = QuadTriangles;
             mesh.uv = QuadUVCoords;
 
-            if (i == 1) {
+            if (i == 0) {
                 // Reverse winding
                 mesh.triangles = mesh.triangles.Reverse().ToArray();
                 mesh.uv = mesh.uv.Reverse().ToArray();
@@ -103,9 +110,22 @@ public class Quad {
         }
     }
 
+    protected Vector3[] OffsetVertices(Vector3 offset) {
+        return new Vector3[]{
+            _vertices[0] + offset,
+            _vertices[1] + offset,
+            _vertices[2] + offset,
+            _vertices[3] + offset
+        };
+    }
+
     // Sets material
     public virtual void SetMaterial(Material material) {
         for (int i = 0; i < _sideCount; i++)
             _gameObjects[i].GetComponent<MeshRenderer>().material = material;
+    }
+
+    public virtual void DestroySelf() {
+        Complex.DestroyGOs(_gameObjects);
     }
 }

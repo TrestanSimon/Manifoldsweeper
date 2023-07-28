@@ -37,7 +37,7 @@ public class Torus : Complex {
         this.ResV = ResV;
         r = this.ResU / 16f;
         R = this.ResV / 16f;
-        currentMap = initMap;
+        CurrentMap = initMap;
         InitVertices(initMap);
         InitTiles();
     }
@@ -59,7 +59,7 @@ public class Torus : Complex {
     }
 
     public override IEnumerator ReMap(Map newMap) {
-        if (newMap == currentMap) yield return null;
+        if (newMap == CurrentMap) yield return null;
         else if (newMap == Map.Flat) {
             yield return StartCoroutine(TorusToCylinder());
             yield return StartCoroutine(CylinderToPlane());
@@ -67,7 +67,53 @@ public class Torus : Complex {
             yield return StartCoroutine(CylinderToPlane(true));
             yield return StartCoroutine(TorusToCylinder(true));
         }
-        currentMap = newMap;
+        CurrentMap = newMap;
+    }
+
+    public override IEnumerator RepeatU() {
+        CopyDepthU++;
+        for (int v = 0; v < resV; v++) {
+            for (int u = 0; u < resU; u++) {
+                Vector3 extraOffset = new Vector3();
+                for (int index = -CopyDepthV; index <= CopyDepthV; index++) {
+                    extraOffset = Offset[1] * index;
+
+                    tiles[u,v].CreateClone(Offset[0] * CopyDepthU + extraOffset);
+                    tiles[u,v].CreateClone(-1*Offset[0] * CopyDepthU + extraOffset);
+                }
+            }
+        }
+
+        CalculateCorners(CopyDepthU, CopyDepthV);
+        yield return null;
+    }
+
+    public override IEnumerator RepeatV() {
+        CopyDepthV++;
+        for (int v = 0; v < resV; v++) {
+            for (int u = 0; u < resU; u++) {
+                Vector3 extraOffset = new Vector3();
+                for (int index = -CopyDepthU; index <= CopyDepthU; index++) {
+                    extraOffset = Offset[0] * index;
+
+                    tiles[u,v].CreateClone(Offset[1] * CopyDepthV + extraOffset);
+                    tiles[u,v].CreateClone(-1*Offset[1] * CopyDepthV + extraOffset);
+                }
+            }
+        }
+
+        CalculateCorners(CopyDepthU, CopyDepthV);
+        yield return null;
+    }
+
+    public override void CalculateCorners(int depthU, int depthV) {
+        Vector3 offset = Offset[0] * depthU + Offset[1] * depthV;
+        _corners = new Vector3[]{
+            vertices[0,ResV] + offset,
+            vertices[ResU,ResV] - offset,
+            vertices[ResU,0] - offset,
+            vertices[0,0] + offset,
+        };
     }
 
     public IEnumerator TorusToCylinder(bool reverse = false) {

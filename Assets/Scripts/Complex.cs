@@ -24,15 +24,21 @@ public abstract class Complex : MonoBehaviour {
     }
 
     protected int resU, resV;
-    protected Map currentMap;
+    private Map _currentMap;
     protected Vector3[,] vertices;
     protected Tile[,] tiles;
     protected int sideCount;
+    private Vector3[] _offset;
+    private Vector3[] _interiorCorners;
+    protected Vector3[] _corners;
+
+    private int _copyDepthU = 0;
+    private int _copyDepthV = 0;
 
     public virtual int ResU {
         get => resU;
         protected set {
-            if (value < 1 || value > 99)
+            if (value < 2 || value > 99)
                 throw new ArgumentOutOfRangeException(nameof(value),
                     "U res. range is between 1 and 99.");
             resU = value;
@@ -41,18 +47,56 @@ public abstract class Complex : MonoBehaviour {
     public virtual int ResV {
         get => resV;
         protected set {
-            if (value < 1 || value > 99)
+            if (value < 2 || value > 99)
                 throw new ArgumentOutOfRangeException(nameof(value),
                     "V res. range is between 1 and 99.");
             resV = value;
         }
     }
     public Map CurrentMap {
-        get => currentMap;
+        get => _currentMap;
+        set {
+            if (value != Map.Flat) {
+                CopyDepthU = 0;
+                CopyDepthV = 0;
+            }
+            _currentMap = value;
+        }
     }
+    public Vector3[] Offset {
+        get {
+            if (CurrentMap != Complex.Map.Flat)
+                return null;
+            _offset ??= new Vector3[]{
+                vertices[resU/2,0] + vertices[resU/2+resU%2,0],
+                vertices[0,resV/2] + vertices[0,resV/2+resV%2]
+            };
+            return _offset;
+        }
+    }
+    public Vector3[] InteriorCorners {
+        get {
+            _interiorCorners ??= new Vector3[]{
+                vertices[0,ResV],
+                vertices[ResU,ResV],
+                vertices[ResU,0],
+                vertices[0,0],
+            };
+            return _interiorCorners;
+        }
+    }
+    public Vector3[] Corners { get => _corners; }
     public Tile[,] Tiles {
         get => tiles;
         private set => tiles = value;
+    }
+    public int CopyDepthU {
+        get => _copyDepthU;
+        protected set => _copyDepthU = value;
+    }
+    public int CopyDepthV {
+        get => _copyDepthV;
+        protected set => _copyDepthV = value;
     }
 
     public abstract void Setup(int resU, int resV, Map initMap);
@@ -70,7 +114,7 @@ public abstract class Complex : MonoBehaviour {
         for (int v = 0; v < resV; v++) {
             for (int u = 0; u < resU; u++) {
                 tiles[u,v] = new Tile(
-                    u, v, sideCount,
+                    u, v,
                     new Vector3[]{
                         vertices[u,v], vertices[u+1,v],
                         vertices[u+1,v+1], vertices[u,v+1]
@@ -91,6 +135,8 @@ public abstract class Complex : MonoBehaviour {
             }
         }
     }
+
+    public abstract void CalculateCorners(int depthU, int depthV);
 
     public IEnumerator ComplexLerp(
         Vector3[][,] vertSteps, float duration
@@ -148,8 +194,28 @@ public abstract class Complex : MonoBehaviour {
         return neighbors;
     }
 
-    public virtual void RepeatComplex() {
-        if (currentMap != Map.Flat) return;
+    public abstract IEnumerator RepeatU();
+
+    public abstract IEnumerator RepeatV();
+
+    public IEnumerator DumpRepeatComplex() {
+        foreach (Tile tile in tiles)
+            tile.DestroyClones();
+        yield break;
+    }
+
+    private void Placeholdering() {
+        float time = 0f;
+        float duration = 2f;
+        float t = 0f;
+
+        while (time < duration) {
+            t = time / duration;
+            t = t*t*(3f - 2f * t);
+
+            time += Time.deltaTime;
+            // yield return null;
+        }
     }
 
     // Identifies the tile instance the cursor is over
@@ -210,7 +276,7 @@ public abstract class Complex : MonoBehaviour {
 
                 tempVerts[p,q] = new Vector3(
                     radius * (sinp - (t - a)*cosp),
-                    radius * (cosp + (t - a)*sinp),
+                    radius * (cosp + (t - a)*sinp) + radius * progress,
                     PI * (resV/2f - q) / 8f
                 );
             }

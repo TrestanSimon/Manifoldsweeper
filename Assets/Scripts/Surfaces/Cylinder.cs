@@ -11,7 +11,7 @@ public class Cylinder : Complex {
             {"Cylinder", Map.Cylinder}
         };
     }
-    
+
     private float radius;
 
     public override void Setup(int resU, int resV, Map initMap) {
@@ -19,7 +19,7 @@ public class Cylinder : Complex {
         this.resU = resU;
         this.resV = resV;
         radius = resU / 16f;
-        currentMap = initMap;
+        CurrentMap = initMap;
         InitVertices(initMap);
         InitTiles();
     }
@@ -41,22 +41,40 @@ public class Cylinder : Complex {
     }
 
     public override IEnumerator ReMap(Map newMap) {
-        if (newMap == currentMap) yield return null;
+        if (newMap == CurrentMap) yield return null;
         else if (newMap == Map.Flat) {
             yield return StartCoroutine(CylinderToPlane());
         } else if (newMap == Map.Cylinder) {
             yield return StartCoroutine(CylinderToPlane(true));
         }
-        currentMap = newMap;
+        CurrentMap = newMap;
     }
 
-    public override void RepeatComplex() {
-        Instantiate(gameObject,
-            2f*(vertices[0,resV/2] + radius*Vector3.up),
-            Quaternion.identity);
-        Instantiate(gameObject,
-            -2f*(vertices[0,resV/2] + radius*Vector3.up),
-            Quaternion.identity);
+    public override IEnumerator RepeatU() {
+        CopyDepthU++;
+        yield return null;
+    }
+
+    public override IEnumerator RepeatV() {
+        CopyDepthV++;
+        for (int v = 0; v < resV; v++) {
+            for (int u = 0; u < resU; u++) {
+                tiles[u,v].CreateClone(Offset[1] * CopyDepthV);
+                tiles[u,v].CreateClone(-1*Offset[1] * CopyDepthV);
+            }
+        }
+
+        CalculateCorners(CopyDepthU, CopyDepthV);
+        yield return null;
+    }
+
+    public override void CalculateCorners(int depthU, int depthV) {
+        _corners = new Vector3[]{
+            vertices[0,ResV] + Offset[1] * depthU,
+            vertices[ResU,ResV] - Offset[1] * depthU,
+            vertices[ResU,0] - Offset[1] * depthU,
+            vertices[0,0] + Offset[1] * depthU,
+        };
     }
 
     public IEnumerator CylinderToPlane(bool reverse = false) {

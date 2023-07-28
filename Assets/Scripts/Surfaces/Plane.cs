@@ -13,7 +13,7 @@ public class Plane : Complex {
         sideCount = 2;
         this.resU = resU;
         this.resV = resV;
-        currentMap = initMap;
+        CurrentMap = initMap;
         InitVertices(initMap);
         InitTiles();
     }
@@ -38,5 +38,19 @@ public class Plane : Complex {
 
     public override IEnumerator ReMap(Map newMap) {
         yield return null;
+    }
+
+    public override IEnumerator RepeatU() {
+        CopyDepthU++;
+        yield return null;
+    }
+
+    public override IEnumerator RepeatV() {
+        CopyDepthV++;
+        yield return null;
+    }
+
+    public override void CalculateCorners(int depthU, int depthV) {
+        _corners = InteriorCorners;
     }
 }
