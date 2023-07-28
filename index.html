@@ -9,6 +9,10 @@
     <canvas id="unity-canvas" width=960 height=600 style="width: 100%; height: 100%; background: #231F20"></canvas>
     <script src="Build/Builds.loader.js"></script>
     <script>
+      window.addEventListener('resize', function() {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+      
       createUnityInstance(document.querySelector("#unity-canvas"), {
         dataUrl: "Build/Builds.data",
         frameworkUrl: "Build/Builds.framework.js",
