@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="191.55634mm"
+   height="191.55632mm"
+   viewBox="0 0 191.55634 191.55632"
+   version="1.1"
+   id="svg6035"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   sodipodi:docname="FundamentalGroup.svg"
+   inkscape:export-filename="..\..\..\..\..\..\..\Users\Trestan\Desktop\PlaneSquare.png"
+   inkscape:export-xdpi="59.62804"
+   inkscape:export-ydpi="59.62804"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview6037"
+     pagecolor="#000000"
+     bordercolor="#000000"
+     borderopacity="1"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="false"
+     inkscape:deskcolor="#000000"
+     inkscape:document-units="px"
+     showgrid="false"
+     inkscape:zoom="0.64693624"
+     inkscape:cx="268.18717"
+     inkscape:cy="412.71455"
+     inkscape:window-width="2560"
+     inkscape:window-height="1377"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs6032">
+    <marker
+       style="overflow:visible"
+       id="marker16183"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Arrow1L"
+       markerWidth="8.75"
+       markerHeight="5"
+       viewBox="0 0 8.75 5"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         id="path16181"
+         transform="scale(-0.5)" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="Arrow1L"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Arrow1L"
+       markerWidth="8.75"
+       markerHeight="5"
+       viewBox="0 0 8.75 5"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         id="arrow1L"
+         transform="scale(-0.5)" />
+    </marker>
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     style="display:inline"
+     transform="translate(-19.027024,-19.027033)">
+    <rect
+       style="fill:#b2b2b2;fill-opacity:1;stroke:#1f1f1f;stroke-width:3.17499987;stroke-linecap:square;stroke-dasharray:12.69999947,12.69999947;stroke-dashoffset:0.63499997;stroke-opacity:1;stop-color:#000000"
+       id="rect6571"
+       width="149.22298"
+       height="149.22298"
+       x="40.193699"
+       y="40.193699" />
+    <path
+       style="display:inline;fill:none;stroke:#ee0000;stroke-width:8.46667;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker16183)"
+       d="M 37.449091,40.193699 H 139.24459"
+       id="path12617"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="display:inline;fill:none;stroke:#ee0000;stroke-width:8.46667;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker16183)"
+       d="M 37.449091,189.41668 H 139.24459"
+       id="path12679"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="display:inline;fill:none;stroke:#5566ee;stroke-width:8.46667;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1L)"
+       d="M 40.193699,189.48759 V 87.692091"
+       id="path13429"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="display:inline;fill:none;stroke:#5566ee;stroke-width:8.46667;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1L)"
+       d="M 40.193699,189.48759 V 87.692091"
+       id="path15679"
+       sodipodi:nodetypes="cc"
+       transform="translate(149.22298)" />
+    <path
+       style="display:inline;fill:none;stroke:#ee0000;stroke-width:8.46667;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker16183)"
+       d="M 192.16128,189.41668 H 90.365779"
+       id="path17058"
+       sodipodi:nodetypes="cc" />
+  </g>
+</svg>

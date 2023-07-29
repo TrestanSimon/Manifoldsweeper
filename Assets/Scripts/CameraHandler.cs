@@ -137,8 +137,6 @@ public class CameraHandler : MonoBehaviour {
             (legV + Mathf.Abs(Camera.main.transform.position.x) - _target.InteriorCorners[1].x)
             / _target.Offset[1].x
         );
-
-        Debug.Log($"{_depthU}, {_depthV}");
         
         _target.CalculateCorners(_depthU, _depthV);
         while (_depthU > _target.CopyDepthU)
