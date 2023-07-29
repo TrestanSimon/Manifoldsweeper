@@ -70,7 +70,7 @@ public class Torus : Complex {
         CurrentMap = newMap;
     }
 
-    public override IEnumerator RepeatU() {
+    public override IEnumerator RepeatU(bool isFade = false) {
         CopyDepthU++;
         for (int v = 0; v < resV; v++) {
             for (int u = 0; u < resU; u++) {
@@ -88,7 +88,7 @@ public class Torus : Complex {
         yield return null;
     }
 
-    public override IEnumerator RepeatV() {
+    public override IEnumerator RepeatV(bool isFade = false) {
         CopyDepthV++;
         for (int v = 0; v < resV; v++) {
             for (int u = 0; u < resU; u++) {

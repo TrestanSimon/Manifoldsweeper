@@ -116,8 +116,10 @@ public class CameraHandler : MonoBehaviour {
 
     // (For 2D functionality only)
     // Repeats flattened surface until screen is completely covered
-    private IEnumerator FillScreen() {
+    public IEnumerator FillScreen(bool isFade = false) {
         CalculateFrustum();
+
+        Color _fadeColor = new Color(1f, 1f, 1f, 1f);
 
         float fovU = Camera.VerticalToHorizontalFieldOfView(
             Camera.main.fieldOfView, Camera.main.aspect);
@@ -140,9 +142,9 @@ public class CameraHandler : MonoBehaviour {
         
         _target.CalculateCorners(_depthU, _depthV);
         while (_depthU > _target.CopyDepthU)
-            StartCoroutine(_target.RepeatU());
+            StartCoroutine(_target.RepeatU(isFade));
         while (_depthV > _target.CopyDepthV)
-            StartCoroutine(_target.RepeatV());
+            StartCoroutine(_target.RepeatV(isFade));
         
         yield return null;
     }
@@ -257,9 +259,7 @@ public class CameraHandler : MonoBehaviour {
         _target = newTarget;
         yield return StartCoroutine(NewMap(_Map));
         if (_Map == Complex.Map.Flat) {
-            StartCoroutine(_target.RepeatU());
-            StartCoroutine(_target.RepeatV());
-            StartCoroutine(FillScreen());
+            StartCoroutine(FillScreen(true));
         }
     }
 }

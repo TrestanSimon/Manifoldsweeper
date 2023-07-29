@@ -64,7 +64,7 @@ public class Klein : Complex {
         CurrentMap = newMap;
     }
 
-    public override IEnumerator RepeatU() {
+    public override IEnumerator RepeatU(bool isFade = false) {
         CopyDepthU++;
         bool isReversed;
         Vector3 flipper = Vector3.zero;
@@ -93,7 +93,7 @@ public class Klein : Complex {
         yield return null;
     }
 
-    public override IEnumerator RepeatV() {
+    public override IEnumerator RepeatV(bool isFade = false) {
         CopyDepthV++;
         if (CopyDepthV == 1) CopyDepthV++;
         bool isReversed = CopyDepthV % 2 == 1;

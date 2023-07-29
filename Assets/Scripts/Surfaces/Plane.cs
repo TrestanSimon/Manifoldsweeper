@@ -40,12 +40,12 @@ public class Plane : Complex {
         yield return null;
     }
 
-    public override IEnumerator RepeatU() {
+    public override IEnumerator RepeatU(bool isFade = false) {
         CopyDepthU++;
         yield return null;
     }
 
-    public override IEnumerator RepeatV() {
+    public override IEnumerator RepeatV(bool isFade = false) {
         CopyDepthV++;
         yield return null;
     }

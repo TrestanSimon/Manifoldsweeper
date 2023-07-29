@@ -70,6 +70,10 @@ public class Tile : GenericTile {
     private Material _CurrentMaterial {
         get => _gameObjects[0].GetComponent<MeshRenderer>().material;
     }
+    public List<CloneTile> Clones {
+        get => _clones;
+        set => _clones = value;
+    }
 
     // Constructor for Invalid Tiles
     public Tile() {}

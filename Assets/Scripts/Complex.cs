@@ -194,27 +194,38 @@ public abstract class Complex : MonoBehaviour {
         return neighbors;
     }
 
-    public abstract IEnumerator RepeatU();
+    public abstract IEnumerator RepeatU(bool isFade = false);
 
-    public abstract IEnumerator RepeatV();
+    public abstract IEnumerator RepeatV(bool isFade = false);
 
     public IEnumerator DumpRepeatComplex() {
+        if (tiles[0,0].Clones is null) yield break;
+        yield return Fade(false, 1, tiles[0,0].Clones.Count);
         foreach (Tile tile in tiles)
             tile.DestroyClones();
         yield break;
     }
 
-    private void Placeholdering() {
+    protected IEnumerator Fade(bool fadeIn, int depth, int count) {
         float time = 0f;
         float duration = 2f;
         float t = 0f;
+        Color fadeColor;
 
         while (time < duration) {
-            t = time / duration;
+            t = fadeIn ? time / duration : 1 - time / duration;
             t = t*t*(3f - 2f * t);
 
+            fadeColor = new Color(1f, 1f, 1f, t);
+
+            foreach (Tile tile in tiles) {
+                Debug.Log(tile.Clones.Count);
+                for (int i = count*(depth-1); i < count*(depth-1)+count; i++)
+                    tile.Clones[i].SetColor(fadeColor);
+            }
+
             time += Time.deltaTime;
-            // yield return null;
+            yield return null;
         }
     }
 
