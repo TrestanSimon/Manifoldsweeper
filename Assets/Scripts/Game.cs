@@ -303,4 +303,11 @@ public class Game : MonoBehaviour {
             default: return null;
         }
     }
+
+    // Ran by UIHandler.cs which runs on button press
+    public void ClearFlags() {
+        foreach (Tile tile in _complex.Tiles)
+            tile.RemoveFlags();
+        _flagCount = 0;
+    }
 }

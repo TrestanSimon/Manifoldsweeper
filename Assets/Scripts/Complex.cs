@@ -35,6 +35,8 @@ public abstract class Complex : MonoBehaviour {
     private int _copyDepthU = 0;
     private int _copyDepthV = 0;
 
+    private bool _raycastEnabled = true;
+
     public virtual int ResU {
         get => resU;
         protected set {
@@ -97,6 +99,11 @@ public abstract class Complex : MonoBehaviour {
     public int CopyDepthV {
         get => _copyDepthV;
         protected set => _copyDepthV = value;
+    }
+
+    public bool RaycastEnabled {
+        get => _raycastEnabled;
+        set => _raycastEnabled = value;
     }
 
     public abstract void Setup(int resU, int resV, Map initMap);
@@ -231,6 +238,7 @@ public abstract class Complex : MonoBehaviour {
     // Identifies the tile instance the cursor is over
     // returns null if there is no tile
     public Tile MouseIdentify() {
+        if (!_raycastEnabled) return null;
         Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         if (Physics.Raycast(inputRay, out hit))

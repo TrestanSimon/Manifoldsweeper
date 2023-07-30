@@ -20,6 +20,7 @@ public class UIHandler : MonoBehaviour {
 
     private Sprite[] fundamentalPolygonSprites;
 
+    private Button newButton, clearButton;
     
     private int selectedManifold;
     private int selectedDifficulty;
@@ -81,7 +82,9 @@ public class UIHandler : MonoBehaviour {
                 
         // Top panel data
         topPanel = transform.Find("Top Panel");
+        newButton = topPanel.Find("Timer Panel").Find("New Game Button").GetComponent<Button>();
         timerText = topPanel.Find("Timer Panel").Find("Timer Label").GetComponent<TMP_Text>();
+        clearButton = topPanel.Find("Flag Panel").Find("Clear Flags Button").GetComponent<Button>();
         flagText = topPanel.Find("Flag Panel").Find("Flag Label").GetComponent<TMP_Text>();
         flagPanelImage = topPanel.Find("Flag Panel").GetComponent<Image>();
         flagPanelGrey = new Color(1f, 1f, 1f, 0.2745098f);
@@ -145,12 +148,19 @@ public class UIHandler : MonoBehaviour {
     }
 
     private void Update() {
-        if (game is null || complex is null) return;
+        if (game is null || complex is null) {
+            newButton.interactable = false;
+            clearButton.interactable = false;
+            return;
+        }
 
         gameStartMessage.SetActive(
             !game.GameOn && !game.GameLost && !game.GameWon);
         gameOverMessage.SetActive(game.GameLost && !panelOpen);
         gameWinMessage.SetActive(game.GameWon && !panelOpen);
+
+        newButton.interactable = true;
+        clearButton.interactable = (game.FlagCount != 0 && !game.GameWon && !game.GameLost);
 
         timerText.text =
             $"{(int)game.Timer}.{((int)(game.Timer*10))%10}";
@@ -302,5 +312,22 @@ public class UIHandler : MonoBehaviour {
         else
             flagPanelImage.color = flagPanelRed;
         flagText.text = $"{game.FlagCount}/{game.MineCount}";
+    }
+
+    // Ran on button press
+    public void ClearFlags() {
+        if (game is null || game.FlagCount == 0 || game.GameWon || game.GameLost) return;
+        game.ClearFlags();
+    }
+
+    // Ran on button press
+    public void NewGame() {
+        if (game is null) return;
+        game.NewGame();
+    }
+
+    public void ActivateRaycast(bool activate) {
+        if (complex is null) return;
+        complex.RaycastEnabled = activate;
     }
 }
