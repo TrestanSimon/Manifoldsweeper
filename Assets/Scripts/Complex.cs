@@ -239,6 +239,7 @@ public abstract class Complex : MonoBehaviour {
     // returns null if there is no tile
     public Tile MouseIdentify() {
         if (!_raycastEnabled) return null;
+        //_raycastEnabled = false;
         Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         if (Physics.Raycast(inputRay, out hit))

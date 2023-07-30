@@ -61,7 +61,7 @@ public class Game : MonoBehaviour {
     }
 
     // Checks for user inputs every frame
-    private void Update() {
+    private void LateUpdate() {
         if (!_paused) {
             if (Input.GetKeyDown(KeyCode.R)) NewGame();
             else if (!_gameLost && !_gameWon) {
