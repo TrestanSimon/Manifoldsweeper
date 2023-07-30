@@ -15,8 +15,8 @@ public class CameraHandler : MonoBehaviour {
     }
 
     // Number of clones
-    private int _depthU = 1;
-    private int _depthV = 1;
+    private int _depthU = 0;
+    private int _depthV = 0;
 
     private bool _isTransitioning = false;
     private bool _is3DCamera = true;
@@ -29,6 +29,22 @@ public class CameraHandler : MonoBehaviour {
         if (_target is null || _isTransitioning) return;
         if (_is3DCamera) Update3DCamera();
         else Update2DCamera();
+    }
+
+    // Top-down camera for viewing flattened surfaces
+    private void Update2DCamera() {
+        _scroll = Input.mouseScrollDelta.y * _sensitivity * -1f;
+
+        if (Input.GetMouseButtonDown(2))
+            _mousePos = Input.mousePosition;
+
+        if ((Input.GetMouseButton(2) && _mousePos != null))
+            Move2DCamera();
+
+        if (_scroll != 0f || _aspect != Camera.main.aspect)
+            Zoom2DCamera();
+        
+        _aspect = Camera.main.aspect;
     }
 
     // Default camera for viewing surfaces in 3D
@@ -48,22 +64,6 @@ public class CameraHandler : MonoBehaviour {
 
         if (_scroll != 0f)
             Camera.main.transform.position -= _scroll * Camera.main.transform.forward.normalized;
-    }
-
-    // Top-down camera for viewing flattened surfaces
-    private void Update2DCamera() {
-        _scroll = Input.mouseScrollDelta.y * _sensitivity * -1f;
-
-        if (Input.GetMouseButtonDown(2))
-            _mousePos = Input.mousePosition;
-
-        if ((Input.GetMouseButton(2) && _mousePos != null))
-            Move2DCamera();
-
-        if (_scroll != 0f || _aspect != Camera.main.aspect)
-            Zoom2DCamera();
-        
-        _aspect = Camera.main.aspect;
     }
 
     private void Move2DCamera() {
@@ -116,20 +116,23 @@ public class CameraHandler : MonoBehaviour {
 
     // (For 2D functionality only)
     // Repeats flattened surface until screen is completely covered
-    public IEnumerator FillScreen(bool isFade = false) {
-        CalculateFrustum();
+    private IEnumerator FillScreen(bool isFade = false) {
+        if (_target is Plane) yield break;
 
+        CalculateFrustum();
         Color _fadeColor = new Color(1f, 1f, 1f, 1f);
 
-        float fovU = Camera.VerticalToHorizontalFieldOfView(
-            Camera.main.fieldOfView, Camera.main.aspect);
-        float thetaU = (fovU / 2f) * (Mathf.PI / 180f);
+        if (_target is Torus or Klein) {
+            float fovU = Camera.VerticalToHorizontalFieldOfView(
+                Camera.main.fieldOfView, Camera.main.aspect);
+            float thetaU = (fovU / 2f) * (Mathf.PI / 180f);
+            float legU = Camera.main.transform.position.y * Mathf.Tan(thetaU);   
 
-        float legU = Camera.main.transform.position.y * Mathf.Tan(thetaU);        
-        _depthU = (int)(
-            (legU + Mathf.Abs(Camera.main.transform.position.z) - _target.InteriorCorners[2].z)
-            / _target.Offset[0].z + 1
-        );
+            _depthU = (int)(
+                (legU + Mathf.Abs(Camera.main.transform.position.z) - _target.InteriorCorners[1].z)
+                / _target.Offset[0].z
+            );
+        }
 
         float fovV = Camera.main.fieldOfView;
         float thetaV = (fovV / 2f) * (Mathf.PI / 180f);
@@ -140,11 +143,13 @@ public class CameraHandler : MonoBehaviour {
             / _target.Offset[1].x
         );
         
-        _target.CalculateCorners(_depthU, _depthV);
         while (_depthU > _target.CopyDepthU)
-            StartCoroutine(_target.RepeatU(isFade));
+            _target.RepeatU();
         while (_depthV > _target.CopyDepthV)
-            StartCoroutine(_target.RepeatV(isFade));
+            _target.RepeatV();
+
+        if (isFade)
+            yield return StartCoroutine(_target.Fade(true));
         
         yield return null;
     }
@@ -235,6 +240,9 @@ public class CameraHandler : MonoBehaviour {
             new Vector3(0f, height, 0f),
             Quaternion.Euler(90f, 0f, 90f))
         );
+        
+        yield return StartCoroutine(FillScreen(true));
+
         _isTransitioning = false;
         _is3DCamera = false;
     }
@@ -248,18 +256,12 @@ public class CameraHandler : MonoBehaviour {
         _is3DCamera = true;
     }
 
-    public IEnumerator NewMap(Complex.Map newMap) {
-        if (newMap == Complex.Map.Flat)
-            yield return StartCoroutine(TransitionTo2DCamera());
-        else if (newMap != Complex.Map.Flat)
-            yield return StartCoroutine(TransitionTo3DCamera());
-    }
-
     public IEnumerator NewTarget(Complex newTarget) {
         _target = newTarget;
-        yield return StartCoroutine(NewMap(_Map));
-        if (_Map == Complex.Map.Flat) {
-            StartCoroutine(FillScreen(true));
-        }
+
+        if (_Map == Complex.Map.Flat)
+            yield return StartCoroutine(TransitionTo2DCamera());
+        else if (_Map != Complex.Map.Flat)
+            yield return StartCoroutine(TransitionTo3DCamera());
     }
 }

@@ -50,12 +50,10 @@ public class Cylinder : Complex {
         CurrentMap = newMap;
     }
 
-    public override IEnumerator RepeatU(bool isFade = false) {
-        CopyDepthU++;
-        yield return null;
+    public override void RepeatU() {
     }
 
-    public override IEnumerator RepeatV(bool isFade = false) {
+    public override void RepeatV() {
         Color fadeColor = new Color(1f, 1f, 1f, 1f);
 
         CopyDepthV++;
@@ -66,11 +64,7 @@ public class Cylinder : Complex {
             }
         }
 
-        //if (isFade)
-        //    yield return Fade(true, CopyDepthV, 2);
-
         CalculateCorners(CopyDepthU, CopyDepthV);
-        yield return null;
     }
 
     public override void CalculateCorners(int depthU, int depthV) {

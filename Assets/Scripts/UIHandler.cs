@@ -268,7 +268,6 @@ public class UIHandler : MonoBehaviour {
             if (SelectedMap == Complex.Map.Flat) {
                 // 3D --> 2D
                 yield return StartCoroutine(cameraHandler.TransitionTo2DCamera());
-                yield return StartCoroutine(cameraHandler.FillScreen(true));
             }
         }
 

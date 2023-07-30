@@ -194,21 +194,21 @@ public abstract class Complex : MonoBehaviour {
         return neighbors;
     }
 
-    public abstract IEnumerator RepeatU(bool isFade = false);
+    public abstract void RepeatU();
 
-    public abstract IEnumerator RepeatV(bool isFade = false);
+    public abstract void RepeatV();
 
     public IEnumerator DumpRepeatComplex() {
         if (tiles[0,0].Clones is null) yield break;
-        yield return Fade(false, 1, tiles[0,0].Clones.Count);
+        yield return Fade(false);
         foreach (Tile tile in tiles)
             tile.DestroyClones();
         yield break;
     }
 
-    protected IEnumerator Fade(bool fadeIn, int depth, int count) {
+    public IEnumerator Fade(bool fadeIn) {
         float time = 0f;
-        float duration = 2f;
+        float duration = 1f;
         float t = 0f;
         Color fadeColor;
 
@@ -219,9 +219,8 @@ public abstract class Complex : MonoBehaviour {
             fadeColor = new Color(1f, 1f, 1f, t);
 
             foreach (Tile tile in tiles) {
-                Debug.Log(tile.Clones.Count);
-                for (int i = count*(depth-1); i < count*(depth-1)+count; i++)
-                    tile.Clones[i].SetColor(fadeColor);
+                foreach (CloneTile clone in tile.Clones)
+                    clone.SetColor(fadeColor);
             }
 
             time += Time.deltaTime;

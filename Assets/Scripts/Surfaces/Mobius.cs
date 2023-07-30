@@ -63,12 +63,10 @@ public class Mobius : Complex {
         CurrentMap = newMap;
     }
 
-    public override IEnumerator RepeatU(bool isFade = false) {
-        CopyDepthU++;
-        yield return null;
+    public override void RepeatU() {
     }
 
-    public override IEnumerator RepeatV(bool isFade = false) {
+    public override void RepeatV() {
         CopyDepthV++;
         bool isReversed = CopyDepthV % 2 == 0;
         Vector3 flipper = Vector3.zero;
@@ -91,7 +89,6 @@ public class Mobius : Complex {
         }
 
         CalculateCorners(CopyDepthU, CopyDepthV);
-        yield return null;
     }
 
     public override void CalculateCorners(int depthU, int depthV) {

@@ -64,7 +64,7 @@ public class Klein : Complex {
         CurrentMap = newMap;
     }
 
-    public override IEnumerator RepeatU(bool isFade = false) {
+    public override void RepeatU() {
         CopyDepthU++;
         bool isReversed;
         Vector3 flipper = Vector3.zero;
@@ -90,10 +90,9 @@ public class Klein : Complex {
         }
 
         CalculateCorners(CopyDepthU, CopyDepthV);
-        yield return null;
     }
 
-    public override IEnumerator RepeatV(bool isFade = false) {
+    public override void RepeatV() {
         CopyDepthV++;
         if (CopyDepthV == 1) CopyDepthV++;
         bool isReversed = CopyDepthV % 2 == 1;
@@ -124,7 +123,6 @@ public class Klein : Complex {
         }
 
         CalculateCorners(CopyDepthU, CopyDepthV);
-        yield return null;
     }
 
     public override void CalculateCorners(int depthU, int depthV) {
