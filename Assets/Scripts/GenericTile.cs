@@ -60,8 +60,10 @@ public class GenericTile : Quad {
         SetMaterial(material);
 
         if (breakPS != null) {
-            _revealPS = Complex.CreateGO(breakPS, _vertices[0], Quaternion.identity, _Scale);
-            _revealPS.transform.parent = _gameObjects[0].transform;
+            for (int i = 0; i < _sideCount; i++) {
+                _revealPS = Complex.CreateGO(breakPS, (_vertices[0]+_vertices[2])/2+ _meshes[i].normals[0] * _Scale/2f, Quaternion.identity, _Scale);
+                _revealPS.transform.parent = _gameObjects[i].transform;
+            }
         }
 
         yield return null;

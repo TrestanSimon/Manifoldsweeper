@@ -30,7 +30,7 @@ public class UIHandler : MonoBehaviour {
     private Game game;
     private Complex complex;
     private Button mapButton;
-    private TMP_Text timerText, flagText;
+    private TMP_Text areaText, timerText, flagText;
     private Image flagPanelImage;
     private Color flagPanelGrey, flagPanelRed, flagPanelGreen;
     private TMP_InputField[] inputFields;
@@ -77,11 +77,12 @@ public class UIHandler : MonoBehaviour {
         difficultyToggle = gamePanel.Find("Difficulty Toggle").GetComponentsInChildren<Toggle>();
         customInputs = gamePanel.Find("Custom Inputs");
         inputFields = customInputs.GetComponentsInChildren<TMP_InputField>();
+        areaText = customInputs.Find("Area Label").GetComponent<TMP_Text>();
 
-        animator = panel.GetComponent<Animator>();
                 
         // Top panel data
         topPanel = transform.Find("Top Panel");
+        animator = topPanel.GetComponent<Animator>();
         newButton = topPanel.Find("Timer Panel").Find("New Game Button").GetComponent<Button>();
         timerText = topPanel.Find("Timer Panel").Find("Timer Label").GetComponent<TMP_Text>();
         clearButton = topPanel.Find("Flag Panel").Find("Clear Flags Button").GetComponent<Button>();
@@ -229,6 +230,8 @@ public class UIHandler : MonoBehaviour {
         for (int i = 0; i < difficultyToggle.Length; i++)
             if (difficultyToggle[i].isOn)
                 selectedDifficulty = i;
+        
+        areaText.text = $"{_resU * _resV} >";
 
         // If custom difficulty is selected
         if (selectedDifficulty == 3) {
@@ -254,8 +257,18 @@ public class UIHandler : MonoBehaviour {
     // Ran On Value Changed of Custom Difficulty Text Inputs
     public void UpdateCustomDifficulty() {
         int.TryParse(inputFields[0].text, out _resU);
+        if (_resU < 2) _resU = 2;
+
         int.TryParse(inputFields[1].text, out _resV);
+        if (_resV < 2) _resV = 2;
+
         int.TryParse(inputFields[2].text, out mineCount);
+        if (mineCount >= _resV * _resU) mineCount = (_resV * _resU) - 1;
+
+        inputFields[0].text = _resU.ToString();
+        inputFields[1].text = _resV.ToString();
+        inputFields[2].text = mineCount.ToString();
+        areaText.text = $"{_resU * _resV} >";
     }
 
     public void ReMapStart() {
@@ -302,6 +315,10 @@ public class UIHandler : MonoBehaviour {
     public void TogglePanel() {
         panelOpen = game.Paused = !panelOpen;
         panel.gameObject.SetActive(panelOpen);
+    }
+
+    public void ToggleTopPanel() {
+        animator.SetBool("panelOpen", !animator.GetBool("panelOpen"));
     }
     
     private void UpdateFlagPanel() {

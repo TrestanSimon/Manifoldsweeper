@@ -54,8 +54,6 @@ public class Cylinder : Complex {
     }
 
     public override void RepeatV() {
-        Color fadeColor = new Color(1f, 1f, 1f, 1f);
-
         CopyDepthV++;
         for (int v = 0; v < resV; v++) {
             for (int u = 0; u < resU; u++) {

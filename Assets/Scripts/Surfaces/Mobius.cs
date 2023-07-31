@@ -68,22 +68,30 @@ public class Mobius : Complex {
 
     public override void RepeatV() {
         CopyDepthV++;
-        bool isReversed = CopyDepthV % 2 == 0;
+        if (CopyDepthV == 1) CopyDepthV++;
+        bool isReversed = CopyDepthV % 2 == 1;
         Vector3 flipper = Vector3.zero;
+        Vector3 offsetU;
+
         for (int v = 0; v < resV; v++) {
             flipper = (tiles[0,ResV-v-1].Vertices[0].z - tiles[0,v].Vertices[0].z) * Vector3.forward;
             for (int u = 0; u < resU; u++) {
-                if (CopyDepthV == 1) {
-                    tiles[u,v].CreateClone(Offset[1] + flipper, true);
-                    tiles[u,v].CreateClone(-1 * Offset[1] + flipper, true);
-                }
+                // Fill left-right depending on CopyDepthU
+                for (int indexU = -CopyDepthU; indexU <= CopyDepthU; indexU++) {
+                    offsetU = Offset[0] * indexU;
 
-                if (isReversed) {
-                    tiles[u,v].CreateClone(Offset[1] * (1 + CopyDepthV) + flipper, true);
-                    tiles[u,v].CreateClone(Offset[1] * -(1 + CopyDepthV) + flipper, true);
-                } else {
-                    tiles[u,v].CreateClone(Offset[1] * (1 + CopyDepthV), false);
-                    tiles[u,v].CreateClone(Offset[1] * (-1 - CopyDepthV), false);
+                    if (CopyDepthV == 2) {
+                        tiles[u,v].CreateClone(Offset[1] + offsetU + flipper, true);
+                        tiles[u,v].CreateClone(-1 * Offset[1] + offsetU + flipper, true);
+                    }
+
+                    if (isReversed) {
+                        tiles[u,v].CreateClone(Offset[1] * CopyDepthV + offsetU + flipper, true);
+                        tiles[u,v].CreateClone(Offset[1] * -CopyDepthV + offsetU + flipper, true);
+                    } else {
+                        tiles[u,v].CreateClone(Offset[1] * CopyDepthV + offsetU, false);
+                        tiles[u,v].CreateClone(Offset[1] * -CopyDepthV + offsetU, false);
+                    }
                 }
             }
         }

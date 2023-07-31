@@ -218,10 +218,10 @@ public class Game : MonoBehaviour {
     private void RevealTile(Tile tile) {
         if (tile.Exploded)
             _coroutinePropagate.Add(StartCoroutine(
-                tile.DelayedReveal(GetRevealedMaterial(tile), _breakPSVol)));
+                tile.DelayedReveal(GetRevealedMaterial(tile), null)));//_breakPSVol)));
         else if (_complex.CurrentMap != Complex.Map.Flat)
             _coroutinePropagate.Add(StartCoroutine(
-                tile.DelayedReveal(GetRevealedMaterial(tile), _breakPS)));
+                tile.DelayedReveal(GetRevealedMaterial(tile), null)));//_breakPS)));
         else
             _coroutinePropagate.Add(StartCoroutine(
                 tile.DelayedReveal(GetRevealedMaterial(tile), null)));
