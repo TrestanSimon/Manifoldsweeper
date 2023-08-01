@@ -31,10 +31,10 @@ public class Torus : Complex {
         }
     }
 
-    public override void Setup(int ResU, int ResV, Map initMap) {
+    public override void Setup(int resU, int resV, Map initMap) {
         sideCount = 2;
-        this.ResU = ResU;
-        this.ResV = ResV;
+        this.ResU = Mathf.Min(resU, resV);
+        this.ResV = Mathf.Max(resU, resV);
         r = this.ResU / 16f;
         R = this.ResV / 16f;
         CurrentMap = initMap;

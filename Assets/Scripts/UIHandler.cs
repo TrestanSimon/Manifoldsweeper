@@ -231,7 +231,7 @@ public class UIHandler : MonoBehaviour {
             if (difficultyToggle[i].isOn)
                 selectedDifficulty = i;
         
-        areaText.text = $"{_resU * _resV} >";
+        areaText.text = $"Total tiles = {_resU * _resV}";
 
         // If custom difficulty is selected
         if (selectedDifficulty == 3) {
@@ -268,7 +268,7 @@ public class UIHandler : MonoBehaviour {
         inputFields[0].text = _resU.ToString();
         inputFields[1].text = _resV.ToString();
         inputFields[2].text = mineCount.ToString();
-        areaText.text = $"{_resU * _resV} >";
+        areaText.text = $"Total tiles = {_resU * _resV}";
     }
 
     public void ReMapStart() {

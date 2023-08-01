@@ -17,8 +17,8 @@ public class Klein : Complex {
     
     public override void Setup(int resU, int resV, Map initMap) {
         sideCount = 2;
-        this.resU = resU;
-        this.resV = resV;
+        this.ResU = Mathf.Min(resU, resV);
+        this.ResV = Mathf.Max(resU, resV);
         CurrentMap = initMap;
         InitVertices(initMap);
         InitTiles();
@@ -201,8 +201,8 @@ public class Klein : Complex {
     private Vector3[,] PinchedTorusMap() {
         Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
         float p1, q1, sinp, cosp, sinp05, cosp05, sinq, cosq;
-        float R = this.ResU / 16f;
-        float r = this.ResV / 16f;
+        float r = this.ResU / 16f;
+        float R = this.ResV / 16f;
 
         for (int p = 0; p <= resU; p++) {
             p1 = 2f*PI*(float)p / (float)resU;
@@ -214,7 +214,7 @@ public class Klein : Complex {
                 sincos(q1, out sinq, out cosq);
 
                 tempVerts[p,q] = new Vector3(
-                    (R + r * cosq) * cosp,
+                    (R + r * cosq) * cosp + R,
                     r * sinq * cosp05,
                     (R + r * cosq) * sinp
                 );

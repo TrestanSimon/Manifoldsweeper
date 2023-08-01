@@ -109,8 +109,10 @@ public class Game : MonoBehaviour {
             u = Random.Range(0, _complex.ResU);
             v = Random.Range(0, _complex.ResV);
 
+            int j = 0;
+
             // Check if Quad is already a mine
-            while (_complex.Tiles[u,v].type == Tile.Type.Mine) {
+            while (_complex.Tiles[u,v].type == Tile.Type.Mine || _mouseOver == _complex.Tiles[u,v]) {
                 u = Random.Range(0, _complex.ResU);
                 v = Random.Range(0, _complex.ResV);
             }
@@ -151,10 +153,19 @@ public class Game : MonoBehaviour {
         if (_mouseOver == null || _mouseOver.type == Tile.Type.Invalid
             || _mouseOver.Revealed || _mouseOver.Flagged) return;
 
-        // Require first click to be an empty tile
-        if (!_gameOn)
-            while (_mouseOver.type != Tile.Type.Empty)
-                NewGame(false); ///////////////////////////////////
+        // Require first click to be an empty tile or, if there are no empty
+        // tiles, a number tile
+        if (!_gameOn) {
+            Tile.Type checkType = Tile.Type.Number;
+            foreach (Tile tile in _complex.Tiles)
+                if (tile.type == Tile.Type.Empty) {
+                    checkType = Tile.Type.Empty;
+                    break;
+                }
+            
+            while (_mouseOver.type != checkType)
+                NewGame(false);
+        }
 
         switch (_mouseOver.type) {
             case Tile.Type.Mine:
