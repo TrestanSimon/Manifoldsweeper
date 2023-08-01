@@ -154,7 +154,7 @@ public class Game : MonoBehaviour {
         // Require first click to be an empty tile
         if (!_gameOn)
             while (_mouseOver.type != Tile.Type.Empty)
-                NewGame(false);
+                NewGame(false); ///////////////////////////////////
 
         switch (_mouseOver.type) {
             case Tile.Type.Mine:

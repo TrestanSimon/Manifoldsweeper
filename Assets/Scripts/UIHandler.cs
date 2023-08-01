@@ -97,8 +97,8 @@ public class UIHandler : MonoBehaviour {
         // GameObjects
         gameOverMessage = transform.Find("GameOver Message").gameObject;
         gameWinMessage = transform.Find("GameWin Message").gameObject;
-        tutorialMessage = topPanel.Find("Tutorial Message").gameObject;
-        gameStartMessage = topPanel.Find("GameStart Message").gameObject;
+        tutorialMessage = transform.Find("Tutorial Message").gameObject;
+        gameStartMessage = transform.Find("GameStart Message").gameObject;
 
         fundamentalPolygon = manifoldsPanel.Find("Fundamental Polygon").GetComponent<Image>();
         fundamentalPolygonSprites = new Sprite[] {
