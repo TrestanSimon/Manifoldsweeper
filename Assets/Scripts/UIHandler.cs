@@ -14,6 +14,12 @@ public class UIHandler : MonoBehaviour {
     private Transform gamePanel;
     private Transform customInputs;
 
+    private GameObject gameOverMessage, gameWinMessage;
+    private GameObject tutorialMessage, gameStartMessage;
+    private Image fundamentalPolygon;
+
+    private Sprite[] fundamentalPolygonSprites;
+
     
     private int selectedManifold;
     private int selectedDifficulty;
@@ -24,10 +30,13 @@ public class UIHandler : MonoBehaviour {
     private Complex complex;
     private Button mapButton;
     private TMP_Text timerText, flagText;
+    private Image flagPanelImage;
+    private Color flagPanelGrey, flagPanelRed, flagPanelGreen;
     private TMP_InputField[] inputFields;
-    private TMP_Dropdown manifoldDropdown, difficultyDropdown, mapDropdown;
+    private Toggle[] manifoldToggle, difficultyToggle;
+    private TMP_Dropdown mapDropdown;
     private Animator animator;
-    private bool panelOpen;
+    private bool panelOpen = true;
 
     private CameraHandler cameraHandler;
     private List<Coroutine> coroutines;
@@ -38,8 +47,8 @@ public class UIHandler : MonoBehaviour {
                 case 0: return Plane.MapDict;
                 case 1: return Cylinder.MapDict;
                 case 2: return Torus.MapDict;
-                case 3: return MobiusStrip.MapDict;
-                case 4: return KleinBottle.MapDict;
+                case 3: return Mobius.MapDict;
+                case 4: return Klein.MapDict;
                 default: throw new System.Exception();
             }
         }
@@ -56,7 +65,7 @@ public class UIHandler : MonoBehaviour {
         panel = transform.Find("Panel");
 
         manifoldsPanel = panel.Find("Manifolds Panel");
-        manifoldDropdown = manifoldsPanel.Find("Manifold Dropdown").gameObject.GetComponent<TMP_Dropdown>();
+        manifoldToggle = manifoldsPanel.Find("Manifold Toggle").gameObject.GetComponentsInChildren<Toggle>();
 
         mapsPanel = panel.Find("Maps Panel");
         mapDropdown = mapsPanel.GetComponentInChildren<TMP_Dropdown>();
@@ -64,7 +73,7 @@ public class UIHandler : MonoBehaviour {
         mapButton.interactable = false;
 
         gamePanel = panel.Find("Game Panel");
-        difficultyDropdown = gamePanel.Find("Difficulty Dropdown").GetComponent<TMP_Dropdown>();
+        difficultyToggle = gamePanel.Find("Difficulty Toggle").GetComponentsInChildren<Toggle>();
         customInputs = gamePanel.Find("Custom Inputs");
         inputFields = customInputs.GetComponentsInChildren<TMP_InputField>();
 
@@ -72,10 +81,29 @@ public class UIHandler : MonoBehaviour {
                 
         // Top panel data
         topPanel = transform.Find("Top Panel");
-        timerText = topPanel.Find("Timer Label").GetComponent<TMP_Text>();
-        flagText = topPanel.Find("Flag Label").GetComponent<TMP_Text>();
+        timerText = topPanel.Find("Timer Panel").Find("Timer Label").GetComponent<TMP_Text>();
+        flagText = topPanel.Find("Flag Panel").Find("Flag Label").GetComponent<TMP_Text>();
+        flagPanelImage = topPanel.Find("Flag Panel").GetComponent<Image>();
+        flagPanelGrey = new Color(1f, 1f, 1f, 0.2745098f);
+        flagPanelGreen = new Color(0f, 1f, 0f, 0.7f);
+        flagPanelRed = new Color(1f, 0f, 0f, 0.7f);
 
         cameraHandler = Camera.main.GetComponent<CameraHandler>();
+
+        // GameObjects
+        gameOverMessage = transform.Find("GameOver Message").gameObject;
+        gameWinMessage = transform.Find("GameWin Message").gameObject;
+        tutorialMessage = topPanel.Find("Tutorial Message").gameObject;
+        gameStartMessage = topPanel.Find("GameStart Message").gameObject;
+
+        fundamentalPolygon = manifoldsPanel.Find("Fundamental Polygon").GetComponent<Image>();
+        fundamentalPolygonSprites = new Sprite[] {
+            Resources.Load("Textures/UI/PlaneSquare", typeof(Sprite)) as Sprite,
+            Resources.Load("Textures/UI/CylinderSquare", typeof(Sprite)) as Sprite,
+            Resources.Load("Textures/UI/TorusSquare", typeof(Sprite)) as Sprite,
+            Resources.Load("Textures/UI/MobiusSquare", typeof(Sprite)) as Sprite,
+            Resources.Load("Textures/UI/KleinSquare", typeof(Sprite)) as Sprite
+        };
 
         manifoldDifficulties = new (int,int,int)[5,3];
 
@@ -102,7 +130,7 @@ public class UIHandler : MonoBehaviour {
         // Klein bottle
         manifoldDifficulties[4,0] = (8, 8, 12);
         manifoldDifficulties[4,1] = (16, 16, 42);
-        manifoldDifficulties[4,2] = (16, 32, 98);
+        manifoldDifficulties[4,2] = (32, 16, 98);
 
         mineCount = 0;
     }
@@ -112,31 +140,28 @@ public class UIHandler : MonoBehaviour {
         UpdateActiveMaps();
         UpdateDifficulty();
 
-        manifoldDropdown.value = 0;
+        manifoldToggle[2].isOn = true;  // Start with torus
         mapDropdown.value = 0;
     }
 
     private void Update() {
         if (game is null || complex is null) return;
 
-        topPanel.Find("GameStart Message").gameObject.SetActive(
+        gameStartMessage.SetActive(
             !game.GameOn && !game.GameLost && !game.GameWon);
-        topPanel.Find("GameOver Message").gameObject.SetActive(game.GameLost);
-        topPanel.Find("GameWin Message").gameObject.SetActive(game.GameWon);
+        gameOverMessage.SetActive(game.GameLost && !panelOpen);
+        gameWinMessage.SetActive(game.GameWon && !panelOpen);
 
-        flagText.text = $"{game.FlagCount}/{game.MineCount}";
         timerText.text =
             $"{(int)game.Timer}.{((int)(game.Timer*10))%10}";
+        UpdateFlagPanel();
+        
+        if (Input.GetKeyDown("escape"))
+            TogglePanel();
     }
 
     public void Clear() {
         Destroy(board);
-    }
-
-    public void PanelOpenClose() {
-        panelOpen = animator.GetBool("panelOpen");
-        panelOpen = !panelOpen;
-        animator.SetBool("panelOpen", panelOpen);
     }
 
     public void Generate() {
@@ -154,8 +179,8 @@ public class UIHandler : MonoBehaviour {
             case 0: complex = board.AddComponent<Plane>(); break;
             case 1: complex = board.AddComponent<Cylinder>(); break;
             case 2: complex = board.AddComponent<Torus>(); break;
-            case 3: complex = board.AddComponent<MobiusStrip>(); break;
-            case 4: complex = board.AddComponent<KleinBottle>(); break;
+            case 3: complex = board.AddComponent<Mobius>(); break;
+            case 4: complex = board.AddComponent<Klein>(); break;
             default: break;
         }
         game = board.AddComponent<Game>();
@@ -166,14 +191,18 @@ public class UIHandler : MonoBehaviour {
 
         mapButton.interactable = false;
 
-        topPanel.Find("Tutorial Message").gameObject.SetActive(false);
+        tutorialMessage.SetActive(false);
 
         game.NewGame(false);
     }
 
     // Ran On Value Changed of Manifold dropdown
     public void UpdateSelectedManifold() {
-        selectedManifold = manifoldDropdown.value;
+        for (int i = 0; i < manifoldToggle.Length; i++)
+            if (manifoldToggle[i].isOn)
+                selectedManifold = i;
+        
+        fundamentalPolygon.sprite = fundamentalPolygonSprites[selectedManifold];
 
         UpdateActiveMaps();
         UpdateDifficulty();
@@ -187,7 +216,9 @@ public class UIHandler : MonoBehaviour {
 
     // Ran On Value Changed of Difficulty dropdown
     public void UpdateDifficulty() {
-        selectedDifficulty = difficultyDropdown.value;
+        for (int i = 0; i < difficultyToggle.Length; i++)
+            if (difficultyToggle[i].isOn)
+                selectedDifficulty = i;
 
         // If custom difficulty is selected
         if (selectedDifficulty == 3) {
@@ -237,8 +268,6 @@ public class UIHandler : MonoBehaviour {
             if (SelectedMap == Complex.Map.Flat) {
                 // 3D --> 2D
                 yield return StartCoroutine(cameraHandler.TransitionTo2DCamera());
-                yield return StartCoroutine(complex.RepeatU());
-                yield return StartCoroutine(complex.RepeatV());
             }
         }
 
@@ -253,5 +282,25 @@ public class UIHandler : MonoBehaviour {
         }
         if (SelectedMap == complex.CurrentMap) mapButton.interactable = false;
         else mapButton.interactable = true;
+    }
+
+    private void ActivateToggleGroup(Toggle[] toggleGroup, bool toggleOn) {
+        foreach (Toggle toggle in toggleGroup)
+            toggle.interactable = toggleOn;
+    }
+
+    public void TogglePanel() {
+        panelOpen = game.Paused = !panelOpen;
+        panel.gameObject.SetActive(panelOpen);
+    }
+    
+    private void UpdateFlagPanel() {
+        if (game.FlagCount < game.MineCount)
+            flagPanelImage.color = flagPanelGrey;
+        else if (game.FlagCount == game.MineCount)
+            flagPanelImage.color = flagPanelGreen;
+        else
+            flagPanelImage.color = flagPanelRed;
+        flagText.text = $"{game.FlagCount}/{game.MineCount}";
     }
 }

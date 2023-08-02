@@ -12,7 +12,7 @@ public abstract class Complex : MonoBehaviour {
         Cylinder, Annulus,
         Torus,
         MobiusStrip, MobiusSudanese,
-        KleinBottle
+        KleinBottle, Figure8, PinchedTorus
     }
 
     // Dictionary for IDing acceptable mappings
@@ -194,27 +194,37 @@ public abstract class Complex : MonoBehaviour {
         return neighbors;
     }
 
-    public abstract IEnumerator RepeatU();
+    public abstract void RepeatU();
 
-    public abstract IEnumerator RepeatV();
+    public abstract void RepeatV();
 
     public IEnumerator DumpRepeatComplex() {
+        if (tiles[0,0].Clones is null) yield break;
+        yield return Fade(false);
         foreach (Tile tile in tiles)
             tile.DestroyClones();
         yield break;
     }
 
-    private void Placeholdering() {
+    public IEnumerator Fade(bool fadeIn) {
         float time = 0f;
-        float duration = 2f;
+        float duration = 1f;
         float t = 0f;
+        Color fadeColor;
 
         while (time < duration) {
-            t = time / duration;
+            t = fadeIn ? time / duration : 1 - time / duration;
             t = t*t*(3f - 2f * t);
 
+            fadeColor = new Color(1f, 1f, 1f, t);
+
+            foreach (Tile tile in tiles) {
+                foreach (CloneTile clone in tile.Clones)
+                    clone.SetColor(fadeColor);
+            }
+
             time += Time.deltaTime;
-            // yield return null;
+            yield return null;
         }
     }
 

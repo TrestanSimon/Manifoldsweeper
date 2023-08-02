@@ -50,12 +50,12 @@ public class Cylinder : Complex {
         CurrentMap = newMap;
     }
 
-    public override IEnumerator RepeatU() {
-        CopyDepthU++;
-        yield return null;
+    public override void RepeatU() {
     }
 
-    public override IEnumerator RepeatV() {
+    public override void RepeatV() {
+        Color fadeColor = new Color(1f, 1f, 1f, 1f);
+
         CopyDepthV++;
         for (int v = 0; v < resV; v++) {
             for (int u = 0; u < resU; u++) {
@@ -65,7 +65,6 @@ public class Cylinder : Complex {
         }
 
         CalculateCorners(CopyDepthU, CopyDepthV);
-        yield return null;
     }
 
     public override void CalculateCorners(int depthU, int depthV) {

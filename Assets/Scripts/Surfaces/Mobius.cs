@@ -5,7 +5,7 @@ using UnityEngine;
 
 using static Unity.Mathematics.math;
 
-public class MobiusStrip : Complex {
+public class Mobius : Complex {
     public new static Dictionary<string, Map> MapDict {
         get => new Dictionary<string, Map>(){
             {"Flat", Map.Flat},
@@ -63,12 +63,10 @@ public class MobiusStrip : Complex {
         CurrentMap = newMap;
     }
 
-    public override IEnumerator RepeatU() {
-        CopyDepthU++;
-        yield return null;
+    public override void RepeatU() {
     }
 
-    public override IEnumerator RepeatV() {
+    public override void RepeatV() {
         CopyDepthV++;
         bool isReversed = CopyDepthV % 2 == 0;
         Vector3 flipper = Vector3.zero;
@@ -91,7 +89,6 @@ public class MobiusStrip : Complex {
         }
 
         CalculateCorners(CopyDepthU, CopyDepthV);
-        yield return null;
     }
 
     public override void CalculateCorners(int depthU, int depthV) {

@@ -52,6 +52,10 @@ public class GenericTile : Quad {
         }
     }
 
+    public void SetColor(Color color) {
+        CurrentMaterial.color = color;
+    }
+
     public virtual IEnumerator Reveal(Material material, GameObject breakPS = null) {
         SetMaterial(material);
 

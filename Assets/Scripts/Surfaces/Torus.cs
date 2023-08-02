@@ -70,7 +70,7 @@ public class Torus : Complex {
         CurrentMap = newMap;
     }
 
-    public override IEnumerator RepeatU() {
+    public override void RepeatU() {
         CopyDepthU++;
         for (int v = 0; v < resV; v++) {
             for (int u = 0; u < resU; u++) {
@@ -85,10 +85,9 @@ public class Torus : Complex {
         }
 
         CalculateCorners(CopyDepthU, CopyDepthV);
-        yield return null;
     }
 
-    public override IEnumerator RepeatV() {
+    public override void RepeatV() {
         CopyDepthV++;
         for (int v = 0; v < resV; v++) {
             for (int u = 0; u < resU; u++) {
@@ -103,7 +102,6 @@ public class Torus : Complex {
         }
 
         CalculateCorners(CopyDepthU, CopyDepthV);
-        yield return null;
     }
 
     public override void CalculateCorners(int depthU, int depthV) {

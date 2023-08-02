@@ -40,14 +40,10 @@ public class Plane : Complex {
         yield return null;
     }
 
-    public override IEnumerator RepeatU() {
-        CopyDepthU++;
-        yield return null;
+    public override void RepeatU() {
     }
 
-    public override IEnumerator RepeatV() {
-        CopyDepthV++;
-        yield return null;
+    public override void RepeatV() {
     }
 
     public override void CalculateCorners(int depthU, int depthV) {

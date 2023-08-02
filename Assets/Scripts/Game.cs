@@ -8,7 +8,7 @@ public class Game : MonoBehaviour {
     private int _mineCount, _flagCount;
     private float _timer;
 
-    private bool _gameOn, _gameLost, _gameWon;
+    private bool _gameOn, _gameLost, _gameWon, _paused;
 
     private Material _materialUknown;
     private Material _materialMine;
@@ -33,6 +33,10 @@ public class Game : MonoBehaviour {
     public bool GameOn { get => _gameOn; }
     public bool GameLost { get => _gameLost; }
     public bool GameWon { get => _gameWon; }
+    public bool Paused {
+        get => _paused;
+        set => _paused = value;
+    }
 
     private void Awake() {
         // Load materials
@@ -58,12 +62,14 @@ public class Game : MonoBehaviour {
 
     // Checks for user inputs every frame
     private void Update() {
-        if (Input.GetKeyDown(KeyCode.R)) NewGame();
-        else if (!_gameLost && !_gameWon) {
-            if (Input.GetMouseButtonDown(1)) AttemptFlagMouseOver();
-            else if (Input.GetMouseButtonDown(0)) AttemptRevealMouseOver();
+        if (!_paused) {
+            if (Input.GetKeyDown(KeyCode.R)) NewGame();
+            else if (!_gameLost && !_gameWon) {
+                if (Input.GetMouseButtonDown(1)) AttemptFlagMouseOver();
+                else if (Input.GetMouseButtonDown(0)) AttemptRevealMouseOver();
+            }
+            if (_gameOn) _timer += Time.deltaTime;
         }
-        if (_gameOn) _timer += Time.deltaTime;
     }
 
     public void Setup(Complex complex, int ResU, int ResV, int mineCount) {

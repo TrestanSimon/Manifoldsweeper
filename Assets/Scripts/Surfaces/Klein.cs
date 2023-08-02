@@ -5,11 +5,13 @@ using UnityEngine;
 
 using static Unity.Mathematics.math;
 
-public class KleinBottle : Complex {
+public class Klein : Complex {
     public new static Dictionary<string, Map> MapDict {
         get => new Dictionary<string, Map>(){
             {"Flat", Map.Flat},
-            {"Bottle", Map.KleinBottle}
+            {"Bottle", Map.KleinBottle},
+            {"Figure 8", Map.Figure8},
+            {"Pinched torus", Map.PinchedTorus}
         };
     }
     
@@ -25,7 +27,9 @@ public class KleinBottle : Complex {
     protected override void InitVertices(Map map) {
         switch(map) {
             case Map.Flat: vertices = PlaneMap(); break;
-            case Map.KleinBottle: vertices = KleinMap(); break;
+            case Map.KleinBottle: vertices = BottleMap(); break;
+            case Map.Figure8: vertices = Figure8Map(); break;
+            case Map.PinchedTorus: vertices = PinchedTorusMap(); break;
         }
     }
 
@@ -49,12 +53,18 @@ public class KleinBottle : Complex {
                 new Vector3[][,]{vertices, PlaneMap()}, 2f));
         } else if (newMap == Map.KleinBottle) {
             yield return StartCoroutine(ComplexLerp(
-                new Vector3[][,]{vertices, KleinMap()}, 2f));
+                new Vector3[][,]{vertices, BottleMap()}, 2f));
+        } else if (newMap == Map.Figure8) {
+            yield return StartCoroutine(ComplexLerp(
+                new Vector3[][,]{vertices, Figure8Map()}, 2f));
+        } else if (newMap == Map.PinchedTorus) {
+            yield return StartCoroutine(ComplexLerp(
+                new Vector3[][,]{vertices, PinchedTorusMap()}, 2f));
         }
         CurrentMap = newMap;
     }
 
-    public override IEnumerator RepeatU() {
+    public override void RepeatU() {
         CopyDepthU++;
         bool isReversed;
         Vector3 flipper = Vector3.zero;
@@ -80,10 +90,9 @@ public class KleinBottle : Complex {
         }
 
         CalculateCorners(CopyDepthU, CopyDepthV);
-        yield return null;
     }
 
-    public override IEnumerator RepeatV() {
+    public override void RepeatV() {
         CopyDepthV++;
         if (CopyDepthV == 1) CopyDepthV++;
         bool isReversed = CopyDepthV % 2 == 1;
@@ -114,7 +123,6 @@ public class KleinBottle : Complex {
         }
 
         CalculateCorners(CopyDepthU, CopyDepthV);
-        yield return null;
     }
 
     public override void CalculateCorners(int depthU, int depthV) {
@@ -127,7 +135,7 @@ public class KleinBottle : Complex {
         };
     }
 
-    private Vector3[,] KleinMap() {
+    private Vector3[,] BottleMap() {
         Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
         for (int p = 0; p <= resU; p++) {
             float p1 = 4f*PI*(float)p / (float)resU;
@@ -161,6 +169,55 @@ public class KleinBottle : Complex {
                         -3f*p1 + 12f*PI
                     );
                 }
+            }
+        }
+        return tempVerts;
+    }
+
+    private Vector3[,] Figure8Map() {
+        Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
+        float p1, q1, sinp, cosp, sinp05, cosp05, sinq, cosq, sin2q;
+
+        for (int p = 0; p <= resU; p++) {
+            p1 = 2f*PI*(float)p / (float)resU;
+            sincos(p1, out sinp, out cosp);
+            sincos(p1*0.5f, out sinp05, out cosp05);
+
+            for (int q = 0; q <= resV; q++) {
+                q1 = 2f*PI*(float)q / (float)resV;
+                sincos(q1, out sinq, out cosq);
+                sin2q = sin(2f*q1);
+
+                tempVerts[p,q] = new Vector3(
+                    (2f + cosp05 * sinq - sinp05 * sin2q) * cosp,
+                    sinp05 * sinq + cosp05 * sin2q,
+                    (2f + cosp05 * sinq - sinp05 * sin2q) * sinp
+                );
+            }
+        }
+        return tempVerts;
+    }
+
+    private Vector3[,] PinchedTorusMap() {
+        Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
+        float p1, q1, sinp, cosp, sinp05, cosp05, sinq, cosq;
+        float R = this.ResU / 16f;
+        float r = this.ResV / 16f;
+
+        for (int p = 0; p <= resU; p++) {
+            p1 = 2f*PI*(float)p / (float)resU;
+            sincos(p1, out sinp, out cosp);
+            sincos(p1*0.5f, out sinp05, out cosp05);
+
+            for (int q = 0; q <= resV; q++) {
+                q1 = 2f*PI*(float)q / (float)resV;
+                sincos(q1, out sinq, out cosq);
+
+                tempVerts[p,q] = new Vector3(
+                    (R + r * cosq) * cosp,
+                    r * sinq * cosp05,
+                    (R + r * cosq) * sinp
+                );
             }
         }
         return tempVerts;

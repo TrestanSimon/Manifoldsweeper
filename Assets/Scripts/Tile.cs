@@ -70,6 +70,10 @@ public class Tile : GenericTile {
     private Material _CurrentMaterial {
         get => _gameObjects[0].GetComponent<MeshRenderer>().material;
     }
+    public List<CloneTile> Clones {
+        get => _clones;
+        set => _clones = value;
+    }
 
     // Constructor for Invalid Tiles
     public Tile() {}
@@ -196,8 +200,8 @@ public class Tile : GenericTile {
     }
 
     public void DestroyClones() {
-        foreach (CloneTile clone in _clones)
-            clone.DestroySelf();
+        for (int i = 0; i < _clones.Count; i++)
+            _clones[i].DestroySelf();
         _clones.Clear();
     }
 
