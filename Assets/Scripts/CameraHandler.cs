@@ -132,6 +132,8 @@ public class CameraHandler : MonoBehaviour {
                 (legU + Mathf.Abs(Camera.main.transform.position.z) - _target.InteriorCorners[1].z)
                 / _target.Offset[0].z
             );
+        } else {
+            _depthU = 0;
         }
 
         float fovV = Camera.main.fieldOfView;
@@ -258,6 +260,7 @@ public class CameraHandler : MonoBehaviour {
 
     public IEnumerator NewTarget(Complex newTarget) {
         _target = newTarget;
+        _depthU = _depthV = 0;
 
         if (_Map == Complex.Map.Flat)
             yield return StartCoroutine(TransitionTo2DCamera());
