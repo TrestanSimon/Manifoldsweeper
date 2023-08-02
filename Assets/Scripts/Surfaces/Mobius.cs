@@ -55,7 +55,9 @@ public class Mobius : Complex {
                 new Vector3[][,]{vertices, PlaneMap()}, 2f));
         } else if (newMap == Map.MobiusStrip) {
             yield return StartCoroutine(ComplexLerp(
-                new Vector3[][,]{vertices, StripMap()}, 2f));
+                new Vector3[][,]{vertices, CylinderInvoluteMap(0f, tau)}, 2f));
+            yield return StartCoroutine(ComplexLerp(
+                new Vector3[][,]{vertices, StripMap()}, 10f));
         } else if (newMap == Map.MobiusSudanese) {
             yield return StartCoroutine(ComplexLerp(
                 new Vector3[][,]{vertices, SudaneseMap()}, 2f));
@@ -116,9 +118,9 @@ public class Mobius : Complex {
                 minor = R + q1/tau * cosp2;
 
                 tempVerts[p,q] = 5f * new Vector3(
-                    q1/tau * sinp2,
+                    minor * cosp,
                     minor * sinp,
-                    minor * cosp
+                    q1/tau * sinp2
                 );
             }
         }
@@ -146,9 +148,9 @@ public class Mobius : Complex {
                 ys = (w + y) / sqrt(2f);
                 ws = (w - y) / sqrt(2f);
                 tempVerts[p,q] = new Vector3(
-                    x / (1 - ws),
+                    z / (1 - ws),
                     ys / (1 - ws),
-                    z / (1 - ws)
+                    x / (1 - ws)
                 );
             }
         }

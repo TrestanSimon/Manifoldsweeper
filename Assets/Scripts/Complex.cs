@@ -302,4 +302,36 @@ public abstract class Complex : MonoBehaviour {
         }
         return tempVerts;
     }
+
+    // Maps from torus to cylinder
+    protected Vector3[,] TorusInvolutesMap(float progress, float R, float r, float minorOffset) {
+        Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
+        float p1, q1, t, minor, sinq, cosq, sinp, cosp;
+
+        for (int p = 0; p < ResU+1; p++) {
+            p1 = 2*PI*p/ResU + minorOffset;
+            for (int q = 0; q < ResV+1; q++) {
+                q1 = 2*PI*q/ResV;
+                // Transformation follows involutes
+                t = (PI - q1)*progress + q1; // Involute curve parameter
+                sincos(t, out sinq, out cosq);
+                sincos(p1, out sinp, out cosp);
+                minor = r * cosp
+                    /sqrt(1 + (t - q1)*(t - q1)*(1 - progress)*(1 - progress));
+
+                // In x and z, the first term gives the involutes of the circles
+                // that wrap around the torus toroidally, and the second term
+                // preserves the shape of the circles that wrap around poloidally
+                tempVerts[p,q] = new Vector3(
+                    R * (cosq + (t - q1)*sinq)
+                        + minor * (cosq + (t - q1)*(1 - progress)*sinq)
+                        + R*progress,
+                    r * sinp,
+                    R * (sinq - (t - q1)*cosq)
+                        + minor * (sinq - (t - q1)*(1 - progress)*cosq)
+                );
+            }
+        }
+        return tempVerts;
+    }
 }

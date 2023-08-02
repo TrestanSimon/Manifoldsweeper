@@ -214,7 +214,7 @@ public class Klein : Complex {
                 sincos(q1, out sinq, out cosq);
 
                 tempVerts[p,q] = new Vector3(
-                    (R + r * cosq) * cosp + R,
+                    (R + r * cosq) * cosp,
                     r * sinq * cosp05,
                     (R + r * cosq) * sinp
                 );

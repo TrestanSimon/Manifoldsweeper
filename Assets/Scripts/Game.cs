@@ -109,8 +109,6 @@ public class Game : MonoBehaviour {
             u = Random.Range(0, _complex.ResU);
             v = Random.Range(0, _complex.ResV);
 
-            int j = 0;
-
             // Check if Quad is already a mine
             while (_complex.Tiles[u,v].type == Tile.Type.Mine || _mouseOver == _complex.Tiles[u,v]) {
                 u = Random.Range(0, _complex.ResU);

@@ -15,7 +15,6 @@ public class UIHandler : MonoBehaviour {
     private Transform customInputs;
 
     private GameObject gameOverMessage, gameWinMessage;
-    private GameObject tutorialMessage, gameStartMessage;
     private Image fundamentalPolygon;
 
     private Sprite[] fundamentalPolygonSprites;
@@ -97,8 +96,6 @@ public class UIHandler : MonoBehaviour {
         // GameObjects
         gameOverMessage = transform.Find("GameOver Message").gameObject;
         gameWinMessage = transform.Find("GameWin Message").gameObject;
-        tutorialMessage = transform.Find("Tutorial Message").gameObject;
-        gameStartMessage = transform.Find("GameStart Message").gameObject;
 
         fundamentalPolygon = manifoldsPanel.Find("Fundamental Polygon").GetComponent<Image>();
         fundamentalPolygonSprites = new Sprite[] {
@@ -155,8 +152,6 @@ public class UIHandler : MonoBehaviour {
             return;
         }
 
-        gameStartMessage.SetActive(
-            !game.GameOn && !game.GameLost && !game.GameWon);
         gameOverMessage.SetActive(game.GameLost && !panelOpen);
         gameWinMessage.SetActive(game.GameWon && !panelOpen);
 
@@ -201,8 +196,6 @@ public class UIHandler : MonoBehaviour {
         StartCoroutine(cameraHandler.NewTarget(complex));
 
         mapButton.interactable = false;
-
-        tutorialMessage.SetActive(false);
 
         game.NewGame(false);
     }
