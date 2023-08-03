@@ -102,6 +102,8 @@ public class GenericTile : Quad {
             _flags[i].transform.position = (_vertices[0] + _vertices[2]) / 2f + _meshes[i].normals[0] * _Scale/2f;
             _flags[i].transform.rotation = Quaternion.LookRotation(_meshes[i].normals[0])
                 * Quaternion.AngleAxis(90, Vector3.up);
+                
+            _flags[i].transform.localScale = _Scale * _flags[i].transform.parent.localScale;
         }
     }
 
