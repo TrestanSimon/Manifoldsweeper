@@ -18,12 +18,17 @@ public class Klein : Complex {
     }
 
     private int glide;
+
+    public int Glide {
+        get => glide;
+        set => glide = value;
+    }
     
     public override void Setup(int resU, int resV, Map initMap) {
         sideCount = 2;
         this.ResV = Mathf.Min(resU, resV);
         this.ResU = Mathf.Max(resU, resV);
-        glide = ResU/2;
+        glide = ResV/2;
         CurrentMap = initMap;
         InitVertices(initMap);
         InitTiles();
@@ -154,34 +159,51 @@ public class Klein : Complex {
     private Vector3[,] BottleMap() {
         Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
         float cosp, sinp, cosq, sinq, p1, q1;
+        int qIndex;
+        
+        for (int q = 0; q <= resV; q++) {
+            // corrects index for this parametrization
+            qIndex = (q + (resV+1)/2) % (resV+1);
 
-        for (int p = 0; p <= resU; p++) {
-            p1 = 4f*PI*(float)p / (float)resU;
-            sincos(p1, out sinp, out cosp);
-            for (int q = 0; q <= resV; q++) {
-                q1 = 2f*PI*(float)q / (float)resV;
+            q1 = 2f*PI*(float)q / (float)resV;
+
+            // Offset necessary so that the first (q==0) and final (q==resV)
+            // vertices for any given p are the same (i.e., overlap).
+            // If this is not applied, vertices q==resV/2-1 and q==resV/2
+            // will be the same affecting tiles with v==resV/2-1
+            if (qIndex < resV/2f) q1 -= 2f*PI / (float)resV;
+
+            // Offset necessary so that the first (p==0) and final (p==resU)
+            // vertices for any given q are the same.
+            // (only needed when resV is odd)
+            if (resV%2 == 1) q1 += 1.5f*PI / (float)resV;
+            
+            for (int p = 0; p <= resU; p++) {
+                p1 = 4f*PI*(float)p / (float)resU;
+                sincos(p1, out sinp, out cosp);
+                
                 sincos(q1, out sinq, out cosq);
 
                 if (p1 < PI) {
-                    tempVerts[p,q] = new Vector3(
+                    tempVerts[p,qIndex] = new Vector3(
                         (2.5f - 1.5f*cosp) * cosq,
                         -(2.5f - 1.5f*cosp) * sinq,
                         -2.5f * sinp
                     );
                 } else if (p1 < 2f*PI) {
-                    tempVerts[p,q] = new Vector3(
+                    tempVerts[p,qIndex] = new Vector3(
                         (2.5f - 1.5f*cosp) * cosq,
                         -(2.5f - 1.5f*cosp) * sinq,
                         3f*p1 - 3f*PI
                     );
                 } else if (p1 < 3f*PI) {
-                    tempVerts[p,q] = new Vector3(
+                    tempVerts[p,qIndex] = new Vector3(
                         -2f + (2f + cosq) * cosp,
                         -sinq,
                         (2f + cosq) * sinp + 3f*PI
                     );
                 } else {
-                    tempVerts[p,q] = new Vector3(
+                    tempVerts[p,qIndex] = new Vector3(
                         -2f + 2f*cosp - cosq,
                         -sinq,
                         -3f*p1 + 12f*PI
