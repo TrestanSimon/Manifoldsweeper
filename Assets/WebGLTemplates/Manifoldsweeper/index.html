@@ -10,6 +10,9 @@
     <canvas id="unity-canvas" style="position: absolute"></canvas>
     <script src="Build/{{{ LOADER_FILENAME }}}"></script>
     <script>
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        alert("Manifoldsweeper is meant to be played with a mouse and may not function correctly on mobile devices.")
+      }
 			var canvas = document.querySelector("#unity-canvas");
       function onResize() {
         var container = canvas.parentElement;
