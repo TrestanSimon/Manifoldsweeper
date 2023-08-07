@@ -128,7 +128,8 @@ public class Tile : GenericTile {
 
         _revealed = true;
         // CheckWinCondition is ran before WaitForSeconds ends
-        yield return new WaitForSeconds(0.05f * Depth);
+        if (Depth > 0)
+            yield return new WaitForSeconds(0.05f * Depth);
 
         yield return Reveal(material, breakPS);
     }

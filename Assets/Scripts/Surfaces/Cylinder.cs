@@ -2,8 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-using static Unity.Mathematics.math;
-
 public class Cylinder : Complex {
     public new static Dictionary<string, Map> MapDict {
         get => new Dictionary<string, Map>(){
@@ -51,11 +49,10 @@ public class Cylinder : Complex {
     }
 
     public override void RepeatU() {
+        CopyDepthU = 1;
     }
 
     public override void RepeatV() {
-        Color fadeColor = new Color(1f, 1f, 1f, 1f);
-
         CopyDepthV++;
         for (int v = 0; v < resV; v++) {
             for (int u = 0; u < resU; u++) {

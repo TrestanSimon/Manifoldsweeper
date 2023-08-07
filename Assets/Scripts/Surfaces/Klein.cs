@@ -10,15 +10,19 @@ public class Klein : Complex {
         get => new Dictionary<string, Map>(){
             {"Flat", Map.Flat},
             {"Bottle", Map.KleinBottle},
+            {"Thin Bottle", Map.ThinBottle},
             {"Figure 8", Map.Figure8},
             {"Pinched torus", Map.PinchedTorus}
         };
     }
+
+    private int glide;
     
     public override void Setup(int resU, int resV, Map initMap) {
         sideCount = 2;
-        this.resU = resU;
-        this.resV = resV;
+        this.ResV = Mathf.Min(resU, resV);
+        this.ResU = Mathf.Max(resU, resV);
+        glide = ResV/2;
         CurrentMap = initMap;
         InitVertices(initMap);
         InitTiles();
@@ -28,6 +32,7 @@ public class Klein : Complex {
         switch(map) {
             case Map.Flat: vertices = PlaneMap(); break;
             case Map.KleinBottle: vertices = BottleMap(); break;
+            case Map.ThinBottle: vertices = ThinBottleMap(); break;
             case Map.Figure8: vertices = Figure8Map(); break;
             case Map.PinchedTorus: vertices = PinchedTorusMap(); break;
         }
@@ -40,7 +45,7 @@ public class Klein : Complex {
 
         // Flips v when wrapping
         if (u % (2*resU) >= resU || u % (-2*resU) < 0)    
-            v1 = resV - (v1 + 1);
+            v1 = ((glide-v-1)%resV + resV)%resV;
 
         if (u1 >= 0 && u1 < resU && v1 >= 0 && v1 < resV) return tiles[u1,v1];
         else return new Tile();
@@ -54,6 +59,9 @@ public class Klein : Complex {
         } else if (newMap == Map.KleinBottle) {
             yield return StartCoroutine(ComplexLerp(
                 new Vector3[][,]{vertices, BottleMap()}, 2f));
+        } else if (newMap == Map.ThinBottle) {
+            yield return StartCoroutine(ComplexLerp(
+                new Vector3[][,]{vertices, ThinBottleMap()}, 2f));
         } else if (newMap == Map.Figure8) {
             yield return StartCoroutine(ComplexLerp(
                 new Vector3[][,]{vertices, Figure8Map()}, 2f));
@@ -70,9 +78,11 @@ public class Klein : Complex {
         Vector3 flipper = Vector3.zero;
         Vector3 offsetV;
         int indexExtraV = CopyDepthV > 1 ? 1 : 0;
+        int glideIndex;
 
         for (int v = 0; v < resV; v++) {
-            flipper = (tiles[0,ResV-v-1].Vertices[0].z - tiles[0,v].Vertices[0].z) * Vector3.forward;
+            glideIndex = ((glide-v-1)%resV + resV)%resV;
+            flipper = (tiles[0,glideIndex].Vertices[0].z - tiles[0,v].Vertices[0].z) * Vector3.forward;
             for (int u = 0; u < resU; u++) {
                 for (int indexV = -CopyDepthV; indexV <= CopyDepthV; indexV++) {
                     offsetV = Offset[1] * indexV;                    
@@ -96,11 +106,13 @@ public class Klein : Complex {
         CopyDepthV++;
         if (CopyDepthV == 1) CopyDepthV++;
         bool isReversed = CopyDepthV % 2 == 1;
+        int glideIndex;
         Vector3 flipper = Vector3.zero;
         Vector3 offsetU;
 
         for (int v = 0; v < resV; v++) {
-            flipper = (tiles[0,ResV-v-1].Vertices[0].z - tiles[0,v].Vertices[0].z) * Vector3.forward;
+            glideIndex = ((glide-v-1)%resV + resV)%resV;
+            flipper = (tiles[0,glideIndex].Vertices[0].z - tiles[0,v].Vertices[0].z) * Vector3.forward;
             for (int u = 0; u < resU; u++) {
                 // Fill left-right depending on CopyDepthU
                 for (int indexU = -CopyDepthU; indexU <= CopyDepthU; indexU++) {
@@ -137,38 +149,79 @@ public class Klein : Complex {
 
     private Vector3[,] BottleMap() {
         Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
-        for (int p = 0; p <= resU; p++) {
-            float p1 = 4f*PI*(float)p / (float)resU;
-            sincos(p1, out float sinp, out float cosp);
-            for (int q = 0; q <= resV; q++) {
-                float q1 = 2f*PI*(float)q / (float)resV;
-                sincos(q1, out float sinq, out float cosq);
+        float cosp, sinp, cosq, sinq, p1, q1;
+        int qIndex;
+        
+        for (int q = 0; q <= resV; q++) {
+            // corrects index for this parametrization
+            qIndex = (q + (resV+1)/2) % (resV+1);
+
+            q1 = 2f*PI*(float)q / (float)resV;
+
+            // Offset necessary so that the first (q==0) and final (q==resV)
+            // vertices for any given p are the same (i.e., overlap).
+            // If this is not applied, vertices q==resV/2-1 and q==resV/2
+            // will be the same affecting tiles with v==resV/2-1
+            if (qIndex < resV/2f) q1 -= 2f*PI / (float)resV;
+
+            // Offset necessary so that the first (p==0) and final (p==resU)
+            // vertices for any given q are the same.
+            // (only needed when resV is odd)
+            if (resV%2 == 1) q1 += 1.5f*PI / (float)resV;
+            
+            for (int p = 0; p <= resU; p++) {
+                p1 = 4f*PI*(float)p / (float)resU;
+                sincos(p1, out sinp, out cosp);
+                
+                sincos(q1, out sinq, out cosq);
 
                 if (p1 < PI) {
-                    tempVerts[p,q] = new Vector3(
+                    tempVerts[p,qIndex] = new Vector3(
                         (2.5f - 1.5f*cosp) * cosq,
-                        (2.5f - 1.5f*cosp) * sinq,
+                        -(2.5f - 1.5f*cosp) * sinq,
                         -2.5f * sinp
                     );
                 } else if (p1 < 2f*PI) {
-                    tempVerts[p,q] = new Vector3(
+                    tempVerts[p,qIndex] = new Vector3(
                         (2.5f - 1.5f*cosp) * cosq,
-                        (2.5f - 1.5f*cosp) * sinq,
+                        -(2.5f - 1.5f*cosp) * sinq,
                         3f*p1 - 3f*PI
                     );
                 } else if (p1 < 3f*PI) {
-                    tempVerts[p,q] = new Vector3(
+                    tempVerts[p,qIndex] = new Vector3(
                         -2f + (2f + cosq) * cosp,
-                        sinq,
+                        -sinq,
                         (2f + cosq) * sinp + 3f*PI
                     );
                 } else {
-                    tempVerts[p,q] = new Vector3(
+                    tempVerts[p,qIndex] = new Vector3(
                         -2f + 2f*cosp - cosq,
-                        sinq,
+                        -sinq,
                         -3f*p1 + 12f*PI
                     );
                 }
+            }
+        }
+        return tempVerts;
+    }
+
+    private Vector3[,] ThinBottleMap() {
+        Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
+        float p1, q1, sinp, cosp, sinq, cosq;
+
+        for (int p = 0; p <= resU; p++) {
+            p1 = PI*(float)p / (float)resU;
+            sincos(p1, out sinp, out cosp);
+
+            for (int q = 0; q <= resV; q++) {
+                q1 = 2f*PI*(float)q / (float)resV;
+                sincos(q1, out sinq, out cosq);
+
+                tempVerts[p,q] = 2f * new Vector3(
+                    -(2f/15f) * cosp * (3*cosq - 30*sinp + 90*pow(cosp,4)*sinp - 60*pow(cosp,6)*sinp + 5*cosp*cosq*sinp),
+                    (2f/15f) * (3f + 5f*cosp*sinp)*sinq,
+                    -(1f/15f) * sinp * (3f*cosq - 3*pow(cosp,2)*cosq - 48*pow(cosp,4)*cosq + 48*pow(cosp,6)*cosq - 60*sinp + 5*cosp*cosq*sinp - 5*pow(cosp,3)*cosq*sinp - 80*pow(cosp,5)*cosq*sinp + 80*pow(cosp,7)*cosq*sinp)
+                );
             }
         }
         return tempVerts;
@@ -201,8 +254,8 @@ public class Klein : Complex {
     private Vector3[,] PinchedTorusMap() {
         Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
         float p1, q1, sinp, cosp, sinp05, cosp05, sinq, cosq;
-        float R = this.ResU / 16f;
-        float r = this.ResV / 16f;
+        float r = this.ResU / 16f;
+        float R = this.ResV / 16f;
 
         for (int p = 0; p <= resU; p++) {
             p1 = 2f*PI*(float)p / (float)resU;

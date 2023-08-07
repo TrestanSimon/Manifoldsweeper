@@ -61,7 +61,7 @@ public class Game : MonoBehaviour {
     }
 
     // Checks for user inputs every frame
-    private void Update() {
+    private void LateUpdate() {
         if (!_paused) {
             if (Input.GetKeyDown(KeyCode.R)) NewGame();
             else if (!_gameLost && !_gameWon) {
@@ -110,7 +110,7 @@ public class Game : MonoBehaviour {
             v = Random.Range(0, _complex.ResV);
 
             // Check if Quad is already a mine
-            while (_complex.Tiles[u,v].type == Tile.Type.Mine) {
+            while (_complex.Tiles[u,v].type == Tile.Type.Mine || _mouseOver == _complex.Tiles[u,v]) {
                 u = Random.Range(0, _complex.ResU);
                 v = Random.Range(0, _complex.ResV);
             }
@@ -151,10 +151,19 @@ public class Game : MonoBehaviour {
         if (_mouseOver == null || _mouseOver.type == Tile.Type.Invalid
             || _mouseOver.Revealed || _mouseOver.Flagged) return;
 
-        // Require first click to be an empty tile
-        if (!_gameOn)
-            while (_mouseOver.type != Tile.Type.Empty)
+        // Require first click to be an empty tile or, if there are no empty
+        // tiles, a number tile
+        if (!_gameOn) {
+            Tile.Type checkType = Tile.Type.Number;
+            foreach (Tile tile in _complex.Tiles)
+                if (tile.type == Tile.Type.Empty) {
+                    checkType = Tile.Type.Empty;
+                    break;
+                }
+            
+            while (_mouseOver.type != checkType)
                 NewGame(false);
+        }
 
         switch (_mouseOver.type) {
             case Tile.Type.Mine:
@@ -302,5 +311,12 @@ public class Game : MonoBehaviour {
             case 8: return _materialNum8;
             default: return null;
         }
+    }
+
+    // Ran by UIHandler.cs which runs on button press
+    public void ClearFlags() {
+        foreach (Tile tile in _complex.Tiles)
+            tile.RemoveFlags();
+        _flagCount = 0;
     }
 }

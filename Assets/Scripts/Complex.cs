@@ -12,7 +12,7 @@ public abstract class Complex : MonoBehaviour {
         Cylinder, Annulus,
         Torus,
         MobiusStrip, MobiusSudanese,
-        KleinBottle, Figure8, PinchedTorus
+        KleinBottle, ThinBottle, Figure8, PinchedTorus
     }
 
     // Dictionary for IDing acceptable mappings
@@ -34,6 +34,8 @@ public abstract class Complex : MonoBehaviour {
 
     private int _copyDepthU = 0;
     private int _copyDepthV = 0;
+
+    private bool _raycastEnabled = true;
 
     public virtual int ResU {
         get => resU;
@@ -97,6 +99,11 @@ public abstract class Complex : MonoBehaviour {
     public int CopyDepthV {
         get => _copyDepthV;
         protected set => _copyDepthV = value;
+    }
+
+    public bool RaycastEnabled {
+        get => _raycastEnabled;
+        set => _raycastEnabled = value;
     }
 
     public abstract void Setup(int resU, int resV, Map initMap);
@@ -231,6 +238,8 @@ public abstract class Complex : MonoBehaviour {
     // Identifies the tile instance the cursor is over
     // returns null if there is no tile
     public Tile MouseIdentify() {
+        if (!_raycastEnabled) return null;
+        //_raycastEnabled = false;
         Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         if (Physics.Raycast(inputRay, out hit))
@@ -288,6 +297,38 @@ public abstract class Complex : MonoBehaviour {
                     radius * (sinp - (t - a)*cosp),
                     radius * (cosp + (t - a)*sinp) + radius * progress,
                     PI * (resV/2f - q) / 8f
+                );
+            }
+        }
+        return tempVerts;
+    }
+
+    // Maps from torus to cylinder
+    protected Vector3[,] TorusInvolutesMap(float progress, float R, float r, float minorOffset) {
+        Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
+        float p1, q1, t, minor, sinq, cosq, sinp, cosp;
+
+        for (int p = 0; p < ResU+1; p++) {
+            p1 = 2*PI*p/ResU + minorOffset;
+            for (int q = 0; q < ResV+1; q++) {
+                q1 = 2*PI*q/ResV;
+                // Transformation follows involutes
+                t = (PI - q1)*progress + q1; // Involute curve parameter
+                sincos(t, out sinq, out cosq);
+                sincos(p1, out sinp, out cosp);
+                minor = r * cosp
+                    /sqrt(1 + (t - q1)*(t - q1)*(1 - progress)*(1 - progress));
+
+                // In x and z, the first term gives the involutes of the circles
+                // that wrap around the torus toroidally, and the second term
+                // preserves the shape of the circles that wrap around poloidally
+                tempVerts[p,q] = new Vector3(
+                    R * (cosq + (t - q1)*sinq)
+                        + minor * (cosq + (t - q1)*(1 - progress)*sinq)
+                        + R*progress,
+                    r * sinp,
+                    R * (sinq - (t - q1)*cosq)
+                        + minor * (sinq - (t - q1)*(1 - progress)*cosq)
                 );
             }
         }

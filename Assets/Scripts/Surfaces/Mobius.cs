@@ -55,7 +55,9 @@ public class Mobius : Complex {
                 new Vector3[][,]{vertices, PlaneMap()}, 2f));
         } else if (newMap == Map.MobiusStrip) {
             yield return StartCoroutine(ComplexLerp(
-                new Vector3[][,]{vertices, StripMap()}, 2f));
+                new Vector3[][,]{vertices, CylinderInvoluteMap(0f, tau)}, 2f));
+            yield return StartCoroutine(ComplexLerp(
+                new Vector3[][,]{vertices, StripMap()}, 10f));
         } else if (newMap == Map.MobiusSudanese) {
             yield return StartCoroutine(ComplexLerp(
                 new Vector3[][,]{vertices, SudaneseMap()}, 2f));
@@ -64,26 +66,29 @@ public class Mobius : Complex {
     }
 
     public override void RepeatU() {
+        CopyDepthU = 1;
     }
 
     public override void RepeatV() {
         CopyDepthV++;
-        bool isReversed = CopyDepthV % 2 == 0;
+        if (CopyDepthV == 1) CopyDepthV++;
+        bool isReversed = CopyDepthV % 2 == 1;
         Vector3 flipper = Vector3.zero;
+
         for (int v = 0; v < resV; v++) {
             flipper = (tiles[0,ResV-v-1].Vertices[0].z - tiles[0,v].Vertices[0].z) * Vector3.forward;
             for (int u = 0; u < resU; u++) {
-                if (CopyDepthV == 1) {
+                if (CopyDepthV == 2) {
                     tiles[u,v].CreateClone(Offset[1] + flipper, true);
                     tiles[u,v].CreateClone(-1 * Offset[1] + flipper, true);
                 }
 
                 if (isReversed) {
-                    tiles[u,v].CreateClone(Offset[1] * (1 + CopyDepthV) + flipper, true);
-                    tiles[u,v].CreateClone(Offset[1] * -(1 + CopyDepthV) + flipper, true);
+                    tiles[u,v].CreateClone(Offset[1] * CopyDepthV + flipper, true);
+                    tiles[u,v].CreateClone(Offset[1] * -CopyDepthV + flipper, true);
                 } else {
-                    tiles[u,v].CreateClone(Offset[1] * (1 + CopyDepthV), false);
-                    tiles[u,v].CreateClone(Offset[1] * (-1 - CopyDepthV), false);
+                    tiles[u,v].CreateClone(Offset[1] * CopyDepthV, false);
+                    tiles[u,v].CreateClone(Offset[1] * -CopyDepthV, false);
                 }
             }
         }
@@ -113,9 +118,9 @@ public class Mobius : Complex {
                 minor = R + q1/tau * cosp2;
 
                 tempVerts[p,q] = 5f * new Vector3(
-                    q1/tau * sinp2,
+                    minor * cosp,
                     minor * sinp,
-                    minor * cosp
+                    q1/tau * sinp2
                 );
             }
         }
@@ -143,9 +148,9 @@ public class Mobius : Complex {
                 ys = (w + y) / sqrt(2f);
                 ws = (w - y) / sqrt(2f);
                 tempVerts[p,q] = new Vector3(
-                    x / (1 - ws),
+                    z / (1 - ws),
                     ys / (1 - ws),
-                    z / (1 - ws)
+                    x / (1 - ws)
                 );
             }
         }

@@ -15,11 +15,11 @@ public class UIHandler : MonoBehaviour {
     private Transform customInputs;
 
     private GameObject gameOverMessage, gameWinMessage;
-    private GameObject tutorialMessage, gameStartMessage;
     private Image fundamentalPolygon;
 
     private Sprite[] fundamentalPolygonSprites;
 
+    private Button newButton, clearButton;
     
     private int selectedManifold;
     private int selectedDifficulty;
@@ -29,7 +29,7 @@ public class UIHandler : MonoBehaviour {
     private Game game;
     private Complex complex;
     private Button mapButton;
-    private TMP_Text timerText, flagText;
+    private TMP_Text areaText, timerText, flagText;
     private Image flagPanelImage;
     private Color flagPanelGrey, flagPanelRed, flagPanelGreen;
     private TMP_InputField[] inputFields;
@@ -76,12 +76,15 @@ public class UIHandler : MonoBehaviour {
         difficultyToggle = gamePanel.Find("Difficulty Toggle").GetComponentsInChildren<Toggle>();
         customInputs = gamePanel.Find("Custom Inputs");
         inputFields = customInputs.GetComponentsInChildren<TMP_InputField>();
+        areaText = customInputs.Find("Area Label").GetComponent<TMP_Text>();
 
-        animator = panel.GetComponent<Animator>();
                 
         // Top panel data
         topPanel = transform.Find("Top Panel");
+        animator = topPanel.GetComponent<Animator>();
+        newButton = topPanel.Find("Timer Panel").Find("New Game Button").GetComponent<Button>();
         timerText = topPanel.Find("Timer Panel").Find("Timer Label").GetComponent<TMP_Text>();
+        clearButton = topPanel.Find("Flag Panel").Find("Clear Flags Button").GetComponent<Button>();
         flagText = topPanel.Find("Flag Panel").Find("Flag Label").GetComponent<TMP_Text>();
         flagPanelImage = topPanel.Find("Flag Panel").GetComponent<Image>();
         flagPanelGrey = new Color(1f, 1f, 1f, 0.2745098f);
@@ -93,8 +96,6 @@ public class UIHandler : MonoBehaviour {
         // GameObjects
         gameOverMessage = transform.Find("GameOver Message").gameObject;
         gameWinMessage = transform.Find("GameWin Message").gameObject;
-        tutorialMessage = topPanel.Find("Tutorial Message").gameObject;
-        gameStartMessage = topPanel.Find("GameStart Message").gameObject;
 
         fundamentalPolygon = manifoldsPanel.Find("Fundamental Polygon").GetComponent<Image>();
         fundamentalPolygonSprites = new Sprite[] {
@@ -145,12 +146,17 @@ public class UIHandler : MonoBehaviour {
     }
 
     private void Update() {
-        if (game is null || complex is null) return;
+        if (game is null || complex is null) {
+            newButton.interactable = false;
+            clearButton.interactable = false;
+            return;
+        }
 
-        gameStartMessage.SetActive(
-            !game.GameOn && !game.GameLost && !game.GameWon);
         gameOverMessage.SetActive(game.GameLost && !panelOpen);
         gameWinMessage.SetActive(game.GameWon && !panelOpen);
+
+        newButton.interactable = true;
+        clearButton.interactable = (game.FlagCount != 0 && !game.GameWon && !game.GameLost);
 
         timerText.text =
             $"{(int)game.Timer}.{((int)(game.Timer*10))%10}";
@@ -191,8 +197,6 @@ public class UIHandler : MonoBehaviour {
 
         mapButton.interactable = false;
 
-        tutorialMessage.SetActive(false);
-
         game.NewGame(false);
     }
 
@@ -219,6 +223,8 @@ public class UIHandler : MonoBehaviour {
         for (int i = 0; i < difficultyToggle.Length; i++)
             if (difficultyToggle[i].isOn)
                 selectedDifficulty = i;
+        
+        areaText.text = $"Total tiles = {_resU * _resV}";
 
         // If custom difficulty is selected
         if (selectedDifficulty == 3) {
@@ -244,8 +250,18 @@ public class UIHandler : MonoBehaviour {
     // Ran On Value Changed of Custom Difficulty Text Inputs
     public void UpdateCustomDifficulty() {
         int.TryParse(inputFields[0].text, out _resU);
+        if (_resU < 2) _resU = 2;
+
         int.TryParse(inputFields[1].text, out _resV);
+        if (_resV < 2) _resV = 2;
+
         int.TryParse(inputFields[2].text, out mineCount);
+        if (mineCount >= _resV * _resU) mineCount = (_resV * _resU) - 1;
+
+        inputFields[0].text = _resU.ToString();
+        inputFields[1].text = _resV.ToString();
+        inputFields[2].text = mineCount.ToString();
+        areaText.text = $"Total tiles = {_resU * _resV}";
     }
 
     public void ReMapStart() {
@@ -293,6 +309,10 @@ public class UIHandler : MonoBehaviour {
         panelOpen = game.Paused = !panelOpen;
         panel.gameObject.SetActive(panelOpen);
     }
+
+    public void ToggleTopPanel() {
+        animator.SetBool("panelOpen", !animator.GetBool("panelOpen"));
+    }
     
     private void UpdateFlagPanel() {
         if (game.FlagCount < game.MineCount)
@@ -302,5 +322,22 @@ public class UIHandler : MonoBehaviour {
         else
             flagPanelImage.color = flagPanelRed;
         flagText.text = $"{game.FlagCount}/{game.MineCount}";
+    }
+
+    // Ran on button press
+    public void ClearFlags() {
+        if (game is null || game.FlagCount == 0 || game.GameWon || game.GameLost) return;
+        game.ClearFlags();
+    }
+
+    // Ran on button press
+    public void NewGame() {
+        if (game is null) return;
+        game.NewGame();
+    }
+
+    public void ActivateRaycast(bool activate) {
+        if (complex is null) return;
+        complex.RaycastEnabled = activate;
     }
 }

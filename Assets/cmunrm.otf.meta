@@ -1,16 +1,17 @@
 fileFormatVersion: 2
-guid: 740aa5244e4350641bfef7e085644fb7
+guid: 448ba22fcb0f96f48a5a9121b9f5fa78
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
   fontSize: 16
-  forceTextureCase: -1
+  forceTextureCase: -2
   characterSpacing: 0
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - CMU Sans Serif
-  fallbackFontReferences: []
+  - CMU Serif
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 414c728592b157f4f9b1fec2a0c47f65, type: 3}
   customCharacters: 
   fontRenderingMode: 0
   ascentCalculationMode: 1
