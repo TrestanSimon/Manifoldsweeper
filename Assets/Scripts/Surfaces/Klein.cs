@@ -11,18 +11,12 @@ public class Klein : Complex {
             {"Flat", Map.Flat},
             {"Bottle", Map.KleinBottle},
             {"Thin Bottle", Map.ThinBottle},
-            {"Torus", Map.Torus},
             {"Figure 8", Map.Figure8},
             {"Pinched torus", Map.PinchedTorus}
         };
     }
 
     private int glide;
-
-    public int Glide {
-        get => glide;
-        set => glide = value;
-    }
     
     public override void Setup(int resU, int resV, Map initMap) {
         sideCount = 2;
@@ -64,13 +58,10 @@ public class Klein : Complex {
                 new Vector3[][,]{vertices, PlaneMap()}, 2f));
         } else if (newMap == Map.KleinBottle) {
             yield return StartCoroutine(ComplexLerp(
-                new Vector3[][,]{vertices, BottleMap()}, 10f));
+                new Vector3[][,]{vertices, BottleMap()}, 2f));
         } else if (newMap == Map.ThinBottle) {
             yield return StartCoroutine(ComplexLerp(
-                new Vector3[][,]{vertices, ThinBottleMap()}, 10f));
-        } else if (newMap == Map.Torus) {
-            yield return StartCoroutine(ComplexLerp(
-                new Vector3[][,]{vertices, TorusInvolutesMap(0,4,2,PI/2)}, 2f));
+                new Vector3[][,]{vertices, ThinBottleMap()}, 2f));
         } else if (newMap == Map.Figure8) {
             yield return StartCoroutine(ComplexLerp(
                 new Vector3[][,]{vertices, Figure8Map()}, 2f));
@@ -226,7 +217,7 @@ public class Klein : Complex {
                 q1 = 2f*PI*(float)q / (float)resV;
                 sincos(q1, out sinq, out cosq);
 
-                tempVerts[p,q] = new Vector3(
+                tempVerts[p,q] = 2f * new Vector3(
                     -(2f/15f) * cosp * (3*cosq - 30*sinp + 90*pow(cosp,4)*sinp - 60*pow(cosp,6)*sinp + 5*cosp*cosq*sinp),
                     (2f/15f) * (3f + 5f*cosp*sinp)*sinq,
                     -(1f/15f) * sinp * (3f*cosq - 3*pow(cosp,2)*cosq - 48*pow(cosp,4)*cosq + 48*pow(cosp,6)*cosq - 60*sinp + 5*cosp*cosq*sinp - 5*pow(cosp,3)*cosq*sinp - 80*pow(cosp,5)*cosq*sinp + 80*pow(cosp,7)*cosq*sinp)
