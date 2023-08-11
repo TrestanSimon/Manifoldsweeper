@@ -306,7 +306,11 @@ public class UIHandler : MonoBehaviour {
     }
 
     public void TogglePanel() {
-        panelOpen = game.Paused = !panelOpen;
+        panelOpen = !panelOpen;
+
+        if (game is not null)
+            game.Paused = panelOpen;
+            
         panel.gameObject.SetActive(panelOpen);
     }
 
