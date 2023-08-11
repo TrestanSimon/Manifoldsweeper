@@ -230,18 +230,29 @@ public class Klein : Complex {
     private Vector3[,] Figure8Map() {
         Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
         float p1, q1, sinp, cosp, sinp05, cosp05, sinq, cosq, sin2q;
+        int qIndex;
 
-        for (int p = 0; p <= resU; p++) {
-            p1 = 2f*PI*(float)p / (float)resU;
-            sincos(p1, out sinp, out cosp);
-            sincos(p1*0.5f, out sinp05, out cosp05);
+        for (int q = 0; q <= resV; q++) {
+            // corrects index for this parametrization
+            qIndex = (q + (resV+1)/4) % (resV+1);
 
-            for (int q = 0; q <= resV; q++) {
-                q1 = 2f*PI*(float)q / (float)resV;
-                sincos(q1, out sinq, out cosq);
-                sin2q = sin(2f*q1);
+            q1 = 2f*PI*(float)q / (float)resV;
 
-                tempVerts[p,q] = new Vector3(
+            // Offset necessary so that the first (q==0) and final (q==resV)
+            // vertices for any given p are the same (i.e., overlap).
+            // If this is not applied, vertices q==resV/2-1 and q==resV/2
+            // will be the same affecting tiles with v==resV/2-1
+            if (qIndex < resV/4f) q1 -= 2f*PI / (float)resV;
+
+            sincos(q1, out sinq, out cosq);
+            sin2q = sin(2f*q1);
+
+            for (int p = 0; p <= resU; p++) {
+                p1 = 2f*PI*(float)p / (float)resU;
+                sincos(p1, out sinp, out cosp);
+                sincos(p1*0.5f, out sinp05, out cosp05);
+
+                tempVerts[p,qIndex] = new Vector3(
                     (2f + cosp05 * sinq - sinp05 * sin2q) * cosp,
                     sinp05 * sinq + cosp05 * sin2q,
                     (2f + cosp05 * sinq - sinp05 * sin2q) * sinp
@@ -254,19 +265,30 @@ public class Klein : Complex {
     private Vector3[,] PinchedTorusMap() {
         Vector3[,] tempVerts = new Vector3[ResU+1,ResV+1];
         float p1, q1, sinp, cosp, sinp05, cosp05, sinq, cosq;
-        float r = this.ResU / 16f;
-        float R = this.ResV / 16f;
+        float r = this.ResV / 16f;
+        float R = this.ResU / 16f;
+        int qIndex;
 
-        for (int p = 0; p <= resU; p++) {
-            p1 = 2f*PI*(float)p / (float)resU;
-            sincos(p1, out sinp, out cosp);
-            sincos(p1*0.5f, out sinp05, out cosp05);
+        for (int q = 0; q <= resV; q++) {
+            // corrects index for this parametrization
+            qIndex = (q + (resV+1)/4) % (resV+1);
 
-            for (int q = 0; q <= resV; q++) {
-                q1 = 2f*PI*(float)q / (float)resV;
-                sincos(q1, out sinq, out cosq);
+            q1 = 2f*PI*(float)q / (float)resV;
 
-                tempVerts[p,q] = new Vector3(
+            // Offset necessary so that the first (q==0) and final (q==resV)
+            // vertices for any given p are the same (i.e., overlap).
+            // If this is not applied, vertices q==resV/2-1 and q==resV/2
+            // will be the same affecting tiles with v==resV/2-1
+            if (qIndex < resV/4f) q1 -= 2f*PI / (float)resV;
+
+            sincos(q1, out sinq, out cosq);
+
+            for (int p = 0; p <= resU; p++) {
+                p1 = 2f*PI*(float)p / (float)resU;
+                sincos(p1, out sinp, out cosp);
+                sincos(p1*0.5f, out sinp05, out cosp05);
+
+                tempVerts[p,qIndex] = new Vector3(
                     (R + r * cosq) * cosp,
                     r * sinq * cosp05,
                     (R + r * cosq) * sinp
