@@ -16,7 +16,7 @@
 
 ## Abstract
 
-Manifoldsweeper is a variant of [Minesweeper](https://en.wikipedia.org/wiki/Minesweeper_(video_game)) that adapts the original game's gridded playing board to different surfaces while preserving the its existing rules. Such surfaces are constructed by gluing opposite edges of the game's grid in different configurations. These conditions allow for four different surfaces (up to certain deformations): the cylinder, torus, Möbius strip, and Klein bottle.
+Manifoldsweeper is a variant of [Minesweeper](https://en.wikipedia.org/wiki/Minesweeper_(video_game)) that adapts the original game's gridded playing board to different surfaces while preserving its existing rules. Such surfaces are constructed by gluing opposite edges of the game's grid in different configurations. These conditions allow for four different surfaces (up to certain deformations): the cylinder, torus, Möbius strip, and Klein bottle.
 
 ## Gameplay Guide
 
